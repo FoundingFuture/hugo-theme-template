@@ -1,37 +1,93 @@
 #!/usr/bin/env python3
-"""Every reference resolves under the site, or it is a third-party request.
+"""Every subresource resolves under the site, or it is a third-party request.
 
-A theme that pulls a font or a script from another host makes every
-page load depend on that host. It also tells that host who is reading.
-A subresource from elsewhere carries an integrity attribute, or it is
-not trusted.
+A theme that pulls a font or a script from another host makes every page
+load depend on that host. It also tells that host who is reading. A
+subresource from elsewhere carries an integrity attribute, or it is not
+trusted.
+
+A link a reader may follow is not a subresource. An anchor pointing at
+another site costs nothing until somebody clicks it. A fixture page
+listing the link forms Hugo resolves has to carry one.
 """
 
 import os
 import re
 import sys
+from html.parser import HTMLParser
 from urllib.parse import urlparse
 
 BASE = "https://example.org/"
-REFERENCE = re.compile(
-    r'(?:src|href)\s*=\s*["\']([^"\']+)["\']'
-    r'|srcset\s*=\s*["\']([^"\']+)["\']'
-    r'|url\(\s*["\']?([^"\')]+)'
-    r'|@import\s+["\']([^"\']+)')
-SUBRESOURCE = re.compile(
-    r'<(script)\b[^>]*\bsrc\s*=|<(link)\b[^>]*\brel\s*=\s*["\']stylesheet["\']',
-    re.IGNORECASE)
-TAG = re.compile(r"<(?:script|link)\b[^>]*>", re.IGNORECASE)
+# Attributes the browser fetches without being asked.
+FETCHED = {
+    "img": ("src", "srcset"), "script": ("src",), "iframe": ("src",),
+    "audio": ("src",), "video": ("src", "poster"), "source": ("src", "srcset"),
+    "embed": ("src",), "track": ("src",), "object": ("data",), "input": ("src",),
+    "link": ("href",),
+}
+# A link element that only describes the document fetches nothing.
+LINK_NOT_FETCHED = {"canonical", "alternate", "author", "license", "prev", "next"}
+SUBRESOURCE_REL = {"stylesheet", "preload", "modulepreload", "prefetch", "icon",
+                   "apple-touch-icon", "manifest", "preconnect", "dns-prefetch"}
+CSS_REFERENCE = re.compile(r"url\(\s*['\"]?([^'\")]+)|@import\s+['\"]([^'\"]+)")
 
 
 def local(target):
-    target = target.strip()
-    if not target or target.startswith(("#", "mailto:", "tel:", "data:")):
+    target = (target or "").strip()
+    if not target or target.startswith(("#", "mailto:", "tel:", "data:", "javascript:")):
         return True
     parsed = urlparse(target)
     if not parsed.scheme and not parsed.netloc:
         return True
     return target.startswith(BASE)
+
+
+class Subresources(HTMLParser):
+    """Collect what the page fetches, leaving what it only points at."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.findings = []
+
+    def handle_starttag(self, tag, attrs):
+        attr = dict(attrs)
+        wanted = FETCHED.get(tag)
+        if not wanted:
+            return
+        if tag == "link":
+            rel = (attr.get("rel") or "").lower().split()
+            if not rel or set(rel) & LINK_NOT_FETCHED:
+                return
+            if not set(rel) & SUBRESOURCE_REL:
+                return
+        for name in wanted:
+            value = attr.get(name)
+            if not value:
+                continue
+            for piece in value.split(","):
+                target = piece.strip().split(" ")[0]
+                if target and not local(target):
+                    self.findings.append((self.getpos()[0], target, attr))
+
+
+def check_html(path, rel, findings):
+    parser = Subresources()
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        parser.feed(handle.read())
+    for line, target, attr in parser.findings:
+        findings.append("%s:%d: %s is a third-party request." % (rel, line, target))
+        if "integrity" not in attr:
+            findings.append("%s:%d: %s has no integrity attribute." % (rel, line, target))
+
+
+def check_css(path, rel, findings):
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        for number, line in enumerate(handle, start=1):
+            for groups in CSS_REFERENCE.findall(line):
+                for target in groups:
+                    if target and not local(target):
+                        findings.append(
+                            "%s:%d: %s is a third-party request." % (rel, number, target))
 
 
 def main():
@@ -43,30 +99,12 @@ def main():
     for folder, dirs, files in os.walk(root):
         dirs[:] = sorted(dirs)
         for name in sorted(files):
-            if not name.endswith((".html", ".css", ".xml")):
-                continue
             full = os.path.join(folder, name)
             rel = os.path.relpath(full, root).replace(os.sep, "/")
-            with open(full, encoding="utf-8", errors="replace") as handle:
-                text = handle.read()
-            for number, line in enumerate(text.splitlines(), start=1):
-                for groups in REFERENCE.findall(line):
-                    for target in groups:
-                        if not target:
-                            continue
-                        for piece in target.split(","):
-                            piece = piece.strip().split(" ")[0]
-                            if piece and not local(piece):
-                                findings.append(
-                                    "%s:%d: %s is a third-party request." % (rel, number, piece))
             if name.endswith(".html"):
-                for tag in TAG.findall(text):
-                    if not SUBRESOURCE.search(tag):
-                        continue
-                    match = re.search(r'(?:src|href)\s*=\s*["\']([^"\']+)', tag)
-                    if match and not local(match.group(1)) and "integrity=" not in tag:
-                        findings.append(
-                            "%s:1: %s has no integrity attribute." % (rel, match.group(1)))
+                check_html(full, rel, findings)
+            elif name.endswith(".css"):
+                check_css(full, rel, findings)
     for finding in sorted(set(findings)):
         print(finding)
     return 1 if findings else 0

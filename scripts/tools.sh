@@ -10,7 +10,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-WRITING_LINT_TAG=v1.0.0
+WRITING_LINT_TAG=v1.0.1
 WRITING_LINT_REPO=FoundingFuture/writing-lint
 
 venv=.tools/venv

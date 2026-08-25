@@ -18,7 +18,7 @@ import shutil
 WORDS = (
     "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu "
     "nu xi omicron pi rho sigma tau upsilon phi chi psi omega ridge harbour "
-    "lantern gravel meadow cinder thicket furrow beacon quarry".split())
+    "lantern gravel meadow cinder thicket furrow quarry sable".split())
 TAGS = ["tag-%02d" % n for n in range(40)]
 CATEGORIES = ["category-%d" % n for n in range(8)]
 DEST = "conformance/scale-content"
