@@ -1,0 +1,92 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Hugo
+        run: |
+          set -euo pipefail
+          version="$(cat .hugo-version)"
+          curl -fsSL -o hugo.tar.gz \
+            "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf hugo.tar.gz -C "$HOME/.local/bin" hugo
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install the tools the gates name
+        run: |
+          set -euo pipefail
+          pip install --quiet html5validator
+          npm install --global --silent pa11y-ci @lhci/cli stylelint stylelint-config-standard eslint
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck libxml2-utils
+
+      - name: Reach writing-lint
+        env:
+          WRITING_LINT_KEY: ${{ secrets.WRITING_LINT_DEPLOY_KEY }}
+          GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${WRITING_LINT_KEY:-}" ]; then
+            mkdir -p ~/.ssh && chmod 700 ~/.ssh
+            printf '%s\n' "$WRITING_LINT_KEY" > ~/.ssh/id_ed25519
+            chmod 600 ~/.ssh/id_ed25519
+            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          scripts/tools.sh writing-lint
+
+      - name: Every gate, then the release gate
+        env:
+          CI: "true"
+          RELEASE_TAG: ${{ github.ref_name }}
+          DEMO_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/demo/
+        run: |
+          ./c check
+          ./c check gate=release
+
+      - name: Build the zip a downloader gets
+        run: |
+          set -euo pipefail
+          name="${GITHUB_REPOSITORY##*/}"
+          mkdir -p ".dist/$name"
+          for entry in *; do
+            case "$entry" in
+              conformance|scripts|templates|.dist|c|lighthouserc.json) continue ;;
+            esac
+            cp -R "$entry" ".dist/$name/"
+          done
+          ( cd .dist && zip -qr "../$name-${GITHUB_REF_NAME}.zip" "$name" )
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: /dev/null
+          generate_release_notes: false
+          files: '*.zip'
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: conformance/public/demo
+
+      - uses: actions/deploy-pages@v4

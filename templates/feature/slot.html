@@ -8,20 +8,25 @@ Render every enabled feature registered for one slot, in weight order.
 */ -}}
 {{- $slot := .slot }}
 {{- $page := .page }}
-{{- range $name, $manifest := hugo.Data.features }}
-  {{- if eq $manifest.slot $slot }}
-    {{- $on := $manifest.default }}
-    {{- with site.Params.features }}
-      {{- $found := index . $name }}
-      {{- if ne $found nil }}{{ $on = $found }}{{ end }}
-    {{- end }}
-    {{- with $page.Params.features }}
-      {{- $found := index . $name }}
-      {{- if ne $found nil }}{{ $on = $found }}{{ end }}
-    {{- end }}
-    {{- $kinds := $manifest.kinds | default (slice $page.Kind) }}
-    {{- if and $on (in $kinds $page.Kind) }}
-      {{- partial $manifest.partial $page }}
+{{- /* The conformance build sets featuresOff to compare a theme with no
+       feature at all against the reference scaffold. It outranks front
+       matter, which nothing else does. */ -}}
+{{- if not site.Params.featuresoff }}
+  {{- range $name, $manifest := hugo.Data.features }}
+    {{- if eq $manifest.slot $slot }}
+      {{- $on := $manifest.default }}
+      {{- with site.Params.features }}
+        {{- $found := index . $name }}
+        {{- if ne $found nil }}{{ $on = $found }}{{ end }}
+      {{- end }}
+      {{- with $page.Params.features }}
+        {{- $found := index . $name }}
+        {{- if ne $found nil }}{{ $on = $found }}{{ end }}
+      {{- end }}
+      {{- $kinds := $manifest.kinds | default (slice $page.Kind) }}
+      {{- if and $on (in $kinds $page.Kind) }}
+        {{- partial $manifest.partial $page }}
+      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}

@@ -1,0 +1,61 @@
+name: hugo-watch
+
+# Hugo releases often. This finds out that a release broke the theme
+# before a contributor does, and opens one issue rather than one a week.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  newest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the newest Hugo
+        id: hugo
+        run: |
+          set -euo pipefail
+          version="$(curl -fsSL https://api.github.com/repos/gohugoio/hugo/releases/latest \
+            | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
+          curl -fsSL -o hugo.tar.gz \
+            "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf hugo.tar.gz -C "$HOME/.local/bin" hugo
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build and compare
+        id: gates
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./c check gate=build  2>&1 | tee -a hugo-watch.log
+          ./c check gate=output 2>&1 | tee -a hugo-watch.log
+
+      - name: Open an issue, unless one is already open
+        if: steps.gates.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.hugo.outputs.version }}
+        run: |
+          set -euo pipefail
+          title="Hugo ${VERSION} breaks the build"
+          existing="$(gh issue list --state open --search "$title" --json title \
+            --jq '.[] | select(.title == "'"$title"'") | .title' | head -1)"
+          if [ -n "$existing" ]; then
+            echo "an issue with that title is already open"
+            exit 0
+          fi
+          gh issue create --title "$title" \
+            --body "$(printf 'The scheduled build against Hugo %s failed.\n\n```\n%s\n```\n' \
+              "$VERSION" "$(tail -60 hugo-watch.log)")"

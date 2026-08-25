@@ -1,0 +1,57 @@
+name: bootstrap
+
+# The "Use this template" button copies the files and runs nothing, so
+# the theme has to be generated on the first push. The marker file is
+# deleted by ./c init, and this workflow never triggers again.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stop unless the marker is present
+        id: marker
+        run: |
+          if [ -f BOOTSTRAP ]; then
+            echo "run=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Hugo
+        if: steps.marker.outputs.run == 'yes'
+        run: |
+          set -euo pipefail
+          version="$(curl -fsSL https://api.github.com/repos/gohugoio/hugo/releases/latest \
+            | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
+          curl -fsSL -o hugo.tar.gz \
+            "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf hugo.tar.gz -C "$HOME/.local/bin" hugo
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - uses: actions/setup-python@v5
+        if: steps.marker.outputs.run == 'yes'
+        with:
+          python-version: '3.12'
+
+      - name: Generate the theme
+        if: steps.marker.outputs.run == 'yes'
+        run: ./c init name="${GITHUB_REPOSITORY##*/}"
+
+      - name: Commit
+        if: steps.marker.outputs.run == 'yes'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Generate theme scaffold from Hugo $(cat .hugo-version)"
+          git push

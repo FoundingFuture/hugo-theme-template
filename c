@@ -39,7 +39,7 @@ parse() {
           ARG["sub"]="$item"
         fi
         ;;
-      list|new|on|off)
+      list|new|on|off|add|available)
         ARG["sub"]="$item"
         ;;
       --strict) ARG["strict"]=yes ;;
@@ -102,6 +102,50 @@ build_one() {
   ( cd conformance && hugo --config "$config" -d "public/$dest" \
       --panicOnWarning --printPathWarnings --printUnusedTemplates \
       --printI18nWarnings --logLevel warn --gc "$@" )
+}
+
+# Build any real Hugo site against the theme. The kitchen sink covers
+# what Hugo can do. This covers what a site does.
+cmd_site() {
+  bootstrapped
+  local site="${ARG[site]}" config dir
+  [ -d "$site" ] || { printf '%s\n' "no site at $site" >&2; exit 2; }
+  site="$(cd "$site" && pwd -P)"
+  scripts/reference.sh
+  config=conformance/config/site/hugo.toml
+  mkdir -p "$(dirname "$config")"
+
+  # Every mount goes in this one file. Hugo replaces the mounts array
+  # when two configs both declare one, rather than joining them, so a
+  # second file holding only the site's mounts would drop the theme's.
+  {
+    printf '%s\n' "# Written by ./c site=. Do not edit."
+    printf '%s\n' "#"
+    printf '%s\n' "# The theme key is emptied. The site names a theme of its own,"
+    printf '%s\n' "# and that directory is not here. The theme under test is"
+    printf '%s\n' "# mounted from the repository root instead."
+    printf '%s\n' "theme = []"
+    printf '%s\n' "[module]"
+    for dir in layouts archetypes assets i18n static data; do
+      # The test runs from the repository root. The path written is
+      # relative to conformance/, which is where Hugo reads it.
+      [ -d "$dir" ] || continue
+      printf '  [[module.mounts]]\n    source = "../%s"\n    target = "%s"\n' "$dir" "$dir"
+    done
+    for dir in content assets static i18n data layouts archetypes; do
+      [ -d "$site/$dir" ] || continue
+      printf '  [[module.mounts]]\n    source = "%s"\n    target = "%s"\n' "$site/$dir" "$dir"
+    done
+  } > "$config"
+
+  # The site's own config merges under the conformance config, so its
+  # taxonomies and menus apply while the conformance settings still win.
+  local extra=""
+  [ -f "$site/hugo.toml" ] && extra="$site/hugo.toml,"
+  say "build $site against the theme"
+  ( cd conformance && hugo --config "hugo.toml,${extra}config/site/hugo.toml" \
+      -d public/site --panicOnWarning --printPathWarnings \
+      --printI18nWarnings --logLevel warn --gc )
 }
 
 cmd_build() {
@@ -172,6 +216,8 @@ cmd_feature() {
   local sub="${ARG[sub]:-list}"
   case "$sub" in
     list) scripts/feature.sh list ;;
+    available) scripts/feature.sh available ;;
+    add)  need name; scripts/feature.sh add "${ARG[name]}" ;;
     new)  need name; scripts/feature.sh new "${ARG[name]}" ;;
     on)   need name; scripts/feature.sh on "${ARG[name]}" ;;
     off)  need name; scripts/feature.sh off "${ARG[name]}" ;;
@@ -194,7 +240,7 @@ cmd_help() {
 parse "$@"
 
 case "$VERB" in
-  "")        cmd_build ;;
+  "")        if [ -n "${ARG[site]:-}" ]; then cmd_site; else cmd_build; fi ;;
   init)      cmd_init ;;
   check)     cmd_check ;;
   conform)   cmd_conform ;;
@@ -228,6 +274,8 @@ esac
 # ./c docs                        regenerate contract.toml and docs/front-matter.md
 # ./c report                      write the PR report to public/report/
 # ./c feature list                name, slot, default, level, one line each
+# ./c feature available          the features the template ships and has not installed
+# ./c feature add name=x          install one of those, whole
 # ./c feature new name=x          write the manifest, partial, css, i18n key and fixture page
 # ./c feature on name=x
 # ./c feature off name=x

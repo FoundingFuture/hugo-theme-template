@@ -1,0 +1,118 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        hugo: [pinned, latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read the pinned Hugo version
+        id: pin
+        run: echo "version=$(cat .hugo-version)" >> "$GITHUB_OUTPUT"
+
+      # Installed from the release tarball by version, not through a
+      # marketplace action, so the pin is explicit and readable here.
+      - name: Install Hugo
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.hugo }}" = latest ]; then
+            version="$(curl -fsSL https://api.github.com/repos/gohugoio/hugo/releases/latest \
+              | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
+          else
+            version="${{ steps.pin.outputs.version }}"
+          fi
+          curl -fsSL -o hugo.tar.gz \
+            "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf hugo.tar.gz -C "$HOME/.local/bin" hugo
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "installed hugo ${version}"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install the tools the gates name
+        run: |
+          set -euo pipefail
+          pip install --quiet html5validator
+          npm install --global --silent pa11y-ci @lhci/cli stylelint stylelint-config-standard eslint
+          curl -fsSL https://github.com/wjdp/htmltest/releases/latest/download/htmltest_linux_amd64.tar.gz \
+            | tar -xz -C "$HOME/.local/bin" htmltest || true
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck libxml2-utils
+
+      # The checkers live in a private repository, so CI needs a key or a
+      # token. Either secret works, and neither is needed to build.
+      - name: Reach writing-lint
+        env:
+          WRITING_LINT_KEY: ${{ secrets.WRITING_LINT_DEPLOY_KEY }}
+          GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${WRITING_LINT_KEY:-}" ]; then
+            mkdir -p ~/.ssh && chmod 700 ~/.ssh
+            printf '%s\n' "$WRITING_LINT_KEY" > ~/.ssh/id_ed25519
+            chmod 600 ~/.ssh/id_ed25519
+            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          scripts/tools.sh writing-lint
+
+      - name: Gates
+        env:
+          CI: "true"
+          GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
+        run: ./c check
+
+      - name: A real site, when one is named
+        run: |
+          set -euo pipefail
+          [ -s conformance/sites.txt ] || { echo "no site named"; exit 0; }
+          while IFS= read -r repo; do
+            case "$repo" in ""|\#*) continue ;; esac
+            git clone --depth 1 "$repo" .site-under-test
+            ./c site=.site-under-test
+            rm -rf .site-under-test
+          done < conformance/sites.txt
+
+      - name: Report
+        if: always() && matrix.hugo == 'pinned'
+        run: ./c report || true
+
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.hugo == 'pinned'
+        with:
+          name: conformance-report
+          path: conformance/public/report
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: conformance-output-${{ matrix.hugo }}
+          path: conformance/public
+
+      - name: Comment on the pull request
+        if: always() && github.event_name == 'pull_request' && matrix.hugo == 'pinned'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: conformance
+          message: |
+            The conformance report for this branch is attached to the run
+            as the `conformance-report` artifact.

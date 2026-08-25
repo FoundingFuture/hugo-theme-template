@@ -9,3 +9,5 @@ resources/_gen/
 public/
 .bootstrap-*
 .hugo-toml-*
+conformance/config/site/
+conformance/config/off/

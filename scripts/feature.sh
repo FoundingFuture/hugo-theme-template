@@ -88,8 +88,48 @@ print("%s = %s in %s" % (name, value, path))
 PY
 }
 
+# Install one of the features the template ships, whole.
+cmd_add() {
+  [ -n "$name" ] || { echo "usage: ./c feature add name=<slug>" >&2; exit 2; }
+  local manifest="templates/feature/manifests/$name.toml"
+  local partial="templates/feature/partials/$name.html"
+  local sheet="templates/feature/css/$name.css"
+  [ -f "$manifest" ] || { echo "the template ships no feature named $name" >&2; exit 1; }
+  [ -e "data/features/$name.toml" ] && { echo "$name is already installed" >&2; exit 1; }
+
+  mkdir -p data/features "$partials/features" assets/css/features \
+           conformance/content/kitchen-sink/features
+  cp "$manifest" "data/features/$name.toml"
+  cp "$partial" "$partials/features/$name.html"
+  [ -f "$sheet" ] && cp "$sheet" "assets/css/features/$name.css"
+
+  local camel
+  camel="$(printf '%s' "$name" | awk -F- '{printf "%s", $1; for(i=2;i<=NF;i++) printf "%s%s", toupper(substr($i,1,1)), substr($i,2)}')"
+  sed -e "s|{{NAME}}|$name|g" -e "s|{{KEY}}|$camel|g" \
+    templates/feature/page.md.tmpl > "conformance/content/kitchen-sink/features/$name.md"
+  if ! grep -q "^\[$camel\]" i18n/en.toml 2>/dev/null; then
+    printf '\n[%s]\nother = "%s"\n' "$camel" "$name" >> i18n/en.toml
+  fi
+  printf '%s\n' "installed $name. Run ./c docs, then ./c conform."
+}
+
+# The features the template ships and has not installed.
+cmd_available() {
+  local found=0 base
+  for file in templates/feature/manifests/*.toml; do
+    [ -e "$file" ] || continue
+    base="$(basename "$file" .toml)"
+    [ -e "data/features/$base.toml" ] && continue
+    found=1
+    printf '%s\n' "$base"
+  done
+  [ "$found" -eq 1 ] || echo "every shipped feature is installed"
+}
+
 case "$action" in
   list) cmd_list ;;
+  add) cmd_add ;;
+  available) cmd_available ;;
   new)  cmd_new ;;
   on)   switch true ;;
   off)  switch false ;;

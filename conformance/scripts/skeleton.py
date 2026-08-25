@@ -2,9 +2,13 @@
 """Reduce a built page to the shape a reader sees.
 
 One JSON document per HTML file: the h1, the heading outline, the links
-and images inside the content, and a count of the block elements. Two
-themes that render the same pages agree here, whatever their markup and
-whatever their stylesheet.
+and images inside the content, a count of the block elements, and every
+classed element with the text it carries. Two themes that render the
+same pages agree here, whatever their markup and their stylesheet.
+
+The classed elements are what makes a feature visible. A feature
+declares what it adds, as tag and class, and the declaration is checked
+against what actually appeared.
 
 Chrome is excluded. A link in a nav or a footer belongs to the theme, not
 to the page, and comparing it would report every menu as a difference.
@@ -30,6 +34,7 @@ class Skeleton(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.h1 = []
+        self.marked = []
         self.headings = []
         self.links = []
         self.images = []
@@ -94,6 +99,10 @@ class Skeleton(HTMLParser):
         elif tag == "h1":
             self.flush()
             self.capture = "h1"
+        elif attr.get("class"):
+            self.flush()
+            self.capture = tag
+            self.pending = attr["class"]
         elif tag in HEADINGS:
             self.flush()
             self.capture = tag
@@ -119,9 +128,12 @@ class Skeleton(HTMLParser):
             self.links.append([self.pending, text])
         elif self.capture == "h1":
             self.h1.append(text)
-        else:
+        elif self.capture in HEADINGS:
             level = int(self.capture[1])
             self.headings.append([level, self.pending or "", text])
+        else:
+            for name in (self.pending or "").split():
+                self.marked.append(["%s.%s" % (self.capture, name), text])
         self.capture, self.buffer, self.pending = None, [], None
 
     def document(self):
@@ -132,6 +144,7 @@ class Skeleton(HTMLParser):
             "links": self.links,
             "images": self.images,
             "counts": self.counts,
+            "marked": self.marked,
         }
 
     def head(self):
