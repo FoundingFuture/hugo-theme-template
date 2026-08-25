@@ -1,0 +1,7 @@
+# The scale fixture, mounted only for the build that measures it. It is
+# generated and gitignored, and it holds two thousand pages, so no other
+# build reads it.
+[module]
+  [[module.mounts]]
+    source = "scale-content"
+    target = "content/scale"

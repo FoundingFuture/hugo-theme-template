@@ -1,0 +1,6 @@
+readlink -f|readlink -f is GNU only. Use cd and pwd -P instead.
+sed -i ''|BSD sed -i with an empty suffix. Write a temp file and mv it.
+find .* -printf|find -printf is GNU only.
+date -d |date -d is GNU only.
+\brealpath\b|realpath is not on every system. Use cd and pwd -P instead.
+mktemp -d *$|mktemp -d without a template.

@@ -1,0 +1,36 @@
+# Mount the repository root as the theme. No symlink, which a Windows
+# checkout mishandles, and no module download, which would need a network.
+#
+# A site-side mount listed after a theme mount for the same target wins,
+# which is the normal site-over-theme order.
+[module]
+  [[module.mounts]]
+    source = "../layouts"
+    target = "layouts"
+  [[module.mounts]]
+    source = "../archetypes"
+    target = "archetypes"
+  [[module.mounts]]
+    source = "../assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "../i18n"
+    target = "i18n"
+  [[module.mounts]]
+    source = "../static"
+    target = "static"
+  [[module.mounts]]
+    source = "../data"
+    target = "data"
+  [[module.mounts]]
+    source = "content"
+    target = "content"
+  [[module.mounts]]
+    source = "assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "i18n"
+    target = "i18n"
+  [[module.mounts]]
+    source = "static"
+    target = "static"

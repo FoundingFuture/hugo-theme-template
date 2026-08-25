@@ -1,0 +1,14 @@
+name = "{{NAME}}"
+slot = "page.meta"
+weight = 50
+default = true
+level = "toggle"
+kinds = ["page"]
+partial = "features/{{NAME}}.html"
+css = "css/features/{{NAME}}.css"
+i18n = ["{{KEY}}"]
+
+[skeleton]
+  # What this feature adds to the page when it is on. The conformance
+  # build allows exactly this and nothing else.
+  text = ["p.{{NAME}}"]

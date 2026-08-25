@@ -1,0 +1,10 @@
+{
+  "defaults": {
+    "runners": ["axe"],
+    "standard": "WCAG2AA",
+    "threshold": 0,
+    "includeWarnings": false,
+    "chromeLaunchConfig": { "args": ["--no-sandbox"] }
+  },
+  "urls": []
+}

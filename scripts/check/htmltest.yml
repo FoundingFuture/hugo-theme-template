@@ -1,0 +1,4 @@
+DirectoryPath: "conformance/public/ours"
+IgnoreDirectoryMissingTrailingSlash: true
+CheckExternal: false
+EnforceHTTPS: false

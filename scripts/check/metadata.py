@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""Check the theme's own metadata.
+
+Two modes. The default is structural: the files exist, the versions
+agree, and no build output is tracked. That holds from the first commit.
+
+--listing is the themes.gohugo.io side. A description, tags, features
+and two screenshots. A theme in development has none of those yet.
+Demanding them on day one would mean shipping a blank screenshot to
+satisfy a gate. They are needed to release, so the release gate asks.
+"""
+
+import os
+import re
+import subprocess
+import sys
+
+# Present from the first commit, because bootstrap writes them.
+STRUCTURAL = ["name", "license", "licenselink", "homepage", "min_version"]
+FORBIDDEN = ["resources/_gen", "public", ".hugo_build.lock"]
+SCREENSHOTS = {"images/screenshot.png": (1500, 1000), "images/tn.png": (900, 600)}
+
+
+def scalar(text, key):
+    match = re.search(r"^\s*%s\s*=\s*(.+)$" % re.escape(key), text, re.MULTILINE)
+    return match.group(1).strip() if match else None
+
+
+def png_size(path):
+    """Read width and height from the PNG header, with no image library."""
+    with open(path, "rb") as handle:
+        header = handle.read(24)
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+    return (int.from_bytes(header[16:20], "big"),
+            int.from_bytes(header[20:24], "big"))
+
+
+def tracked():
+    try:
+        out = subprocess.run(["git", "ls-files"], capture_output=True,
+                             text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return []
+    return out.splitlines()
+
+
+def listing_checks():
+    """What themes.gohugo.io needs before it can list the theme."""
+    findings = []
+    if os.path.exists("theme.toml"):
+        with open("theme.toml", encoding="utf-8") as handle:
+            text = handle.read()
+        for key in ("description", "tags", "features", "demosite"):
+            value = scalar(text, key)
+            if value is None:
+                findings.append("theme.toml:1: no %s." % key)
+            elif value in ('""', "''", "[]"):
+                findings.append("theme.toml:1: %s is empty. The listing shows it." % key)
+    else:
+        findings.append("theme.toml:1: missing.")
+
+    for path, want in SCREENSHOTS.items():
+        if not os.path.exists(path):
+            findings.append("%s:1: missing. themes.gohugo.io shows it." % path)
+            continue
+        size = png_size(path)
+        if size is None:
+            findings.append("%s:1: not a PNG." % path)
+        elif size != want:
+            findings.append("%s:1: is %dx%d, must be %dx%d."
+                            % (path, size[0], size[1], want[0], want[1]))
+
+    if os.path.exists("README.md"):
+        with open("README.md", encoding="utf-8") as handle:
+            readme = handle.read()
+        for target in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", readme):
+            if not target.startswith(("http://", "https://")):
+                findings.append(
+                    "README.md:1: image %s is relative. themes.gohugo.io needs an absolute URL."
+                    % target)
+    return findings
+
+
+def main():
+    if "--listing" in sys.argv:
+        findings = listing_checks()
+        for finding in findings:
+            print(finding)
+        return 1 if findings else 0
+
+    findings = []
+
+    if not os.path.exists("theme.toml"):
+        findings.append("theme.toml:1: missing. themes.gohugo.io reads it.")
+    else:
+        with open("theme.toml", encoding="utf-8") as handle:
+            text = handle.read()
+        for key in STRUCTURAL:
+            if scalar(text, key) is None:
+                findings.append("theme.toml:1: no %s." % key)
+
+    pinned = None
+    if os.path.exists(".hugo-version"):
+        with open(".hugo-version", encoding="utf-8") as handle:
+            pinned = handle.read().strip()
+
+    if os.path.exists("hugo.toml"):
+        with open("hugo.toml", encoding="utf-8") as handle:
+            config = handle.read()
+        minimum = scalar(config, "min")
+        if minimum is None:
+            findings.append("hugo.toml:1: no [module.hugoVersion] min.")
+        elif pinned:
+            got = minimum.strip("\"'")
+            if tuple(int(x) for x in got.split(".")) > tuple(
+                    int(x) for x in pinned.split(".")):
+                findings.append(
+                    "hugo.toml:1: min %s is newer than .hugo-version %s." % (got, pinned))
+
+    if not os.path.exists("LICENSE"):
+        findings.append("LICENSE:1: missing.")
+
+    for path in tracked():
+        for bad in FORBIDDEN:
+            if path == bad or path.startswith(bad + "/"):
+                findings.append("%s:1: tracked, and must not be." % path)
+
+    for finding in findings:
+        print(finding)
+    return 1 if findings else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Every page resolves without JavaScript. A menu that needs a script
+# is a menu a crawler cannot follow and a reader may never see.
+set -uo pipefail
+cd "$(dirname "$0")/../.."
+
+source_dir=conformance/public/ours
+target=conformance/public/nojs
+[ -d "$source_dir" ] || { echo "SKIP nojs: no build at $source_dir"; exit 3; }
+
+rm -rf "$target"
+cp -R "$source_dir" "$target"
+python3 - "$target" <<'PY'
+import os, re, sys
+root = sys.argv[1]
+strip = re.compile(r"<script\b.*?</script>|<script\b[^>]*/?>", re.DOTALL | re.IGNORECASE)
+for folder, dirs, files in os.walk(root):
+    for name in files:
+        if not name.endswith(".html"):
+            continue
+        path = os.path.join(folder, name)
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            text = handle.read()
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(strip.sub("", text))
+PY
+
+status=0
+scripts/check/head.sh "$target" || status=1
+if command -v htmltest >/dev/null 2>&1; then
+  htmltest -c scripts/check/htmltest.yml "$target" || status=1
+fi
+exit $status

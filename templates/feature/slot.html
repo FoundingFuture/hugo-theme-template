@@ -1,0 +1,27 @@
+{{- /*
+Render every enabled feature registered for one slot, in weight order.
+
+@context {string} slot The slot name, such as "page.meta".
+@context {page} page The page being rendered.
+
+@example: {{ partial "slot.html" (dict "slot" "page.meta" "page" .) }}
+*/ -}}
+{{- $slot := .slot }}
+{{- $page := .page }}
+{{- range $name, $manifest := hugo.Data.features }}
+  {{- if eq $manifest.slot $slot }}
+    {{- $on := $manifest.default }}
+    {{- with site.Params.features }}
+      {{- $found := index . $name }}
+      {{- if ne $found nil }}{{ $on = $found }}{{ end }}
+    {{- end }}
+    {{- with $page.Params.features }}
+      {{- $found := index . $name }}
+      {{- if ne $found nil }}{{ $on = $found }}{{ end }}
+    {{- end }}
+    {{- $kinds := $manifest.kinds | default (slice $page.Kind) }}
+    {{- if and $on (in $kinds $page.Kind) }}
+      {{- partial $manifest.partial $page }}
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,48 @@
+baseURL = "https://example.org/"
+title = "Conformance"
+defaultContentLanguage = "en"
+enableRobotsTXT = true
+enableGitInfo = false
+
+[pagination]
+  pagerSize = 3
+
+[markup.goldmark.renderer]
+  unsafe = false
+
+[markup.goldmark.extensions.passthrough]
+  enable = true
+  [markup.goldmark.extensions.passthrough.delimiters]
+    block = [["$$", "$$"]]
+    inline = [["$", "$"]]
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  author = "authors"
+
+[languages.en]
+  label = "English"
+  weight = 1
+[languages.nl]
+  label = "Nederlands"
+  weight = 2
+
+[menus]
+  [[menus.main]]
+    name = "Kitchen sink"
+    pageRef = "/kitchen-sink"
+    weight = 10
+  [[menus.main]]
+    name = "Posts"
+    pageRef = "/posts"
+    weight = 20
+  [[menus.main]]
+    name = "Nested"
+    pageRef = "/kitchen-sink/sections"
+    parent = "Kitchen sink"
+    weight = 30
+
+[outputs]
+  home = ["html", "rss"]
+  section = ["html", "rss"]

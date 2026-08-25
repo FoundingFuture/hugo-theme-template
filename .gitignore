@@ -1,0 +1,11 @@
+conformance/themes/
+conformance/public/
+conformance/scale-content/
+.tools/
+conformance/resources/_gen/
+conformance/.hugo_build.lock
+resources/_gen/
+.hugo_build.lock
+public/
+.bootstrap-*
+.hugo-toml-*
