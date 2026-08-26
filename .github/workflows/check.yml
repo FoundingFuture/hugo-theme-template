@@ -136,8 +136,7 @@ jobs:
           npm install --global --silent pa11y-ci @lhci/cli stylelint stylelint-config-standard eslint
           # visual.sh needs these three, and skipped without them.
           npm install --global --silent playwright pixelmatch pngjs
-          PLAYWRIGHT_BROWSERS_PATH="${GITHUB_WORKSPACE}/.playwright" \
-            npx --yes playwright install --with-deps chromium
+          npx --yes playwright install --with-deps chromium
           # The asset carries its version in the name, so the
           # latest/download URL is a 404 and always has been. The tool
           # was never installed, and the gate skipped without saying so.
@@ -171,9 +170,6 @@ jobs:
         if: steps.state.outputs.ready == 'yes'
         env:
           CI: "true"
-          # Lighthouse drives the browser Playwright installed. The gate
-          # finds one by itself, and this saves it the search.
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright
           GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
         run: ./c check
 

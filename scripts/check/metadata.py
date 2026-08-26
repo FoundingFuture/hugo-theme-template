@@ -40,6 +40,17 @@ def png_size(path):
             int.from_bytes(header[20:24], "big"))
 
 
+def untracked():
+    """Files a commit would add: present, not tracked, not ignored."""
+    try:
+        out = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return []
+    return [line[3:] for line in out.splitlines() if line.startswith("?? ")]
+
+
 def tracked():
     try:
         out = subprocess.run(["git", "ls-files"], capture_output=True,
@@ -136,6 +147,20 @@ def main():
         if size > MAX_TRACKED_BYTES:
             findings.append(
                 "%s:1: %.1f MB is tracked. Nothing here needs a megabyte."
+                % (path, size / 1024 / 1024))
+
+    # What a commit would add, as well as what one already has. The rule
+    # read tracked files only, so it could not see a browser sitting
+    # untracked in the working tree. The bootstrap run commits whatever
+    # it finds there, and a browser is hundreds of megabytes.
+    for path in untracked():
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            continue
+        if size > MAX_TRACKED_BYTES:
+            findings.append(
+                "%s:1: %.1f MB is untracked and not ignored. A commit would take it."
                 % (path, size / 1024 / 1024))
 
     for finding in findings:

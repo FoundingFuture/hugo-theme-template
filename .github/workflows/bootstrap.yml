@@ -98,8 +98,7 @@ jobs:
           pip install --quiet html5validator
           npm install --global --silent pa11y-ci @lhci/cli stylelint \
             stylelint-config-standard eslint playwright pixelmatch pngjs
-          PLAYWRIGHT_BROWSERS_PATH="${GITHUB_WORKSPACE}/.playwright" \
-            npx --yes playwright install --with-deps chromium
+          npx --yes playwright install --with-deps chromium
           ht="$(curl -fsSL https://api.github.com/repos/wjdp/htmltest/releases/latest \
             | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
           mkdir -p "$HOME/.local/bin"
@@ -114,7 +113,6 @@ jobs:
         if: steps.marker.outputs.run == 'yes'
         env:
           CI: "true"
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright
         run: ./c check
 
       - name: Commit

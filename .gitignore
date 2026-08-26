@@ -21,3 +21,7 @@ tmp/
 .lighthouseci/
 __pycache__/
 *.pyc
+
+# Playwright, when somebody points it here. The browsers are hundreds
+# of megabytes, and a bootstrap run commits whatever it finds.
+.playwright/
