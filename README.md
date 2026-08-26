@@ -108,6 +108,25 @@ template.
 catalogue it copies from stays in `templates/feature/`, so a feature
 removed from a project can be put back.
 
+### Two levels
+
+A **toggle** is a partial in the theme, wired to a slot and switched by
+one line. Most features are toggles.
+
+A **component** is a directory under `features/` with its own layouts,
+assets and words, mounted beside the theme. Turning one off means not
+mounting it, which is what makes it a component rather than a toggle.
+
+`privacy-embeds` overrides Hugo's `youtube`, `vimeo` and `x` with a
+poster and a link, so a page loads nothing from another host until the
+reader follows it. A site without the component gets Hugo's own
+renderings back, so the shortcode names in the content stay portable.
+
+`search` publishes a JSON index and a search page. The page lists every
+page in its markup, so a reader with the script blocked has a working
+index rather than an empty box. The script filters that list and fetches
+nothing. The index is held under 1.5 MB by a gate.
+
 A manifest declares what the feature adds to the rendered page. The
 fixture builds three times. The reference scaffold, the theme with every
 feature off, and the theme with them at their defaults.

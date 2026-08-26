@@ -1,0 +1,9 @@
+# A Hugo theme component holding search.
+#
+# A site that imports it adds the json output format to its home page,
+# which is what publishes the index. Nothing here reaches another host,
+# and the page works with the script blocked.
+[module]
+  [module.hugoVersion]
+    extended = true
+    min = "0.158.0"

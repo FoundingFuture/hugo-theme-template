@@ -55,10 +55,14 @@ listing() {
     | grep -Ev '^(css|js|fonts)/|^resources/_gen' \
     | LC_ALL=C sort
 }
+# The build compared here has every feature off, for the same reason
+# the skeleton gate uses it. A feature may publish a file of its own,
+# such as a search index. What it may publish is checked against its
+# manifest further down.
 say "conform: comparing the file list"
-if ! diff -u <(listing "$PUB/hugo") <(listing "$PUB/ours") > "$PUB/files.diff" 2>&1; then
+if ! diff -u <(listing "$PUB/hugo") <(listing "$PUB/ours-off") > "$PUB/files.diff" 2>&1; then
   cat "$PUB/files.diff" >&2
-  fail "the theme publishes a different set of files than the scaffold."
+  fail "with every feature off the theme publishes a different set of files."
 fi
 
 # 4. Skeleton. Same pages is not the same as the same page.

@@ -13,6 +13,7 @@ This replaces a hand-kept list of things to ignore. The list would go
 stale. A declaration cannot, because the build reads it.
 """
 
+import fnmatch
 import json
 import os
 import subprocess
@@ -40,7 +41,8 @@ def skeleton(root):
 def declarations():
     """Every addition the manifests allow, by kind."""
     allowed = {"marked": set(), "links": set(), "images": set(),
-               "counts": set(), "headings": set(), "removes": set()}
+               "counts": set(), "headings": set(), "removes": set(),
+               "files": set()}
     if tomllib is None or not os.path.isdir(MANIFESTS):
         return allowed, False
     for name in sorted(os.listdir(MANIFESTS)):
@@ -123,6 +125,29 @@ def compare(before, after, allowed):
     return findings
 
 
+def published(root):
+    """Every file a build wrote, as paths relative to its root."""
+    out = set()
+    for folder, dirs, names in os.walk(root):
+        dirs[:] = sorted(d for d in dirs if d not in ("css", "js", "fonts"))
+        for name in names:
+            out.add(os.path.relpath(os.path.join(folder, name), root).replace(os.sep, "/"))
+    return out
+
+
+def compare_files(off, on, allowed):
+    """A feature may publish a file, if its manifest says which."""
+    findings = []
+    for path in sorted(on - off):
+        if not any(fnmatch.fnmatch(path, pattern) for pattern in allowed["files"]):
+            findings.append(
+                "%s:1: published only with the features on, and no manifest declares it."
+                % path)
+    for path in sorted(off - on):
+        findings.append("%s:1: vanishes when the features are on." % path)
+    return findings
+
+
 def main():
     allowed, readable = declarations()
     if not readable:
@@ -142,6 +167,8 @@ def main():
                 "%s:1: with every feature off the theme still differs from the scaffold."
                 % path)
     findings.extend(compare(off, on, allowed))
+    findings.extend(compare_files(published("public/ours-off"),
+                                  published("public/ours"), allowed))
 
     for finding in findings:
         print(finding)

@@ -1,0 +1,8 @@
+{{- /* Loaded at the end of the body, and only on the search page. Every
+       other page pays nothing for a feature it does not use. */ -}}
+{{- if eq .Layout "search" }}
+  {{- with resources.Get "js/search.js" }}
+    {{- $script := . | js.Build (dict "minify" true) | fingerprint }}
+<script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>
+  {{- end }}
+{{- end }}

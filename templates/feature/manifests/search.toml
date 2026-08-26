@@ -1,0 +1,21 @@
+name = "search"
+slot = "body.end"
+weight = 5
+default = true
+level = "component"
+kinds = ["page"]
+partial = "features/search.html"
+css = "css/search.css"
+i18n = ["searchLabel", "searchSubmit", "searchCount"]
+
+[skeleton]
+  # The search page carries a form and a list of every page. Both are
+  # markup, so a reader with the script blocked still has an index.
+  text = [
+    "form.search-form", "p.search-count", "ul.search-results",
+    "li.search-result", "p.search-summary",
+  ]
+  links = ["li.search-result"]
+  counts = ["ul"]
+  # The index the script reads, published by the json output format.
+  files = ["index.json", "*/index.json"]

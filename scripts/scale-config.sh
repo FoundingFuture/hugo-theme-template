@@ -16,6 +16,17 @@ for dir in layouts archetypes assets i18n static data; do
   [ -d "$dir" ] || continue
   printf '  [[module.mounts]]\n    source = "../%s"\n    target = "%s"\n' "$dir" "$dir"
 done
+# The components, so the scale build renders what the ours build
+# renders. An installed feature whose partial is not mounted is a build
+# error. The scale fixture is where that showed up.
+for component in features/*/; do
+  [ -d "$component" ] || continue
+  for dir in layouts assets i18n; do
+    [ -d "$component$dir" ] || continue
+    printf '  [[module.mounts]]\n    source = "../%s%s"\n    target = "%s"\n' \
+      "$component" "$dir" "$dir"
+  done
+done
 for dir in assets i18n static; do
   [ -d "conformance/$dir" ] || continue
   printf '  [[module.mounts]]\n    source = "%s"\n    target = "%s"\n' "$dir" "$dir"

@@ -1,0 +1,19 @@
+{{- /* The search index. One record a page, holding what the page is
+       called, where it lives, and enough of its words to match on.
+
+       Built at publish time, so no request is made to anyone when a
+       reader searches. */ -}}
+{{- $records := slice }}
+{{- range where site.RegularPages "Params.private" "!=" true }}
+  {{- $tags := slice }}
+  {{- range .GetTerms "tags" }}
+    {{- $tags = $tags | append .LinkTitle }}
+  {{- end }}
+  {{- $records = $records | append (dict
+        "title" .LinkTitle
+        "href" .RelPermalink
+        "summary" (.Summary | plainify | chomp)
+        "tags" $tags
+        "body" (.Plain | truncate 1200 "")) }}
+{{- end }}
+{{- dict "records" $records | jsonify (dict "indent" "") -}}

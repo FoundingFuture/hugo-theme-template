@@ -1,0 +1,16 @@
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  align-items: baseline;
+}
+
+.search-results {
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.search-summary {
+  color: var(--muted, #666);
+  margin-block-start: 0.2em;
+}

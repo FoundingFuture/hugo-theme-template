@@ -72,6 +72,7 @@ def main():
             for key in REQUIRED:
                 if key not in manifest:
                     findings.append("%s:1: no %s." % (path, key))
+            feature = manifest.get("name") or os.path.splitext(name)[0]
             slot = manifest.get("slot")
             if slot and slot != NO_SLOT and slot not in SLOTS:
                 findings.append("%s:1: slot %s is not a slot." % (path, slot))
@@ -80,13 +81,17 @@ def main():
                 findings.append("%s:1: no partial, and it claims a slot." % path)
             if partial:
                 declared[os.path.basename(partial)] = path
-                target = os.path.join(root, partial)
-                if not os.path.exists(target):
+                # A component keeps its partial in its own layouts, which
+                # the site mounts over the theme's.
+                places = [os.path.join(root, partial)]
+                for folder in ("_partials", "partials"):
+                    places.append(os.path.join("features", feature, "layouts",
+                                               folder, partial))
+                if not any(os.path.exists(place) for place in places):
                     findings.append("%s:1: partial %s does not exist." % (path, partial))
             # A component keeps its stylesheet and its words in its own
             # directory, which the site mounts. A toggle keeps them in
             # the theme.
-            feature = manifest.get("name") or os.path.splitext(name)[0]
             roots = ["."]
             component = os.path.join("features", feature)
             if os.path.isdir(component):

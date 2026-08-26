@@ -1,0 +1,27 @@
+{{ define "main" }}
+  {{- /* Every page is listed here in the markup. The script filters
+         that list rather than fetching one, so a reader with the
+         script blocked gets a working index instead of an empty box.
+
+         The index.json is for the script. The list below is for
+         everybody else, and for a crawler. */ -}}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+
+  <form class="search-form" role="search" action="{{ .RelPermalink }}" method="get">
+    <label for="search-query">{{ i18n "searchLabel" }}</label>
+    <input type="search" id="search-query" name="q" autocomplete="off">
+    <button type="submit">{{ i18n "searchSubmit" }}</button>
+  </form>
+
+  <p class="search-count" hidden>{{ i18n "searchCount" (dict "Count" 0) }}</p>
+
+  <ul class="search-results">
+    {{- range where site.RegularPages "Params.private" "!=" true }}
+    <li class="search-result">
+      <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+      <p class="search-summary">{{ .Summary | plainify | chomp | truncate 160 }}</p>
+    </li>
+    {{- end }}
+  </ul>
+{{ end }}
