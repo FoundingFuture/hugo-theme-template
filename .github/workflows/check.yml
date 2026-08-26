@@ -49,12 +49,25 @@ jobs:
           else
             version="${{ steps.pin.outputs.version }}"
           fi
-          curl -fsSL -o "$RUNNER_TEMP/hugo.tar.gz" \
-            "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
           mkdir -p "$HOME/.local/bin"
-          tar -xzf "$RUNNER_TEMP/hugo.tar.gz" -C "$HOME/.local/bin" hugo
+          get() {
+            curl -fsSL -o "$RUNNER_TEMP/hugo-$1.tar.gz" \
+              "https://github.com/gohugoio/hugo/releases/download/v$1/hugo_extended_$1_linux-amd64.tar.gz"
+            tar -xzf "$RUNNER_TEMP/hugo-$1.tar.gz" -C "$RUNNER_TEMP" hugo
+            mv "$RUNNER_TEMP/hugo" "$HOME/.local/bin/$2"
+          }
+          get "${version}" hugo
+          # versions.sh builds under both, and skipped in CI because the
+          # second binary was never installed.
+          newest="$(curl -fsSL https://api.github.com/repos/gohugoio/hugo/releases/latest \
+            | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
+          if [ "$newest" != "${version}" ]; then
+            get "$newest" hugo-latest
+          else
+            cp "$HOME/.local/bin/hugo" "$HOME/.local/bin/hugo-latest"
+          fi
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          echo "installed hugo ${version}"
+          echo "installed hugo ${version} and hugo-latest ${newest}"
 
       - uses: actions/setup-python@v5
         if: steps.state.outputs.ready == 'yes'
@@ -72,6 +85,9 @@ jobs:
           set -euo pipefail
           pip install --quiet html5validator
           npm install --global --silent pa11y-ci @lhci/cli stylelint stylelint-config-standard eslint
+          # visual.sh needs these three, and skipped without them.
+          npm install --global --silent playwright pixelmatch pngjs
+          npx --yes playwright install --with-deps chromium
           curl -fsSL https://github.com/wjdp/htmltest/releases/latest/download/htmltest_linux_amd64.tar.gz \
             | tar -xz -C "$HOME/.local/bin" htmltest || true
           sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck libxml2-utils

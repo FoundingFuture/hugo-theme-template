@@ -21,6 +21,10 @@ const ROOT = 'conformance/public/ours';
 const SNAPSHOTS = 'conformance/snapshots/screens';
 const OUT = 'conformance/public/screens';
 
+// --write takes the screenshots as the new baseline instead of comparing
+// against one. ./c snapshot passes it, and a release runs ./c snapshot.
+const WRITE = process.argv.includes('--write');
+
 async function main() {
   let chromium, pixelmatch, PNG;
   try {
@@ -32,7 +36,7 @@ async function main() {
     process.exit(3);
   }
 
-  fs.mkdirSync(OUT, { recursive: true });
+  fs.mkdirSync(WRITE ? SNAPSHOTS : OUT, { recursive: true });
   const browser = await chromium.launch();
   const differences = [];
 
@@ -43,10 +47,13 @@ async function main() {
       const context = await browser.newContext({ viewport: { width, height: 900 } });
       const tab = await context.newPage();
       await tab.goto('file://' + file);
-      const shot = path.join(OUT, `${name}-${width}.png`);
+      const shot = WRITE
+        ? path.join(SNAPSHOTS, `${name}-${width}.png`)
+        : path.join(OUT, `${name}-${width}.png`);
       await tab.screenshot({ path: shot, fullPage: true });
       await context.close();
 
+      if (WRITE) continue;
       const before = path.join(SNAPSHOTS, `${name}-${width}.png`);
       if (!fs.existsSync(before)) continue;
       const a = PNG.sync.read(fs.readFileSync(before));
@@ -67,7 +74,9 @@ async function main() {
   await browser.close();
 
   for (const line of differences) console.log(line);
-  console.log(`${differences.length} screenshot difference(s), reported and not fatal`);
+  console.log(WRITE
+    ? `screenshots written to ${SNAPSHOTS}`
+    : `${differences.length} screenshot difference(s), reported and not fatal`);
   process.exit(0);
 }
 

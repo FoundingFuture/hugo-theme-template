@@ -198,6 +198,18 @@ cmd_snapshot() {
   mkdir -p conformance/snapshots/skeleton
   "$PY_BIN" conformance/scripts/skeleton.py "$STAGE/ours" \
     --out conformance/snapshots/skeleton
+  # The screenshots are part of the snapshot. Without this the visual
+  # gate had no baseline to compare against, ever.
+  if command -v node >/dev/null 2>&1; then
+    mkdir -p conformance/snapshots/screens
+    if node conformance/scripts/visual.js --write; then
+      say "screenshots refreshed"
+    else
+      say "screenshots not written. playwright, pixelmatch and pngjs are needed."
+    fi
+  else
+    say "screenshots not written. node is not installed."
+  fi
   say "snapshot refreshed from $STAGE/ours"
 }
 
