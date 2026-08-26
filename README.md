@@ -1,8 +1,8 @@
 # hugo-theme-template
 
 A GitHub template that produces a Hugo theme project. The template holds
-no theme. The first command generates one from whichever Hugo is
-installed that day. A project never starts from a scaffold frozen when
+no theme. The first command generates one from whichever Hugo version
+is installed that day. A project never starts from a scaffold frozen when
 the template was written.
 
 What the template carries is the pipeline.
@@ -20,9 +20,20 @@ git add -A && git commit -m "Generate theme scaffold from Hugo $(cat .hugo-versi
 The last command passes on a fresh scaffold. From then on every change
 is measured against that baseline.
 
-The GitHub "Use this template" button copies the files and runs
-nothing. So `bootstrap.yml` runs `./c init` on the first push, and then
-never triggers again.
+## Starting from the button
+
+The GitHub "Use this template" button copies the files and makes an
+initial commit. It runs no script of its own. That commit is a push to
+`main`, which brings up `bootstrap.yml`, which runs `./c init` and
+commits the theme.
+
+So a repository made with the button arrives with its theme already
+generated, and the sequence above is already done. `./c init` deletes
+the marker file, so the workflow never triggers again. It also removes
+itself, along with the other one-shot pieces.
+
+Cloning the template and running `./c init` by hand gives the same
+result.
 
 ## The command
 
@@ -52,6 +63,37 @@ page is not.
 
 The reference is regenerated before every run, so it always matches the
 Hugo doing the building.
+
+## What the gates need
+
+Only Hugo is needed to build. Each gate names its own tool, and a gate
+whose tool is absent prints `SKIP`. That is a warning on a workstation
+and a failure under CI, where the image carries all of them.
+
+Install what you want to run. Nothing here is bundled, because the way
+to install it differs by platform.
+
+| Tool | Used by | Where |
+|---|---|---|
+| [Hugo](https://gohugo.io/installation/), extended | everything | required, and the only one that is |
+| [Python 3](https://www.python.org/downloads/) | most checks | 3.9 or later |
+| [Go](https://go.dev/dl/) | `release/module` | resolves the theme as a module |
+| [Node.js](https://nodejs.org/) | runs the five tools below | 20 or later |
+| [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` | every script in the repository |
+| [Stylelint](https://stylelint.io/) | `static/css` | with `stylelint-config-standard` |
+| [ESLint](https://eslint.org/) | `static/js` | only when the theme has a script |
+| [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments`, `output/content` | fetched by tag into `.tools/` |
+| [html5validator](https://github.com/svenkreiss/html5validator) | `output/validity` | the Nu validator, so it needs Java |
+| [htmltest](https://github.com/wjdp/htmltest) | `output/validity`, `output/nojs` | every link resolves |
+| [pa11y-ci](https://pa11y.org/) | `output/a11y` | WCAG 2.1 AA, and it drives a browser |
+| [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | `output/perf` | budgets, and it drives a browser |
+| [Playwright](https://playwright.dev/) | `output/visual` | with `pixelmatch` and `pngjs` |
+| [libxml2](https://gitlab.gnome.org/GNOME/libxml2), for `xmllint` | `output/feeds` | the feeds and sitemap parse |
+
+Two of them drive a browser. Playwright installs one, and the perf gate
+finds it. A system Chrome or Chromium works as well.
+
+`./c help check` lists every gate and the script behind it.
 
 ## The gates
 
@@ -123,8 +165,8 @@ reader follows it. A site without the component gets Hugo's own
 renderings back, so the shortcode names in the content stay portable.
 
 `search` publishes a JSON index and a search page. The page lists every
-page in its markup, so a reader with the script blocked has a working
-index rather than an empty box. The script filters that list and fetches
+page in its own markup. A reader with the script blocked then has a
+working index rather than an empty box. The script filters that list and fetches
 nothing. The index is held under 1.5 MB by a gate.
 
 A manifest declares what the feature adds to the rendered page. The
@@ -140,7 +182,7 @@ the classed elements it adds, and the elements it adds more of. A
 feature changing anything else fails the build.
 
 The h1 is nobody's to add. The reference and the theme are compared on
-the h1 of every page, by itself, so the claim cannot go quiet.
+the h1 of every page, by itself. The claim cannot go quiet.
 
 Nothing is kept in an ignore list. That is the point. An ignore list
 goes stale, and a declaration cannot.

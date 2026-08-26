@@ -16,6 +16,31 @@ Hugo knows it as `{{SLUG}}`.
 `./c check` passes on the theme as generated. Every change from here is
 measured against that.
 
+## What the gates need
+
+Only Hugo is needed to build. Each gate names its own tool, and a gate
+whose tool is absent prints `SKIP`. Install what you want to run.
+
+| Tool | Used by |
+|---|---|
+| [Hugo](https://gohugo.io/installation/), extended | everything |
+| [Python 3](https://www.python.org/downloads/) | most checks |
+| [Go](https://go.dev/dl/) | `release/module` |
+| [Node.js](https://nodejs.org/) | the five tools below |
+| [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` |
+| [Stylelint](https://stylelint.io/) | `static/css` |
+| [ESLint](https://eslint.org/) | `static/js` |
+| [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments`, `output/content` |
+| [html5validator](https://github.com/svenkreiss/html5validator) | `output/validity`, and it needs Java |
+| [htmltest](https://github.com/wjdp/htmltest) | `output/validity`, `output/nojs` |
+| [pa11y-ci](https://pa11y.org/) | `output/a11y` |
+| [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | `output/perf` |
+| [Playwright](https://playwright.dev/) | `output/visual`, with `pixelmatch` and `pngjs` |
+| [libxml2](https://gitlab.gnome.org/GNOME/libxml2), for `xmllint` | `output/feeds` |
+
+Two of them drive a browser. Playwright installs one, and the perf gate
+finds it. `./c help check` lists every gate and its script.
+
 ## What conformance means
 
 A fixture site builds twice. Once against the scaffold of the installed

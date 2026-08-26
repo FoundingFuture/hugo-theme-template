@@ -1,8 +1,11 @@
 name: bootstrap
 
-# The "Use this template" button copies the files and runs nothing, so
-# the theme has to be generated on the first push. The marker file is
-# deleted by ./c init, and this workflow never triggers again.
+# The "Use this template" button copies the files and makes an initial
+# commit. It runs no script of its own, but that commit is a push to
+# main, which is what brings this workflow up.
+#
+# So a repository made with the button arrives with its theme already
+# generated. ./c init deletes the marker, and this never triggers again.
 on:
   push:
     branches: [main]

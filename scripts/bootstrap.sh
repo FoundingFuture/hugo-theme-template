@@ -2,7 +2,7 @@
 # Generate the theme from the installed Hugo, once.
 #
 # The template holds no theme. A project starts from the scaffold of
-# whichever Hugo is installed on the day it starts. It is never a copy
+# whichever Hugo version is installed on the day it starts. It is not a copy
 # frozen when the template was written.
 set -euo pipefail
 cd "$(dirname "$0")/.." || exit 1
