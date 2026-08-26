@@ -1,0 +1,15 @@
+name = "related"
+slot = "page.after-body"
+weight = 10
+default = true
+level = "toggle"
+kinds = ["page"]
+partial = "features/related.html"
+css = "css/features/related.css"
+i18n = ["related"]
+
+[skeleton]
+  text = ["section.related"]
+  headings = ["section.related"]
+  links = ["section.related"]
+  counts = ["ul"]

@@ -1,0 +1,13 @@
+name = "edit-link"
+slot = "page.footer"
+weight = 30
+default = false
+level = "toggle"
+kinds = ["page"]
+partial = "features/edit-link.html"
+css = "css/features/edit-link.css"
+i18n = ["editThisPage"]
+
+[skeleton]
+  text = ["p.edit-link"]
+  links = ["p.edit-link"]

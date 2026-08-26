@@ -79,6 +79,7 @@ printf '%s\n' "$version" > .hugo-version
 #    the strings move into i18n before the first check runs.
 scripts/internationalise.sh
 scripts/install-head.sh
+scripts/install-links.sh
 
 # 8. Install the feature mechanism into the generated layouts.
 scripts/install-features.sh

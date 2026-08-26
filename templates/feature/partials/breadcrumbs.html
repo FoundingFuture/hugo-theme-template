@@ -1,0 +1,22 @@
+{{- /* The trail walks up through .Parent, so it follows the section tree
+       rather than the URL. A page reached by an alias still reports
+       where it actually lives.
+
+       Each ancestor is put in front of the ones already found, which
+       leaves the trail in reading order without a sort. */ -}}
+{{- $trail := slice }}
+{{- $node := . }}
+{{- range seq 10 }}
+  {{- if and $node (not $node.IsHome) }}
+    {{- $trail = (slice $node) | append $trail }}
+    {{- $node = $node.Parent }}
+  {{- end }}
+{{- end }}
+{{- if $trail }}
+<ol class="breadcrumbs" aria-label="{{ i18n "breadcrumbs" }}">
+  <li><a href="{{ site.Home.RelPermalink }}">{{ site.Home.LinkTitle }}</a></li>
+  {{- range $trail }}
+  <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
+  {{- end }}
+</ol>
+{{- end }}

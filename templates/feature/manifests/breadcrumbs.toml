@@ -1,0 +1,14 @@
+name = "breadcrumbs"
+slot = "page.before-title"
+weight = 10
+default = true
+level = "toggle"
+kinds = ["page", "section", "term"]
+partial = "features/breadcrumbs.html"
+css = "css/features/breadcrumbs.css"
+i18n = ["breadcrumbs"]
+
+[skeleton]
+  text = ["ol.breadcrumbs"]
+  links = ["ol.breadcrumbs"]
+  counts = ["ol"]

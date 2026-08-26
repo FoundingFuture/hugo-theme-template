@@ -28,5 +28,14 @@ fi
 if printf '%s' "$out" | awk '/cumulative/{seen=1} seen && $NF ~ /cached/ {print}' | grep -q .; then
   printf '%s\n' "$out" | grep -i 'cached' | head -10
 fi
-printf '%s\n' "scale: ${elapsed}s for $(find conformance/scale-content -name '*.md' | wc -l) pages"
+pages="$(find conformance/scale-content -name '*.md' | wc -l | tr -d ' ')"
+printf '%s\n' "scale: ${elapsed}s for ${pages} pages"
+
+# The report reads this on every run. A budget of twenty seconds is a
+# ceiling, and a scaffold that finishes in one says nothing about the
+# theme that replaces it. The measured number is what shows a backport
+# the day its own templates land.
+mkdir -p conformance/public
+printf '%s\t%s\t%s\n' "$elapsed" "$pages" "$BUDGET_SECONDS" \
+  > conformance/public/scale.txt
 exit $status

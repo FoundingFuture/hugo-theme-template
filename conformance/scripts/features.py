@@ -39,7 +39,8 @@ def skeleton(root):
 
 def declarations():
     """Every addition the manifests allow, by kind."""
-    allowed = {"marked": set(), "links": set(), "images": set(), "counts": set()}
+    allowed = {"marked": set(), "links": set(), "images": set(),
+               "counts": set(), "headings": set()}
     if tomllib is None or not os.path.isdir(MANIFESTS):
         return allowed, False
     for name in sorted(os.listdir(MANIFESTS)):
@@ -49,6 +50,8 @@ def declarations():
             manifest = tomllib.load(handle)
         table = manifest.get("skeleton", {})
         for key in allowed:
+            # The manifest calls it text, because that is what a feature
+            # author is adding. The skeleton calls it marked.
             source = table.get("text" if key == "marked" else key, [])
             allowed[key].update(source)
     return allowed, True
@@ -66,21 +69,56 @@ def compare(before, after, allowed):
         if new is None:
             findings.append("%s:1: the page vanishes when features are on." % path)
             continue
-        for key in ("h1", "headings", "counts"):
-            if key == "counts":
+        # The h1 is the page's own. No feature may add one or move one.
+        if old.get("h1") != new.get("h1"):
+            findings.append("%s:1: the h1 changed, which no feature may do." % path)
+
+        # A heading is allowed when the container it sits in was
+        # declared, the same rule the links follow.
+        for row in new.get("headings", []):
+            if row in old.get("headings", []):
                 continue
-            if old.get(key) != new.get(key):
-                findings.append("%s:1: %s changed, and no feature declared it." % (path, key))
+            container = row[3] if len(row) > 3 else ""
+            if container not in allowed["headings"]:
+                findings.append(
+                    "%s:1: a heading was added in %s, which no manifest declares."
+                    % (path, container or "the content itself"))
+        for row in old.get("headings", []):
+            if row not in new.get("headings", []):
+                findings.append("%s:1: a heading went missing when a feature was on." % path)
+
+        # An element type that appears more often has to be named.
+        for element, count in new.get("counts", {}).items():
+            was = old.get("counts", {}).get(element, 0)
+            if count > was and element not in allowed["counts"]:
+                findings.append(
+                    "%s:1: %d more <%s> than with the feature off, and no manifest declares it."
+                    % (path, count - was, element))
+            if count < was:
+                findings.append(
+                    "%s:1: %d fewer <%s> when a feature was on." % (path, was - count, element))
         added = [row for row in new.get("marked", []) if row not in old.get("marked", [])]
         for selector, _text in added:
             if selector not in allowed["marked"]:
                 findings.append(
                     "%s:1: %s appeared, and no manifest declares it." % (path, selector))
-        for key in ("links", "images"):
-            extra = [row for row in new.get(key, []) if row not in old.get(key, [])]
-            if extra and not allowed[key]:
+        # A link is allowed when the container it sits in was declared.
+        # That is what lets a table of contents or a breadcrumb trail add
+        # links without opening the door to every other link.
+        for row in new.get("links", []):
+            if row in old.get("links", []):
+                continue
+            container = row[2] if len(row) > 2 else ""
+            if container not in allowed["links"]:
                 findings.append(
-                    "%s:1: %d %s added, and no manifest declares any." % (path, len(extra), key))
+                    "%s:1: a link was added in %s, which no manifest declares."
+                    % (path, container or "the content itself"))
+        extra_images = [row for row in new.get("images", [])
+                        if row not in old.get("images", [])]
+        if extra_images and not allowed["images"]:
+            findings.append(
+                "%s:1: %d image(s) added, and no manifest declares any."
+                % (path, len(extra_images)))
     return findings
 
 

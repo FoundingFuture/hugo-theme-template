@@ -9,6 +9,10 @@ trusted.
 A link a reader may follow is not a subresource. An anchor pointing at
 another site costs nothing until somebody clicks it. A fixture page
 listing the link forms Hugo resolves has to carry one.
+
+Such an anchor still has to say where it goes. It carries rel with
+external and noopener, so the difference between a link and a fetched
+subresource is visible in the output and not only in this rule.
 """
 
 import os
@@ -43,14 +47,24 @@ def local(target):
 
 
 class Subresources(HTMLParser):
-    """Collect what the page fetches, leaving what it only points at."""
+    """Collect what the page fetches, and check what it points at."""
 
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.findings = []
+        self.anchors = []
 
     def handle_starttag(self, tag, attrs):
         attr = dict(attrs)
+        if tag == "a":
+            target = attr.get("href")
+            if target and not local(target):
+                rel = set((attr.get("rel") or "").lower().split())
+                missing = {"external", "noopener"} - rel
+                if missing:
+                    self.anchors.append(
+                        (self.getpos()[0], target, sorted(missing)))
+            return
         wanted = FETCHED.get(tag)
         if not wanted:
             return
@@ -78,6 +92,9 @@ def check_html(path, rel, findings):
         findings.append("%s:%d: %s is a third-party request." % (rel, line, target))
         if "integrity" not in attr:
             findings.append("%s:%d: %s has no integrity attribute." % (rel, line, target))
+    for line, target, missing in parser.anchors:
+        findings.append("%s:%d: the link to %s has no %s in its rel."
+                        % (rel, line, target, " or ".join(missing)))
 
 
 def check_css(path, rel, findings):

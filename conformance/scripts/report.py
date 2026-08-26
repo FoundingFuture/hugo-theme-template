@@ -110,6 +110,26 @@ def page_differences(before, after):
     return rows
 
 
+def build_times():
+    """The measured scale build, beside the budget it is held to."""
+    raw = read(os.path.join(PUB, "scale.txt"))
+    if not raw or not raw.strip():
+        return as_none("The scale build did not run.")
+    seconds, pages, budget = (raw.strip().split("\t") + ["", "", ""])[:3]
+    share = ""
+    try:
+        if float(budget):
+            share = "%d%% of the budget" % round(float(seconds) / float(budget) * 100)
+    except ValueError:
+        share = ""
+    return ("<table><tr><th>Fixture</th><th>Pages</th><th>Seconds</th>"
+            "<th>Budget</th><th>Headroom</th></tr>"
+            "<tr><td>scale</td><td>%s</td><td>%s</td><td>%s</td>"
+            "<td class=\"muted\">%s</td></tr></table>"
+            % (html.escape(pages), html.escape(seconds),
+               html.escape(budget), html.escape(share)))
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     parts = ["<h1>Conformance report</h1>"]
@@ -137,6 +157,8 @@ def main():
     else:
         parts.append(section("Against the last release",
                              as_none("No page changed shape since the last tag.")))
+
+    parts.append(section("Build time", build_times()))
 
     external = read(os.path.join(PUB, "external.txt"))
     parts.append(section("Third-party requests",

@@ -1,15 +1,16 @@
 +++
 title = '{{NAME}}'
-date = 2026-01-01T08:00:00Z
-description = 'Fixture page for the {{NAME}} feature, exercising the switch in the on position and the off position.'
+date = 2026-01-25T08:00:00Z
+description = 'The fixture page for the {{NAME}} feature, which turns the switch on so that what the manifest declares can be seen.'
 [params.features]
   {{NAME}} = true
 +++
 
 This page exercises the {{NAME}} feature. The switch above turns it on,
-so the element the manifest declares appears below the title.
+so the element its manifest declares appears on the page.
 
 ## Off state
 
-The sibling page under this directory sets the same switch to false, and
-the element must be absent there.
+A page setting the same switch to false carries none of it. The
+comparison build turns every feature off and has to match the reference
+scaffold exactly.

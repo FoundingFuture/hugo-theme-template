@@ -1,0 +1,14 @@
+name = "back-to-top"
+slot = "body.end"
+weight = 10
+default = false
+level = "toggle"
+kinds = ["page", "section", "home", "term", "taxonomy"]
+partial = "features/back-to-top.html"
+css = "css/features/back-to-top.css"
+i18n = ["backToTop"]
+
+[skeleton]
+  # Rendered at the end of the body, outside the content, so the
+  # page skeleton does not see it.
+  text = []

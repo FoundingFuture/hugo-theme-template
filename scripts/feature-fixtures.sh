@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Write one fixture page per installed feature.
+#
+# Each page turns its own feature on in front matter and names the
+# element the manifest declares. The sibling page turns it off. The
+# static gate stops a feature that has no fixture page, so this runs at
+# bootstrap and again whenever a feature is installed.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+dest=conformance/content/kitchen-sink/features
+mkdir -p "$dest"
+
+cat > "$dest/_index.md" <<'PAGE'
++++
+title = 'Features'
+date = 2026-01-24T08:00:00Z
+description = 'One page per shipped feature, each turning its own feature on so that what the manifest declares can be seen.'
++++
+
+Every page below exercises one feature. The switch in its front matter
+turns that feature on, and the sibling section turns it off.
+PAGE
+
+for manifest in data/features/*.toml; do
+  [ -e "$manifest" ] || continue
+  name="$(basename "$manifest" .toml)"
+  [ -e "$dest/$name.md" ] && continue
+  sed -e "s|{{NAME}}|$name|g" templates/feature/page.md.tmpl > "$dest/$name.md"
+done

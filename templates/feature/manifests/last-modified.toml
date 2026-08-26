@@ -1,0 +1,12 @@
+name = "last-modified"
+slot = "page.meta"
+weight = 30
+default = true
+level = "toggle"
+kinds = ["page"]
+partial = "features/last-modified.html"
+css = "css/features/last-modified.css"
+i18n = ["lastModified"]
+
+[skeleton]
+  text = ["time.last-modified"]

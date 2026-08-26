@@ -14,26 +14,20 @@ name="${2:-}"
 manifest_path() { printf 'data/features/%s.toml\n' "$1"; }
 
 cmd_list() {
-  [ -d data/features ] || { echo "no features"; return 0; }
-  local found=0
+  local python found=0 base
+  python="$(scripts/python.sh 2>/dev/null || echo python3)"
+  printf '%-18s %-10s %-18s %-8s %s\n' NAME STATE SLOT DEFAULT LEVEL
   for file in data/features/*.toml; do
     [ -e "$file" ] || continue
     found=1
-    "$(scripts/python.sh)" - "$file" <<'PY'
-import sys
-try:
-    import tomllib
-except ModuleNotFoundError:
-    try:
-        import tomli as tomllib
-    except ModuleNotFoundError:
-        sys.exit(0)
-with open(sys.argv[1], "rb") as handle:
-    m = tomllib.load(handle)
-print("%-22s %-18s %-8s %s" % (
-    m.get("name", "?"), m.get("slot", "?"),
-    "on" if m.get("default") else "off", m.get("level", "toggle")))
-PY
+    "$python" scripts/read-manifest.py "$file"
+  done
+  for file in templates/feature/manifests/*.toml; do
+    [ -e "$file" ] || continue
+    base="$(basename "$file" .toml)"
+    [ -e "data/features/$base.toml" ] && continue
+    found=1
+    printf '%-18s %-10s %-18s %-8s %s\n' "$base" available "" "" 'add with ./c feature add'
   done
   [ "$found" -eq 1 ] || echo "no features"
 }

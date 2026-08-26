@@ -18,3 +18,27 @@ partials=layouts/_partials
 mkdir -p "$partials/features" data/features assets/css/features
 cp templates/feature/slot.html "$partials/slot.html"
 python3 scripts/wire-slots.py "$partials"
+
+# The starter set is installed and switched on. A feature that ships is a
+# feature a user turns off with one line, rather than one they assemble.
+#
+# Every shipped feature renders, so every partial is reached and the
+# unused-template check still means something. The comparison build
+# switches them all off and does not ask about unused templates, because
+# switching them off is what leaves them unused.
+for manifest in templates/feature/manifests/*.toml; do
+  [ -e "$manifest" ] || continue
+  name="$(basename "$manifest" .toml)"
+  cp "$manifest" "data/features/$name.toml"
+  cp "templates/feature/partials/$name.html" "$partials/features/$name.html"
+  [ -f "templates/feature/css/$name.css" ] \
+    && cp "templates/feature/css/$name.css" "assets/css/features/$name.css"
+done
+
+# The words those features render.
+if [ -f templates/feature/i18n.toml ] && ! grep -q '^\[readingTime\]' i18n/en.toml 2>/dev/null; then
+  cat templates/feature/i18n.toml >> i18n/en.toml
+fi
+
+# One fixture page a feature, exercising the switch in both positions.
+scripts/feature-fixtures.sh

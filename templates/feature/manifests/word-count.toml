@@ -1,6 +1,6 @@
 name = "word-count"
 slot = "page.meta"
-weight = 30
+weight = 40
 default = false
 level = "toggle"
 kinds = ["page"]

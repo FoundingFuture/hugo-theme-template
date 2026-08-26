@@ -35,6 +35,9 @@ build hugo.toml,config/ours/hugo.toml ours --printUnusedTemplates
 # Unused templates are not reported for this build. Switching every
 # feature off leaves every feature partial unused, by design. The build
 # with the features on is where that check means something.
+# The directory is gitignored, because the file in it is generated. A
+# fresh clone therefore does not have it yet.
+mkdir -p config/off
 python3 scripts/features-off.py > config/off/hugo.toml
 say "conform: building with every feature off"
 build hugo.toml,config/ours/hugo.toml,config/off/hugo.toml ours-off
@@ -65,6 +68,10 @@ if ! diff -u "$PUB/skeleton-hugo.json" "$PUB/skeleton-ours.json" > "$PUB/skeleto
   head -60 "$PUB/skeleton.diff" >&2
   fail "with every feature off the theme still renders a different page shape."
 fi
+
+# The h1 of every page survives what bootstrap does to the scaffold.
+say "conform: comparing the h1 of every page"
+python3 scripts/h1-agree.py || fail "the theme and the reference disagree on an h1."
 
 # What a feature adds is what its manifest said it would add. The
 # manifests are TOML, so the reader has to be a python that reads it.

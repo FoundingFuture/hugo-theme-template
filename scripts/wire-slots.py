@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Place the slot calls in the generated templates, once, at bootstrap.
 
-A slot renders every enabled feature registered for it. With no feature
-installed a slot renders nothing. The generated theme therefore still
-matches the reference scaffold, page for page.
+A slot renders every enabled feature registered for it. The insertion
+points are the ones the slot table names, found by the markup the Hugo
+scaffold writes. A template already wired is left alone.
 
-The insertion points are the ones the slot table names. Each is found
-by the markup the Hugo scaffold writes. A template already wired is
-left alone.
+A slot with no enabled feature renders nothing, so a theme whose
+features are all switched off still matches the reference scaffold.
 """
 
 import os
@@ -17,7 +16,12 @@ import sys
 CALL = '{{ partial "slot.html" (dict "slot" "%s" "page" .) }}'
 
 
+def indent_of(line):
+    return line[:len(line) - len(line.lstrip())]
+
+
 def wire(path, edits):
+    """Apply the edits to one template, unless it is already wired."""
     if not os.path.exists(path):
         return False
     with open(path, encoding="utf-8") as handle:
@@ -25,8 +29,8 @@ def wire(path, edits):
     if 'partial "slot.html"' in text:
         return False
     original = text
-    for pattern, replacement in edits:
-        text = re.sub(pattern, replacement, text, count=1)
+    for pattern, build in edits:
+        text = re.sub(pattern, build, text, count=1)
     if text == original:
         return False
     with open(path, "w", encoding="utf-8") as handle:
@@ -34,35 +38,61 @@ def wire(path, edits):
     return True
 
 
+def before(slot):
+    """Put the call on its own line above whatever was matched."""
+    def build(match):
+        pad = indent_of(match.group(0))
+        return "%s%s\n%s" % (pad, CALL % slot, match.group(0))
+    return build
+
+
+def after(slot):
+    def build(match):
+        pad = indent_of(match.group(0))
+        return "%s\n%s%s" % (match.group(0), pad, CALL % slot)
+    return build
+
+
 def main():
-    partials = sys.argv[1] if len(sys.argv) > 1 else "layouts/_partials"
     changed = []
 
     if wire("layouts/baseof.html", [
-        (r"(?m)^(\s*)</head>", lambda m: "%s  %s\n%s</head>" % (
-            m.group(1), CALL % "head", m.group(1))),
-        (r"(?m)^(\s*)</body>", lambda m: "%s  %s\n%s</body>" % (
-            m.group(1), CALL % "body.end", m.group(1))),
+        (r"(?m)^[ \t]*</head>", before("head")),
+        (r"(?m)^[ \t]*</body>", before("body.end")),
     ]):
         changed.append("layouts/baseof.html")
 
     if wire("layouts/page.html", [
-        (r"(?m)^(\s*)<h1>", lambda m: "%s%s\n%s<h1>" % (
-            m.group(1), CALL % "page.before-title", m.group(1))),
-        (r"(?m)^(\s*)\{\{ \$dateMachine", lambda m: "%s%s\n%s{{ $dateMachine" % (
-            m.group(1), CALL % "page.after-title", m.group(1))),
-        (r"(?m)^(\s*)\{\{ \.Content \}\}", lambda m: "%s%s\n%s{{ .Content }}\n%s%s" % (
-            m.group(1), CALL % "page.meta", m.group(1), m.group(1),
-            CALL % "page.after-body")),
+        (r"(?m)^[ \t]*<h1>", before("page.before-title")),
+        (r"(?m)^[ \t]*\{\{ \$dateMachine", before("page.after-title")),
+        # Both sit above the body. meta is the dateline and its
+        # neighbours; before-body is for anything that introduces the
+        # reading, such as a table of contents.
+        (r"(?m)^[ \t]*\{\{ \.Content \}\}", before("page.meta")),
+        (r"(?m)^[ \t]*\{\{ \.Content \}\}", before("page.before-body")),
+        (r"(?m)^[ \t]*\{\{ \.Content \}\}", after("page.after-body")),
+        (r"(?m)^[ \t]*\{\{ partial \"terms\.html\".*$", after("page.footer")),
     ]):
         changed.append("layouts/page.html")
 
     for name in ("section.html", "term.html"):
-        if wire("layouts/%s" % name, [
-            (r"(?m)^(\s*)\{\{ end \}\}\s*$", lambda m: "%s%s\n%s{{ end }}" % (
-                m.group(1), CALL % "list.after", m.group(1))),
+        path = "layouts/%s" % name
+        if wire(path, [
+            (r"(?m)^[ \t]*</section>", before("list.item")),
+            # Between the end of the range and the end of the block, so
+            # it renders once after the rows rather than once a row.
+            (r"(?ms)^([ \t]*)\{\{ end \}\}\n(\{\{ end \}\})",
+             lambda m: "%s{{ end }}\n%s%s\n%s" % (
+                 m.group(1), m.group(1), CALL % "list.after", m.group(2))),
         ]):
-            changed.append("layouts/%s" % name)
+            changed.append(path)
+
+    if wire("layouts/home.html", [
+        (r"(?ms)^([ \t]*)\{\{ end \}\}\n(\{\{ end \}\})",
+         lambda m: "%s{{ end }}\n%s%s\n%s" % (
+             m.group(1), m.group(1), CALL % "list.after", m.group(2))),
+    ]):
+        changed.append("layouts/home.html")
 
     for name in changed:
         print("wired %s" % name)

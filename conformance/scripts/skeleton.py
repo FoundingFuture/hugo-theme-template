@@ -24,6 +24,10 @@ import sys
 from html.parser import HTMLParser
 
 CHROME = {"nav", "header", "footer", "aside"}
+# An element that never closes cannot hold anything, so it never becomes
+# the container of a link.
+VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link",
+        "meta", "param", "source", "track", "wbr"}
 COUNTED = ("table", "dl", "ul", "ol", "figure", "blockquote", "pre")
 HEADINGS = ("h2", "h3", "h4", "h5", "h6")
 
@@ -35,6 +39,10 @@ class Skeleton(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.h1 = []
         self.marked = []
+        # The classed elements open around the cursor, innermost last. A
+        # link records the nearest one, so a feature can declare the
+        # links it adds by naming the container it puts them in.
+        self.classed = []
         self.headings = []
         self.links = []
         self.images = []
@@ -61,8 +69,14 @@ class Skeleton(HTMLParser):
             return False
         return bool(self.main_depth) or not self.seen_main
 
+    def container(self):
+        return self.classed[-1][1] if self.classed else ""
+
     def handle_starttag(self, tag, attrs):
         attr = dict(attrs)
+        if tag not in VOID and attr.get("class"):
+            first = attr["class"].split()[0] if attr["class"].split() else ""
+            self.classed.append((tag, "%s.%s" % (tag, first) if first else tag))
         if tag == "main":
             self.seen_main = True
             self.main_depth += 1
@@ -95,7 +109,7 @@ class Skeleton(HTMLParser):
         elif tag == "a" and "href" in attr:
             self.flush()
             self.capture = "a"
-            self.pending = attr["href"]
+            self.pending = (attr["href"], self.container())
         elif tag == "h1":
             self.flush()
             self.capture = "h1"
@@ -106,9 +120,13 @@ class Skeleton(HTMLParser):
         elif tag in HEADINGS:
             self.flush()
             self.capture = tag
-            self.pending = attr.get("id", "")
+            self.pending = (attr.get("id", ""), self.container())
 
     def handle_endtag(self, tag):
+        for index in range(len(self.classed) - 1, -1, -1):
+            if self.classed[index][0] == tag:
+                del self.classed[index:]
+                break
         if tag == "main":
             self.main_depth = max(0, self.main_depth - 1)
         elif tag in CHROME:
@@ -125,12 +143,14 @@ class Skeleton(HTMLParser):
             return
         text = " ".join("".join(self.buffer).split())
         if self.capture == "a":
-            self.links.append([self.pending, text])
+            href, container = self.pending
+            self.links.append([href, text, container])
         elif self.capture == "h1":
             self.h1.append(text)
         elif self.capture in HEADINGS:
             level = int(self.capture[1])
-            self.headings.append([level, self.pending or "", text])
+            identifier, container = self.pending
+            self.headings.append([level, identifier, text, container])
         else:
             for name in (self.pending or "").split():
                 self.marked.append(["%s.%s" % (self.capture, name), text])

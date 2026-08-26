@@ -1,0 +1,7 @@
+{{- /* Needs params.editBase, the repository path a page file sits under.
+       Without it there is nowhere to send the reader. */ -}}
+{{- with site.Params.editBase }}
+<p class="edit-link">
+  <a rel="external noopener" href="{{ . }}/{{ $.File.Path }}">{{ i18n "editThisPage" }}</a>
+</p>
+{{- end }}
