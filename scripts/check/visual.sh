@@ -8,11 +8,25 @@ cd "$(dirname "$0")/../.." || exit 1
 
 command -v node >/dev/null 2>&1 || { echo "SKIP visual: node not installed"; exit 3; }
 
-# No baseline is not a missing tool. The first run on a theme has none,
-# and a release writes them. Saying SKIP made CI fail for want of a
-# screenshot nobody had taken yet.
+# node resolves a module from the directory it runs in, and a global
+# install is nowhere near this one. Without this the gate reported
+# playwright missing while it was installed, here and in CI.
+if [ -z "${NODE_PATH:-}" ] && command -v npm >/dev/null 2>&1; then
+  NODE_PATH="$(npm root -g 2>/dev/null || true)"
+  export NODE_PATH
+fi
+
+# No baseline is not a missing tool. A repository has none until it
+# tags a release, and saying SKIP made CI fail for want of a screenshot
+# nobody had taken yet.
+#
+# Saying nothing is no better. What covers the pages until then is the
+# comparison against the Hugo scaffold, which conform makes every run,
+# so the gate says which comparison is standing in.
 if [ ! -d conformance/snapshots/screens ]; then
-  printf '%s\n' "visual: no baseline yet. ./c snapshot writes one."
+  printf '%s\n' "visual: no baseline until the first release."
+  printf '%s\n' "visual: compared against the Hugo scaffold instead, by conform."
+  printf '%s\n' "visual: ./c release writes the baseline, or ./c snapshot does."
   exit 0
 fi
 node conformance/scripts/visual.js

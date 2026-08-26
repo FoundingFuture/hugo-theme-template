@@ -1,10 +1,18 @@
 // Screenshots of the pages a design change is most likely to move.
 //
+// The pages are served over HTTP, not opened as files. A built page
+// links its stylesheet by an absolute path, and under file:// that path
+// resolves from the root of the disk, so nothing loaded and every
+// screenshot was of an unstyled page. They matched each other perfectly
+// and the gate could not have seen a design change.
+//
 // A difference is reported and lands in the pull request report. It does
 // not fail the build. A deliberate design change is a difference too,
 // and only a person can tell the two apart.
 const fs = require('fs');
 const path = require('path');
+const { pathToFileURL } = require('url');
+const http = require('http');
 
 const PAGES = [
   ['home', 'index.html'],
@@ -26,27 +34,56 @@ const OUT = 'conformance/public/screens';
 const WRITE = process.argv.includes('--write');
 
 async function main() {
+  // pixelmatch ships as an ES module, so require cannot load it.
+  //
+  // A bare dynamic import cannot find it either, because ES resolution
+  // ignores NODE_PATH and a global install is nowhere near this file.
+  // require.resolve does honour NODE_PATH, so the path is found the
+  // CommonJS way and imported as a file URL.
   let chromium, pixelmatch, PNG;
   try {
     ({ chromium } = require('playwright'));
-    pixelmatch = require('pixelmatch');
     ({ PNG } = require('pngjs'));
+    pixelmatch = (await import(pathToFileURL(require.resolve('pixelmatch')).href)).default;
   } catch (error) {
     console.log('SKIP visual: playwright, pixelmatch or pngjs is not installed');
+    console.log('  ' + error.message.split('\n')[0]);
     process.exit(3);
   }
 
   fs.mkdirSync(WRITE ? SNAPSHOTS : OUT, { recursive: true });
+
+  const TYPES = {
+    '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript',
+    '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon', '.json': 'application/json',
+    '.xml': 'application/xml', '.woff2': 'font/woff2',
+  };
+  const server = http.createServer((request, response) => {
+    let target = decodeURIComponent(request.url.split('?')[0]);
+    if (target.endsWith('/')) target += 'index.html';
+    const file = path.join(ROOT, path.normalize(target).replace(/^(\.\.[/\\])+/, ''));
+    fs.readFile(file, (error, body) => {
+      if (error) {
+        response.writeHead(404).end('not found');
+        return;
+      }
+      response.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream' });
+      response.end(body);
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+
   const browser = await chromium.launch();
   const differences = [];
 
   for (const [name, page] of PAGES) {
-    const file = path.resolve(ROOT, page);
-    if (!fs.existsSync(file)) continue;
+    if (!fs.existsSync(path.resolve(ROOT, page))) continue;
     for (const width of WIDTHS) {
       const context = await browser.newContext({ viewport: { width, height: 900 } });
       const tab = await context.newPage();
-      await tab.goto('file://' + file);
+      await tab.goto(`${origin}/${page}`, { waitUntil: 'networkidle' });
       const shot = WRITE
         ? path.join(SNAPSHOTS, `${name}-${width}.png`)
         : path.join(OUT, `${name}-${width}.png`);
@@ -72,6 +109,7 @@ async function main() {
     }
   }
   await browser.close();
+  await new Promise((resolve) => server.close(resolve));
 
   for (const line of differences) console.log(line);
   console.log(WRITE

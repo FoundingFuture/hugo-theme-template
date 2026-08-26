@@ -42,6 +42,12 @@ def skeleton_of(root):
         return {}
 
 
+def has_snapshot():
+    """Whether a release has ever been tagged from this repository."""
+    return os.path.isdir(SNAPSHOT) and any(
+        name.endswith(".json") for name in os.listdir(SNAPSHOT))
+
+
 def snapshot():
     if not os.path.isdir(SNAPSHOT):
         return {}
@@ -130,7 +136,18 @@ def main():
     parts.append(section("Page skeletons against the scaffold",
                          skel or as_none("Every page has the shape the scaffold gives it.")))
 
-    rows = page_differences(snapshot(), skeleton_of(os.path.join(PUB, "ours")))
+    # Before the first release there is nothing to compare against, and
+    # an empty snapshot would read as every page being new. What stands
+    # in until then is the comparison against the Hugo scaffold, which
+    # conform makes on every run and which is two sections above.
+    if not has_snapshot():
+        parts.append(section("Against the last release", as_none(
+            "No baseline until the first release. Until then the pages are "
+            "compared against the Hugo scaffold, which is the file list and "
+            "page skeleton above.")))
+        rows = []
+    else:
+        rows = page_differences(snapshot(), skeleton_of(os.path.join(PUB, "ours")))
     if rows:
         body = ["<table><tr><th>Page</th><th>Change</th><th>What moved</th></tr>"]
         for path, kind, moved in rows:
@@ -138,7 +155,7 @@ def main():
                         % (html.escape(path), kind, html.escape(moved)))
         body.append("</table>")
         parts.append(section("Against the last release", "".join(body)))
-    else:
+    elif has_snapshot():
         parts.append(section("Against the last release",
                              as_none("No page changed shape since the last tag.")))
 

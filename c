@@ -204,6 +204,11 @@ cmd_snapshot() {
   # gate had no baseline to compare against, ever.
   if command -v node >/dev/null 2>&1; then
     mkdir -p conformance/snapshots/screens
+    # The same global module path the visual gate needs.
+    if [ -z "${NODE_PATH:-}" ] && command -v npm >/dev/null 2>&1; then
+      NODE_PATH="$(npm root -g 2>/dev/null || true)"
+      export NODE_PATH
+    fi
     if node conformance/scripts/visual.js --write; then
       say "screenshots refreshed"
     else
