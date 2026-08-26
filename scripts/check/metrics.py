@@ -7,7 +7,7 @@ the same markup it returned before. Cached is how often Hugo served it
 from the cache instead of running it.
 
 A template with potential and no caching runs once a page for no gain.
-On the scale fixture that is two thousand needless calls.
+On the scale fixture that is two thousand calls that need not happen.
 """
 
 import re

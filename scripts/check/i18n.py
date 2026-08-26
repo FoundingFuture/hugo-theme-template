@@ -7,8 +7,8 @@ downloader. A bare text node in a template is English no translation can
 reach.
 
 The fourth is a placeholder. ./c feature new writes the feature's own
-name as its word, so the page reads "reading-time" where it should read
-"4 minutes read". Nothing rendered it wrong, so nothing else notices.
+name as its word. The page then reads "reading-time" where it should
+read "4 minutes read". Nothing rendered it wrong, so nothing notices.
 """
 
 import os

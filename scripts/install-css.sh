@@ -2,8 +2,8 @@
 # Build the stylesheet from the theme's own plus every enabled feature.
 #
 # A feature shipped a stylesheet that reached nothing. main.css imports
-# the components and knows nothing of features, so the rules for a
-# reading time or a table of contents were built and never served.
+# the components and knows nothing of features. The rules for a reading
+# time were built into the theme and never served.
 #
 # A feature switched off contributes no bytes, which is what makes a
 # switch worth having.

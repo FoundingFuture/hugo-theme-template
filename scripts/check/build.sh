@@ -9,8 +9,8 @@ status=0
 run() {
   local label="$1" config="$2" dest="$3"
   shift 3
-  # The redirect happens inside the subshell, so the file lands beside
-  # the build rather than at the repository root, where nothing read it.
+  # The redirect happens inside the subshell. The file lands beside the
+  # build, rather than at the repository root where nothing read it.
   if ! ( cd conformance && hugo --config "$config" -d "public/$dest" \
       --panicOnWarning --printPathWarnings --printUnusedTemplates \
       --printI18nWarnings --logLevel warn --gc "$@" >/dev/null 2>.build-err ); then
