@@ -1,0 +1,14 @@
+name = "toc"
+slot = "page.before-body"
+weight = 10
+default = true
+level = "toggle"
+kinds = ["page"]
+partial = "features/toc.html"
+css = "css/features/toc.css"
+i18n = ["contents"]
+
+[skeleton]
+  text = ["nav.toc"]
+  links = ["nav.toc"]
+  counts = ["ol"]

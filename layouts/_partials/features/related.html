@@ -1,0 +1,13 @@
+{{- /* Hugo ranks by the related settings in the site config. With none
+       set it falls back to shared taxonomy terms. */ -}}
+{{- $related := first 5 (site.RegularPages.Related .) }}
+{{- with $related }}
+<section class="related">
+  <h2>{{ i18n "related" }}</h2>
+  <ul>
+    {{- range . }}
+    <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
+    {{- end }}
+  </ul>
+</section>
+{{- end }}

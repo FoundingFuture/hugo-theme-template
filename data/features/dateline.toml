@@ -1,0 +1,12 @@
+name = "dateline"
+slot = "page.meta"
+weight = 10
+default = true
+level = "toggle"
+kinds = ["page"]
+partial = "features/dateline.html"
+css = "css/features/dateline.css"
+i18n = []
+
+[skeleton]
+  text = ["time.dateline"]

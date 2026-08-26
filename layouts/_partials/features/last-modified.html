@@ -1,0 +1,7 @@
+{{- /* Shown only where it differs from the date. A page revised in the
+       same minute it was written has nothing to report. */ -}}
+{{- if and .Lastmod (ne (.Lastmod.Format "2006-01-02") (.Date.Format "2006-01-02")) }}
+<time class="last-modified" datetime="{{ time.Format "2006-01-02T15:04:05-07:00" .Lastmod }}">
+  {{- i18n "lastModified" (dict "Date" (time.Format ":date_long" .Lastmod)) -}}
+</time>
+{{- end }}

@@ -1,0 +1,5 @@
+{{- /* Plain links, so nothing is loaded from another host and nobody is
+       counted for arriving. */ -}}
+<nav class="share" aria-label="{{ i18n "share" }}">
+  <a rel="external noopener" href="mailto:?subject={{ .Title | urlquery }}&amp;body={{ .Permalink | urlquery }}">{{ i18n "share" }}</a>
+</nav>

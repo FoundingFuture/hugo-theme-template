@@ -1,0 +1,13 @@
+name = "share"
+slot = "page.footer"
+weight = 20
+default = false
+level = "toggle"
+kinds = ["page"]
+partial = "features/share.html"
+css = "css/features/share.css"
+i18n = ["share"]
+
+[skeleton]
+  text = ["nav.share"]
+  links = ["nav.share"]

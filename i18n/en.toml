@@ -1,0 +1,44 @@
+# Every string the templates render. A theme that spells a word inside
+# its markup cannot be translated. The words gate reads the keys here
+# to decide whether one is used or missing.
+
+[copyright]
+other = "Copyright {{ .Year }}. All rights reserved."
+
+[readingTime]
+one = "{{ .Count }} minute read"
+other = "{{ .Count }} minutes read"
+
+[lastModified]
+other = "Revised {{ .Date }}"
+
+[breadcrumbs]
+other = "Breadcrumb"
+
+[contents]
+other = "Contents"
+
+[related]
+other = "Related pages"
+
+[previousPage]
+other = "Previous"
+
+[nextPage]
+other = "Next"
+
+[wordCount]
+one = "{{ .Count }} word"
+other = "{{ .Count }} words"
+
+[share]
+other = "Share"
+
+[editThisPage]
+other = "Edit this page"
+
+[backToTop]
+other = "Back to top"
+
+[copy]
+other = "Copy"

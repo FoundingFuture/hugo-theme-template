@@ -1,0 +1,12 @@
+{{- /* Rendered only from three headings up. On a shorter page a table of
+       contents is longer than the reading it saves. */ -}}
+{{- $headings := .Fragments.Headings }}
+{{- if ge (len .Fragments.Identifiers) 3 }}
+<nav class="toc" aria-label="{{ i18n "contents" }}">
+  <ol>
+    {{- range $headings }}
+    <li><a href="#{{ .ID }}">{{ .Title }}</a></li>
+    {{- end }}
+  </ol>
+</nav>
+{{- end }}

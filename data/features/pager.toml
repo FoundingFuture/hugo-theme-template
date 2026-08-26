@@ -1,0 +1,13 @@
+name = "pager"
+slot = "page.footer"
+weight = 10
+default = true
+level = "toggle"
+kinds = ["page"]
+partial = "features/pager.html"
+css = "css/features/pager.css"
+i18n = ["previousPage", "nextPage"]
+
+[skeleton]
+  text = ["nav.pager"]
+  links = ["nav.pager"]

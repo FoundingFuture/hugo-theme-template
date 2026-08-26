@@ -1,0 +1,7 @@
+{{- /* The datetime attribute is the machine form. The visible form
+       follows the site language, so it is never spelled in the markup. */ -}}
+{{- with .Date }}
+<time class="dateline" datetime="{{ time.Format "2006-01-02T15:04:05-07:00" . }}">
+  {{- time.Format ":date_long" . -}}
+</time>
+{{- end }}

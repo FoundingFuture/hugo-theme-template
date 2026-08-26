@@ -1,0 +1,12 @@
+{{ define "main" }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ range .Pages }}
+    <section>
+      <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+      {{ .Summary }}
+    {{ partial "slot.html" (dict "slot" "list.item" "page" .) }}
+    </section>
+  {{ end }}
+  {{ partial "slot.html" (dict "slot" "list.after" "page" .) }}
+{{ end }}

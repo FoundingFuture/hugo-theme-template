@@ -1,0 +1,13 @@
+name = "hugo-theme-template"
+license = "MIT"
+licenselink = "https://github.com/OWNER/hugo-theme-template/blob/main/LICENSE"
+description = ""
+homepage = "https://github.com/OWNER/hugo-theme-template"
+demosite = ""
+min_version = "0.165.0"
+tags = []
+features = []
+
+[author]
+  name = ""
+  homepage = ""

@@ -1,0 +1,27 @@
+{{- /* A link leaving the site says so, with rel external and noopener.
+
+       Overriding this hook also takes over resolving the destination,
+       which Hugo's own hook does. A relative path and a bare fragment
+       both have to be resolved here, or every such link in the content
+       would be published exactly as it was written. */ -}}
+{{- $href := .Destination }}
+{{- $parsed := urls.Parse .Destination }}
+{{- $external := false }}
+{{- with $parsed.Host }}
+  {{- $external = ne . (urls.Parse site.BaseURL).Host }}
+{{- end }}
+{{- if not $external }}
+  {{- if hasPrefix .Destination "#" }}
+    {{- $href = printf "%s%s" .Page.RelPermalink .Destination }}
+  {{- else if not $parsed.Scheme }}
+    {{- with .Page.GetPage $parsed.Path }}
+      {{- $href = .RelPermalink }}
+      {{- with $parsed.Fragment }}
+        {{- $href = printf "%s#%s" $href . }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+<a href="{{ $href | safeURL }}"
+  {{- with .Title }} title="{{ . }}"{{ end }}
+  {{- if $external }} rel="external noopener"{{ end }}>{{ .Text }}</a>

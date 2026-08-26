@@ -1,0 +1,13 @@
+name = "code-copy"
+slot = "body.end"
+weight = 20
+default = false
+level = "toggle"
+kinds = ["page"]
+partial = "features/code-copy.html"
+css = "css/features/code-copy.css"
+i18n = ["copy"]
+
+[skeleton]
+  # The button is added by a script, so the built page carries none.
+  text = []

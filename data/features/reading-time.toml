@@ -1,0 +1,12 @@
+name = "reading-time"
+slot = "page.meta"
+weight = 20
+default = true
+level = "toggle"
+kinds = ["page"]
+partial = "features/reading-time.html"
+css = "css/features/reading-time.css"
+i18n = ["readingTime"]
+
+[skeleton]
+  text = ["p.reading-time"]

@@ -1,0 +1,6 @@
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  margin-block-start: 2em;
+}

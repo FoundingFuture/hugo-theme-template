@@ -1,0 +1,12 @@
+name = "word-count"
+slot = "page.meta"
+weight = 40
+default = false
+level = "toggle"
+kinds = ["page"]
+partial = "features/word-count.html"
+css = "css/features/word-count.css"
+i18n = ["wordCount"]
+
+[skeleton]
+  text = ["p.word-count"]

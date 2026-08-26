@@ -1,0 +1,8 @@
+{{- /* Off by default, because it brings a script. The button is made by
+       the script, so a reader without one sees no control that does
+       nothing, and the built page carries nothing extra. */ -}}
+{{- with resources.Get "js/code-copy.js" }}
+  {{- $script := . | js.Build (dict "minify" true) | fingerprint }}
+<script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}"
+        data-copy-label="{{ i18n "copy" }}" defer></script>
+{{- end }}

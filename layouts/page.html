@@ -1,0 +1,16 @@
+{{ define "main" }}
+  {{ partial "slot.html" (dict "slot" "page.before-title" "page" .) }}
+  <h1>{{ .Title }}</h1>
+
+  {{ partial "slot.html" (dict "slot" "page.after-title" "page" .) }}
+  {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+  {{ $dateHuman := .Date | time.Format ":date_long" }}
+  <time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time>
+
+  {{ partial "slot.html" (dict "slot" "page.meta" "page" .) }}
+  {{ partial "slot.html" (dict "slot" "page.before-body" "page" .) }}
+  {{ .Content }}
+  {{ partial "slot.html" (dict "slot" "page.after-body" "page" .) }}
+  {{ partial "terms.html" (dict "taxonomy" "tags" "page" .) }}
+  {{ partial "slot.html" (dict "slot" "page.footer" "page" .) }}
+{{ end }}
