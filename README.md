@@ -101,9 +101,8 @@ The template carries no theme, so most gates have nothing to read.
 `./c check` in it runs the `template` gate, the subset needing no theme:
 coverage, portability, ShellCheck and the comment rules.
 
-Without it the template's own README and changelog were read by nothing,
-because bootstrap replaces both and no generated project ever sees
-them.
+Without it the template's own README and changelog were read by nothing.
+Bootstrap replaces both, so no generated project ever sees them.
 
 ## The gates
 
