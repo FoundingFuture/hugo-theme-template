@@ -3,7 +3,7 @@
 
 Bootstrap takes one h1 off the scaffold. The scaffold puts the site
 title in an h1 in the header. The page title goes in a second h1 below
-it, and a page with two of them has no single heading.
+it. A page carrying two of them has no single heading.
 
 The one taken away sits in the header, outside the content, so no
 page's own h1 moves. That claim held when it was made, and this is what
