@@ -1,8 +1,8 @@
 // Put a copy button on every code block.
 //
-// The button is added here rather than in the template, so a reader with
-// no script sees no control that does nothing. The label comes from the
-// script tag, so the words stay in i18n with the rest of them.
+// The button is added here rather than in the template. A reader with no
+// script then sees no control that does nothing. The label comes from
+// the script tag, so the words stay in i18n with the rest.
 (function () {
   var tag = document.currentScript;
   var label = (tag && tag.dataset.copyLabel) || 'Copy';
