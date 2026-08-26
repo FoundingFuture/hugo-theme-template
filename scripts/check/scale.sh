@@ -4,8 +4,13 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+
+
 BUDGET_SECONDS="${SCALE_BUDGET_SECONDS:-20}"
-[ -d conformance/scale-content ] || python3 conformance/scripts/fixture.py --size 2000 || {
+[ -d conformance/scale-content ] || "$PY_BIN" conformance/scripts/fixture.py --size 2000 || {
   echo "conformance/scale-content:1: could not generate the scale fixture."; exit 1; }
 
 mkdir -p conformance/config/scale
@@ -26,10 +31,17 @@ if [ "$elapsed" -gt "$BUDGET_SECONDS" ]; then
   printf '%s\n' "conformance:1: the scale build took ${elapsed}s, over the ${BUDGET_SECONDS}s budget."
   status=1
 fi
-# A partial the hints mark cachable is one that returns the same markup
-# every call. Leaving it uncached repeats that work once a page.
-if printf '%s' "$out" | awk '/cumulative/{seen=1} seen && $NF ~ /cached/ {print}' | grep -q .; then
-  printf '%s\n' "$out" | grep -i 'cached' | head -10
+# A partial the hints mark cachable returns the same markup every call.
+# Leaving it uncached repeats that work once a page, which is invisible
+# on twenty pages and expensive on two thousand.
+#
+# The metrics table carries a cache potential column and a cached
+# column. A partial with potential and no caching is the finding.
+printf '%s\n' "$out" > conformance/public/metrics.txt
+hints="$("$PY_BIN" scripts/check/metrics.py conformance/public/metrics.txt)" || true
+if [ -n "$hints" ]; then
+  printf '%s\n' "$hints"
+  status=1
 fi
 # The count is what was published, not what was written. A build that
 # renders nothing used to report the pages it was given and pass.

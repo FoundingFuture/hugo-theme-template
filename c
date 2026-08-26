@@ -9,6 +9,11 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+
+
 ROOT="$(pwd -P)"
 STAGE=conformance/public
 VERB=""
@@ -186,14 +191,14 @@ cmd_snapshot() {
   cmd_build
   rm -rf conformance/snapshots/skeleton
   mkdir -p conformance/snapshots/skeleton
-  python3 conformance/scripts/skeleton.py "$STAGE/ours" \
+  "$PY_BIN" conformance/scripts/skeleton.py "$STAGE/ours" \
     --out conformance/snapshots/skeleton
   say "snapshot refreshed from $STAGE/ours"
 }
 
 cmd_fixture() {
   local size="${ARG[size]:-2000}"
-  python3 conformance/scripts/fixture.py --size "$size"
+  "$PY_BIN" conformance/scripts/fixture.py --size "$size"
 }
 
 cmd_docs() {
@@ -202,7 +207,7 @@ cmd_docs() {
 }
 
 cmd_report() {
-  python3 conformance/scripts/report.py
+  "$PY_BIN" conformance/scripts/report.py
 }
 
 cmd_clean() {

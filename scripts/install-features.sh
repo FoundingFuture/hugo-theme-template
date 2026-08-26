@@ -11,13 +11,18 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+
+
 partials=layouts/_partials
 [ -d "$partials" ] || partials=layouts/partials
 [ -d "$partials" ] || { echo "no partials directory" >&2; exit 1; }
 
 mkdir -p "$partials/features" data/features assets/css/features
 cp templates/feature/slot.html "$partials/slot.html"
-python3 scripts/wire-slots.py "$partials"
+"$PY_BIN" scripts/wire-slots.py "$partials"
 
 # The starter set is installed and switched on. A feature that ships is a
 # feature a user turns off with one line, rather than one they assemble.

@@ -6,4 +6,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-python3 scripts/contract.py "$@"
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+
+
+"$PY_BIN" scripts/contract.py "$@"

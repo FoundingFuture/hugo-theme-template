@@ -4,13 +4,18 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+
+
 source_dir=conformance/public/ours
 target=conformance/public/nojs
 [ -d "$source_dir" ] || { echo "SKIP nojs: no build at $source_dir"; exit 3; }
 
 rm -rf "$target"
 cp -R "$source_dir" "$target"
-python3 - "$target" <<'PY'
+"$PY_BIN" - "$target" <<'PY'
 import os, re, sys
 root = sys.argv[1]
 strip = re.compile(r"<script\b.*?</script>|<script\b[^>]*/?>", re.DOTALL | re.IGNORECASE)

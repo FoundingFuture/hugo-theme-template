@@ -5,6 +5,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+
+
 partials=layouts/_partials
 [ -d "$partials" ] || partials=layouts/partials
 
@@ -62,7 +67,7 @@ switch() {
   local value="$1" config=conformance/hugo.toml
   [ -n "$name" ] || { echo "usage: ./c feature $action name=<slug>" >&2; exit 2; }
   [ -e "$(manifest_path "$name")" ] || { echo "no feature named $name" >&2; exit 1; }
-  python3 - "$config" "$name" "$value" <<'PY'
+  "$PY_BIN" - "$config" "$name" "$value" <<'PY'
 import re, sys
 path, name, value = sys.argv[1], sys.argv[2], sys.argv[3]
 with open(path, encoding="utf-8") as handle:

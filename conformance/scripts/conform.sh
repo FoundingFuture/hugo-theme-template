@@ -4,7 +4,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+
+
 ROOT="$(cd .. && pwd -P)"
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$("$ROOT/scripts/python.sh" 2>/dev/null || echo python3)"
 PUB=public
 
 say() { printf '%s\n' "$*"; }
@@ -38,7 +43,7 @@ build hugo.toml,config/ours/hugo.toml ours --printUnusedTemplates
 # The directory is gitignored, because the file in it is generated. A
 # fresh clone therefore does not have it yet.
 mkdir -p config/off
-python3 scripts/features-off.py > config/off/hugo.toml
+"$PY_BIN" scripts/features-off.py > config/off/hugo.toml
 say "conform: building with every feature off"
 build hugo.toml,config/ours/hugo.toml,config/off/hugo.toml ours-off
 
@@ -62,8 +67,8 @@ fi
 #    on is meant to change the page. What it may change is checked
 #    against its manifest in the next step.
 say "conform: comparing the page skeletons"
-python3 scripts/skeleton.py "$PUB/hugo" > "$PUB/skeleton-hugo.json"
-python3 scripts/skeleton.py "$PUB/ours-off" > "$PUB/skeleton-ours.json"
+"$PY_BIN" scripts/skeleton.py "$PUB/hugo" > "$PUB/skeleton-hugo.json"
+"$PY_BIN" scripts/skeleton.py "$PUB/ours-off" > "$PUB/skeleton-ours.json"
 if ! diff -u "$PUB/skeleton-hugo.json" "$PUB/skeleton-ours.json" > "$PUB/skeleton.diff" 2>&1; then
   head -60 "$PUB/skeleton.diff" >&2
   fail "with every feature off the theme still renders a different page shape."
@@ -71,7 +76,7 @@ fi
 
 # The h1 of every page survives what bootstrap does to the scaffold.
 say "conform: comparing the h1 of every page"
-python3 scripts/h1-agree.py || fail "the theme and the reference disagree on an h1."
+"$PY_BIN" scripts/h1-agree.py || fail "the theme and the reference disagree on an h1."
 
 # What a feature adds is what its manifest said it would add. The
 # manifests are TOML, so the reader has to be a python that reads it.

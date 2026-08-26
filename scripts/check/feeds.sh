@@ -4,6 +4,11 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
+# Git Bash has python and not python3, and the manifests need a reader
+# that parses TOML. scripts/python.sh answers both questions.
+PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+
+
 target=conformance/public/ours
 [ -d "$target" ] || { echo "SKIP feeds: no build at $target"; exit 3; }
 command -v xmllint >/dev/null 2>&1 || { echo "SKIP feeds: xmllint not installed"; exit 3; }
@@ -16,5 +21,5 @@ if [ -f "$target/sitemap.xml" ]; then
   xmllint --noout "$target/sitemap.xml" || {
     printf '%s\n' "$target/sitemap.xml:1: not well formed."; status=1; }
 fi
-python3 scripts/check/feeds.py "$target" || status=1
+"$PY_BIN" scripts/check/feeds.py "$target" || status=1
 exit $status

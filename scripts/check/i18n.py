@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Check the words a theme renders.
 
-Three faults. A call with no key renders nothing, so a heading vanishes
+Four faults. A call with no key renders nothing, so a heading vanishes
 without a message. A key with no call is dead weight for every
-downloader. A bare text node in a template is English that no translation
-can reach.
+downloader. A bare text node in a template is English no translation can
+reach.
+
+The fourth is a placeholder. ./c feature new writes the feature's own
+name as its word, so the page reads "reading-time" where it should read
+"4 minutes read". Nothing rendered it wrong, so nothing else notices.
 """
 
 import os
@@ -40,6 +44,44 @@ def templates(root):
         for name in sorted(files):
             if name.endswith(".html"):
                 yield os.path.join(folder, name)
+
+
+VALUE = re.compile(r'^\s*(?:one|other|few|many|two|zero)\s*=\s*"([^"]*)"')
+
+
+def placeholders(path, features):
+    """Report a word that is still the name of the thing that renders it."""
+    findings = []
+    if not os.path.exists(path):
+        return findings
+    key = None
+    with open(path, encoding="utf-8") as handle:
+        for number, line in enumerate(handle, start=1):
+            table = TABLE.match(line)
+            if table:
+                key = table.group(1)
+                continue
+            match = VALUE.match(line)
+            if not match or key is None:
+                continue
+            value = match.group(1).strip()
+            if not value:
+                findings.append("%s:%d: %s is empty." % (path, number, key))
+            elif value == key or value in features:
+                findings.append(
+                    "%s:%d: %s reads %r, which is its own name. Write the words."
+                    % (path, number, key, value))
+    return findings
+
+
+def feature_names():
+    names = set()
+    folder = "data/features"
+    if os.path.isdir(folder):
+        for name in sorted(os.listdir(folder)):
+            if name.endswith(".toml"):
+                names.add(os.path.splitext(name)[0])
+    return names
 
 
 def defined_keys(path):
@@ -125,6 +167,8 @@ def main():
 
     for key in sorted(defined - used):
         findings.append("i18n/en.toml:1: key %s is defined and never used." % key)
+
+    findings.extend(placeholders("i18n/en.toml", feature_names()))
 
     for finding in findings:
         print(finding)

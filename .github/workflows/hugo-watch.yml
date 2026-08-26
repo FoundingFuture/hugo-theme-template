@@ -38,7 +38,9 @@ jobs:
         id: gates
         continue-on-error: true
         run: |
-          set -o pipefail
+          # Without -e a failing build gate followed by a passing output
+          # gate left the step green and opened no issue.
+          set -eo pipefail
           ./c check gate=build  2>&1 | tee -a hugo-watch.log
           ./c check gate=output 2>&1 | tee -a hugo-watch.log
 
