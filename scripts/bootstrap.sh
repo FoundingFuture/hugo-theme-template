@@ -26,6 +26,11 @@ SLUG="$(printf '%s' "$NAME" \
 # deprecation into a build failure, so 0.158 is the real floor.
 MIN_VERSION=0.158.0
 
+# The template's own repository name. A clone or a fork of the template
+# has it as the last part of the remote URL. A repository made with the
+# "Use this template" button has its own name there.
+TEMPLATE=hugo-theme-template
+
 fail() { printf '%s\n' "$1" >&2; exit 1; }
 
 # 1. Hugo must be present, extended, and recent enough for this layout.
@@ -68,7 +73,12 @@ done
 #
 #    The owner and the repository are given, or read from the remote,
 #    or left as placeholders. Whoever calls knows them. The workflow
-#    has them in its environment, and a clone has them in its remote.
+#    has them in its environment, and a repository made with the button
+#    has them in its remote.
+#
+#    A clone of the template has the template in its remote. That names
+#    the template, not the project, so nothing is read from it. The
+#    clone case is finished in step 11.
 #
 #    A placeholder left in theme.toml is a URL going nowhere. The
 #    release gate then fails on it later rather than sooner.
@@ -78,9 +88,14 @@ done
 #    repository. A module path is case sensitive, and module.sh reads
 #    that path out of homepage.
 year="$(date +%Y)"
-if [ -z "$OWNER" ] || [ -z "$REPO" ]; then
-  remote="$(git config --get remote.origin.url 2>/dev/null || true)"
-  remote="${remote%.git}"
+origin="$(git config --get remote.origin.url 2>/dev/null || true)"
+remote="${origin%.git}"
+remote="${remote%/}"
+cloned=no
+case "$remote" in
+  */"$TEMPLATE"|*:"$TEMPLATE") cloned=yes ;;
+esac
+if [ "$cloned" = no ] && { [ -z "$OWNER" ] || [ -z "$REPO" ]; }; then
   [ -n "$OWNER" ] || \
     OWNER="$(printf '%s' "$remote" | sed -n 's|.*[:/]\([^/:]*\)/[^/]*$|\1|p')"
   [ -n "$REPO" ] || \
@@ -88,7 +103,9 @@ if [ -z "$OWNER" ] || [ -z "$REPO" ]; then
 fi
 [ -n "$OWNER" ] || OWNER=OWNER
 [ -n "$REPO" ] || REPO="$SLUG"
-if [ "$OWNER" = OWNER ]; then
+if [ "$OWNER" = OWNER ] && [ "$cloned" = yes ]; then
+  printf '%s\n' "cloned from the template, and no owner given, so theme.toml keeps the placeholder"
+elif [ "$OWNER" = OWNER ]; then
   printf '%s\n' "no owner given or found, so theme.toml keeps the placeholder"
 fi
 
@@ -146,10 +163,69 @@ rm -f BOOTSTRAP
 # 10. Prove the pair before handing back.
 ./c conform || fail "the fresh scaffold does not conform. The suite is wrong, not the theme."
 
-cat <<EOF
+# 11. A repository made with the button has a one-commit history and a
+#     remote of its own. A clone of the template has the template's
+#     history and the template as its remote. Neither belongs to the
+#     project. When the caller has named the project's owner and
+#     repository, the clone is brought level here. When not, the
+#     template's history and remote are left alone. The closing
+#     message then says what to do by hand.
+#
+#     Deleting the ref under the checked-out branch leaves HEAD unborn
+#     on that branch name. The index and the working tree stay intact.
+#     The next commit is the root of the project's history. The old
+#     commits stay in the object store until git prunes them. The
+#     message names the one that restores them.
+detached=no
+if [ "$cloned" = yes ] && [ "$OWNER" != OWNER ]; then
+  branch="$(git symbolic-ref --short -q HEAD || true)"
+  head="$(git rev-parse -q --verify HEAD || true)"
+  # The project's remote, in the form the clone used: ssh or https, on
+  # the same host.
+  home="$(printf '%s' "$remote" | sed "s|[^/:]*/$TEMPLATE\$|$OWNER/$REPO|").git"
+  git remote remove origin
+  if [ -n "$branch" ] && [ -n "$head" ]; then
+    git update-ref -d "refs/heads/$branch"
+    detached=yes
+  fi
+fi
 
-Generated $NAME ($SLUG) from Hugo $version.
+commit="git add -A && git commit -m \"Generate theme scaffold from Hugo $version\""
+printf '\n%s\n\n' "Generated $NAME ($SLUG) from Hugo $version."
+if [ "$detached" = yes ]; then
+  cat <<EOF
+This was a clone of the template. Its history and its remote are gone.
+The next commit starts the history of $OWNER/$REPO:
 
-  git add -A && git commit -m "Generate theme scaffold from Hugo $version"
+  $commit
 
+To publish it:
+
+  gh repo create $OWNER/$REPO --public --source=. --push
+
+or, with $OWNER/$REPO created on GitHub:
+
+  git remote add origin $home
+  git push -u origin $branch
+
+To undo instead, before committing:
+
+  git reset --hard $head && git clean -fd
+  git remote add origin $origin
 EOF
+elif [ "$cloned" = yes ]; then
+  cat <<EOF
+This is a clone of the template. It still has the template's history
+and the template as its remote. A project of its own starts like this:
+
+  git remote remove origin
+  git update-ref -d refs/heads/$(git symbolic-ref --short -q HEAD || echo main)
+  $commit
+
+Then create the repository on GitHub, add it as origin, and push.
+Running init with owner= and repo= does the first two steps.
+EOF
+else
+  printf '  %s\n' "$commit"
+fi
+printf '\n'

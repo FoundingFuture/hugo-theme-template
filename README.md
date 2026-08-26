@@ -9,31 +9,61 @@ What the template carries is the pipeline.
 
 ## Starting a project
 
+Press "Use this template" on GitHub and name the repository. The name
+is the theme's name, in any form. Hugo gets a slug derived from it, so
+`My Theme` is `my-theme` in `theme.toml` and in the module path.
+
+The button copies the files and makes one commit. That commit is a push
+to `main`, which brings up `bootstrap.yml`, which runs `./c init` and
+commits the theme. A minute later the repository holds:
+
+- a theme generated from the newest Hugo release, in a second commit
+- `theme.toml` with the owner and repository filled in
+- a history of two commits, none of them the template's
+- Actions running `check.yml` on every push from now on
+
+Then, on your machine:
+
 ```sh
-git clone git@github.com:FoundingFuture/hugo-theme-template.git my-theme
-cd my-theme
-./c init name=my-theme
-git add -A && git commit -m "Generate theme scaffold from Hugo $(cat .hugo-version)"
+git clone git@github.com:<owner>/<repository>.git
+cd <repository>
 ./c check
 ```
 
 The last command passes on a fresh scaffold. From then on every change
-is measured against that baseline.
+is measured against that baseline. `./c init` deletes the marker file
+and the workflow, so the workflow never runs again.
 
-## Starting from the button
+## Cloning instead
 
-The GitHub "Use this template" button copies the files and makes an
-initial commit. It runs no script of its own. That commit is a push to
-`main`, which brings up `bootstrap.yml`, which runs `./c init` and
-commits the theme.
+A clone of the template can run `./c init` by hand. The theme comes out
+the same. Three things the button provides do not:
 
-So a repository made with the button arrives with its theme already
-generated, and the sequence above is already done. `./c init` deletes
-the marker file, so the workflow never triggers again. It also removes
-itself, along with the other one-shot pieces.
+- The history is the template's. Every commit in it is about the
+  pipeline, not the theme.
+- The remote is the template. A push goes to the wrong repository, or
+  is refused.
+- There is no repository on GitHub, so nothing runs `check.yml`.
 
-Cloning the template and running `./c init` by hand gives the same
-result.
+`./c init` sees the template in the remote and reads no owner from it.
+Given the project's owner and repository, it also cuts the clone loose:
+
+```sh
+git clone git@github.com:FoundingFuture/hugo-theme-template.git my-theme
+cd my-theme
+./c init name="My Theme" owner=<owner> repo=my-theme
+git add -A && git commit -m "Generate theme scaffold from Hugo $(cat .hugo-version)"
+gh repo create <owner>/my-theme --public --source=. --push
+```
+
+After `init` the remote is gone and the branch has no commits. The
+commit that follows is the root of the project's history. The closing
+message prints these commands, a `git push` alternative for those
+without `gh`, and the two lines that undo the cut.
+
+Without `owner=` and `repo=`, `init` leaves the history and the remote
+as they are, keeps the placeholder in `theme.toml`, and prints the
+three commands that do the same by hand.
 
 ## The command
 
@@ -106,6 +136,13 @@ Bootstrap replaces both, so no generated project ever sees them.
 
 ## The gates
 
+| Gate | What it reads |
+|---|---|
+| static | the sources, with no build |
+| build | four builds, and the scale fixture |
+| output | the built pages |
+| release | the tag, the changelog and the module path |
+
 ### What the scale gate is for
 
 A template running a site-wide query in a per-page loop is fast on
@@ -129,24 +166,14 @@ A partial reporting a reading time returns the same words whenever two
 pages read alike. Caching that by page would be a correctness bug
 wearing the clothes of an optimisation.
 
-| Gate | What it reads |
-|---|---|
-| static | the sources, with no build |
-| build | four builds, and the scale fixture |
-| output | the built pages |
-| release | the tag, the changelog and the module path |
-
-A check whose tool is missing prints `SKIP`. That is a warning on a
-workstation and a failure in CI, where the image carries every tool.
-
 ## Features
 
 A feature is an optional element the theme renders, registered to a slot
 and switched by one line. `./c feature list` shows them.
 
-Twelve features ship installed. Seven are on and five are off, and one
-line in the config moves any of them. A feature is never edited out of a
-template.
+Fourteen ship installed: twelve toggles and two components. Nine are on
+and five are off, and one line in the config moves any of them. A
+feature is never edited out of a template.
 
 ```sh
 ./c feature list          every feature, installed or available
@@ -168,15 +195,15 @@ A **component** is a directory under `features/` with its own layouts,
 assets and words, mounted beside the theme. Turning one off means not
 mounting it, which is what makes it a component rather than a toggle.
 
-`privacy-embeds` overrides Hugo's `youtube`, `vimeo` and `x` with a
-poster and a link, so a page loads nothing from another host until the
-reader follows it. A site without the component gets Hugo's own
-renderings back, so the shortcode names in the content stay portable.
+`privacy-embeds` overrides Hugo's `youtube` and `vimeo` with a poster
+and a link. A page then loads nothing from another host until the reader
+follows it. A site without the component gets Hugo's own renderings
+back, so the shortcode names in the content stay portable.
 
 `search` publishes a JSON index and a search page. The page lists every
 page in its own markup. A reader with the script blocked then has a
-working index rather than an empty box. The script filters that list and fetches
-nothing. The index is held under 1.5 MB by a gate.
+working index rather than an empty box. The script filters that list and
+fetches nothing. The index is held under 1.5 MB by a gate.
 
 A manifest declares what the feature adds to the rendered page. The
 fixture builds three times. The reference scaffold, the theme with every
