@@ -2,8 +2,8 @@
 """Hold a fixture page to what it says its output must contain.
 
 A page may carry params.expect, a list of strings that must appear in
-the page it builds to. A page may also carry params.reject, for what
-must not.
+the page it builds to. It may also carry params.reject, listing what
+must stay out.
 
 The skeleton compares the shape of a page, and the manifests compare
 what a feature adds. Neither reads the words.

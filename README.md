@@ -59,7 +59,7 @@ counts of the block elements. Every classed element is recorded with the
 text it carries.
 
 Markup and styling are free to differ. What a reader can find on the
-page is not.
+page has to match.
 
 The reference is regenerated before every run, so it always matches the
 Hugo doing the building.
@@ -194,4 +194,4 @@ The h1 is nobody's to add. The reference and the theme are compared on
 the h1 of every page, by itself. The claim cannot go quiet.
 
 Nothing is kept in an ignore list. That is the point. An ignore list
-goes stale, and a declaration cannot.
+goes stale, and a declaration stays true because the build reads it.
