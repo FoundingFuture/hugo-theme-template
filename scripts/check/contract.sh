@@ -3,7 +3,7 @@
 # and the templates disagree, and the documentation is what a user reads.
 # reads: layouts data contract.toml
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 scripts/docs.sh --stdout > .contract-fresh.toml 2>/dev/null || {
   rm -f .contract-fresh.toml

@@ -3,7 +3,7 @@
 # markdown the repository itself carries.
 # reads: conformance/content/kitchen-sink README.md CHANGELOG.md docs contract.toml
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 bin="$(scripts/tools.sh writing-lint 2>/dev/null)" || {
   echo "SKIP content: writing-lint not installed"; exit 3; }

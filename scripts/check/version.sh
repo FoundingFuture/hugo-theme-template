@@ -3,7 +3,7 @@
 # the one it was built against.
 # reads: theme.toml .hugo-version
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 status=0
 pinned="$(cat .hugo-version 2>/dev/null || true)"

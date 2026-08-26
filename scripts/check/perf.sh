@@ -3,7 +3,7 @@
 # gate runs in CI and nowhere else.
 # reads: conformance/public/ours lighthouserc.json
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 command -v lhci >/dev/null 2>&1 || { echo "SKIP perf: lighthouse-ci not installed"; exit 3; }
 [ -d conformance/public/ours ] || { echo "SKIP perf: no build"; exit 3; }

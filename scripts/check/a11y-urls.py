@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Print the pa11y-ci config, with every built page in it.
+"""Print the pa11y-ci config, with every readable page in it.
 
 The config shipped with an empty list, and pa11y-ci reports success when
 it is given nothing to read. A gate that passes on no input is worse
 than no gate, because it reads as evidence.
+
+A redirect stub is left out. It holds a meta refresh and nothing else,
+so it has no landmark, no heading and no language to judge.
 """
 
 import json
@@ -20,12 +23,10 @@ def main():
         with open(base, encoding="utf-8") as handle:
             config = json.load(handle)
 
-    urls = []
-    for folder, dirs, files in os.walk(root):
-        dirs[:] = sorted(d for d in dirs if d not in ("css", "js", "fonts"))
-        for name in sorted(files):
-            if name.endswith(".html"):
-                urls.append(os.path.abspath(os.path.join(folder, name)))
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import pages as readable_pages
+
+    urls = [os.path.abspath(p) for p in readable_pages.readable(root)]
     config["urls"] = urls
     json.dump(config, sys.stdout, indent=2)
     sys.stdout.write("\n")

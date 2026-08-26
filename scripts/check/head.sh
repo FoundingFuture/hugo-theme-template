@@ -2,7 +2,7 @@
 # What every page owes a reader and a crawler.
 # reads: conformance/public/ours
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 # Git Bash has python and not python3, and the manifests need a reader
 # that parses TOML. scripts/python.sh answers both questions.

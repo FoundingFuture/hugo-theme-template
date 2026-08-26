@@ -8,7 +8,7 @@
 # A feature switched off contributes no bytes, which is what makes a
 # switch worth having.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 partials=layouts/_partials
 [ -d "$partials" ] || partials=layouts/partials
@@ -25,6 +25,11 @@ cat > "$target" <<'HOOK'
        which rules it carries. */ -}}
 {{- $sheets := slice }}
 {{- with resources.Get "css/main.css" }}
+  {{- $sheets = $sheets | append . }}
+{{- end }}
+{{- /* The code colours, which the theme owns rather than inherits as
+       inline styles it cannot override. */ -}}
+{{- with resources.Get "css/chroma.css" }}
   {{- $sheets = $sheets | append . }}
 {{- end }}
 {{- $features := slice }}

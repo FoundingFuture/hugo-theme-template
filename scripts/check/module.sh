@@ -9,7 +9,7 @@
 # success without testing anything.
 # reads: theme.toml
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 command -v go >/dev/null 2>&1 || { echo "SKIP module: go not installed"; exit 3; }
 

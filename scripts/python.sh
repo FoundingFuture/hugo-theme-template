@@ -5,7 +5,7 @@
 # because writing-lint depends on it there. The pipeline has a reader
 # either way, so no check is skipped for the want of one.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 candidates="python3 python"
 for candidate in $candidates; do

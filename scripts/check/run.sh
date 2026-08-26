@@ -5,20 +5,30 @@
 # one line per finding in path:line: message form. CI runs these same
 # scripts, so a green run here predicts a green run there.
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 WANT_GATE="${1:-}"
 WANT_NAME="${2:-}"
 
 
-GATE_static="coverage portable shellcheck templates contract reserved i18n css js comments metadata features"
-GATE_build="build versions scale"
-GATE_output="conform validity head a11y perf content external nojs feeds search expect visual"
-GATE_release="changelog version listing module demo"
+# The gates, and the checks each one runs, in the order they run.
+#
+# Read through a function rather than through eval on a variable name.
+# eval hid the lists from every reader, shellcheck included, which
+# reported four unused variables that were the whole schedule.
+gate_checks() {
+  case "$1" in
+    static)  echo "coverage portable shellcheck templates contract reserved i18n css js comments metadata features" ;;
+    build)   echo "build versions scale" ;;
+    output)  echo "conform validity head a11y perf content external nojs feeds search expect visual" ;;
+    release) echo "changelog version listing module demo" ;;
+    *)       return 1 ;;
+  esac
+}
 
 if [ "$WANT_GATE" = "--list" ]; then
   for gate in static build output release; do
-    eval "names=\$GATE_$gate"
+    names="$(gate_checks "$gate")"
     printf '%s\n' "$gate"
     for name in $names; do
       printf '  %-12s %s\n' "$name" "scripts/check/$name.sh"
@@ -36,7 +46,12 @@ if [ -t 1 ]; then
 fi
 
 run_one() {
-  local gate="$1" name="$2" script="scripts/check/$name.sh" out status
+  # One local a line. Bash expands the whole list before any of it
+  # takes effect, so script would have read an outer name.
+  local gate="$1"
+  local name="$2"
+  local script="scripts/check/$name.sh"
+  local out status
   if [ ! -x "$script" ]; then
     printf '%s\n' "${yellow}SKIP${off} $gate/$name: no script at $script"
     skip=$((skip + 1))
@@ -63,8 +78,9 @@ run_one() {
 }
 
 run_gate() {
-  local gate="$1" names name
-  eval "names=\$GATE_$gate"
+  local gate="$1"
+  local names name
+  names="$(gate_checks "$gate")"
   for name in $names; do
     [ -n "$WANT_NAME" ] && [ "$name" != "$WANT_NAME" ] && continue
     run_one "$gate" "$name" || return 1

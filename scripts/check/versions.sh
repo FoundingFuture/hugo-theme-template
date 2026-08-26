@@ -3,7 +3,7 @@
 # release that only works on the author's version is not a release.
 # reads: conformance
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 if ! command -v hugo-latest >/dev/null 2>&1; then
   echo "SKIP versions: hugo-latest not on PATH. CI installs both."

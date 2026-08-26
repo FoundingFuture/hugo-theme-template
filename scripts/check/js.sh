@@ -2,7 +2,7 @@
 # eslint over the theme's scripts, when it has any.
 # reads: assets/js
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 [ -d assets/js ] || exit 0
 command -v eslint >/dev/null 2>&1 || {

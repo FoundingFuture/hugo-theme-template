@@ -45,6 +45,10 @@ class Skeleton(HTMLParser):
         # A link records the nearest one. A feature can then declare the
         # links it adds by naming the container it puts them in.
         self.classed = []
+        # Inside a code block nothing is page shape. Syntax highlighting
+        # puts a class on every token, and recording those would bury
+        # the page in presentation.
+        self.pre_depth = 0
         self.headings = []
         self.links = []
         self.images = []
@@ -111,6 +115,10 @@ class Skeleton(HTMLParser):
 
         if tag in self.counts:
             self.counts[tag] += 1
+        if tag == "pre":
+            self.pre_depth += 1
+        if self.pre_depth and tag != "pre":
+            return
         if tag == "img":
             self.images.append([attr.get("src", ""), attr.get("alt")])
             return
@@ -136,6 +144,8 @@ class Skeleton(HTMLParser):
                             "buffer": []})
 
     def handle_endtag(self, tag):
+        if tag == "pre":
+            self.pre_depth = max(0, self.pre_depth - 1)
         for index in range(len(self.frames) - 1, -1, -1):
             if self.frames[index]["tag"] == tag:
                 for frame in self.frames[index:]:

@@ -5,7 +5,7 @@
 # reference always matches the Hugo doing the building. A stale reference
 # would be worse than none.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 dest=conformance/themes
 rm -rf "$dest/hugo"

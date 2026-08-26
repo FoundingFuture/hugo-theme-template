@@ -8,7 +8,7 @@
 # That is what made the scale build render nothing, while still
 # reporting a time.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 printf '%s\n' "# Written by scale.sh. Do not edit."
 printf '%s\n' "[module]"

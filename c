@@ -7,7 +7,7 @@
 #
 # Exit codes: 0 pass, 1 findings, 2 usage, 3 missing tool.
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit 1
 
 # Git Bash has python and not python3, and the manifests need a reader
 # that parses TOML. scripts/python.sh answers both questions.

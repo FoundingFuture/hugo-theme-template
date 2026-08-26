@@ -3,7 +3,7 @@
 # follows the same rules as a code comment.
 # reads: c scripts conformance/scripts layouts assets features docs README.md CHANGELOG.md
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 bin="$(scripts/tools.sh writing-lint 2>/dev/null)" || {
   echo "SKIP comments: writing-lint not installed"; exit 3; }

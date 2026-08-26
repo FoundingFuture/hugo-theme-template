@@ -9,7 +9,7 @@
 # A gate that never walks a directory reports the same silence as one
 # that walks it and finds nothing.
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
 "$PY_BIN" scripts/check/coverage.py

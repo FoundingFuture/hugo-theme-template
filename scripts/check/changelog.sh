@@ -2,7 +2,7 @@
 # The tag has a changelog section with something in it.
 # reads: CHANGELOG.md
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 tag="${1:-${RELEASE_TAG:-}}"
 [ -n "$tag" ] || tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"

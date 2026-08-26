@@ -9,7 +9,7 @@
 # The href and the link text do not change. The page skeleton is the
 # same, so the conformance diff stays empty.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 mkdir -p layouts/_markup
 hook=layouts/_markup/render-link.html

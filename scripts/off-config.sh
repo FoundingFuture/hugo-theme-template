@@ -11,7 +11,7 @@
 # Hugo replaces the mounts array when two configs declare one, which is
 # what lets a later file take mounts away.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 printf '%s\n' "# Written by conform.sh. Do not edit."
 printf '%s\n' "[params]"

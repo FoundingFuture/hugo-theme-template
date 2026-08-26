@@ -9,6 +9,8 @@ categories = ['reference']
 This post exercises pagination and date ordering. It is post 7 of
 seven, and the pager splits the seven into three pages.
 
+<!--more-->
+
 ## Position
 
 The date orders this post among its siblings. The pager decides

@@ -6,7 +6,7 @@
 # feature adds. Neither reads the words. A reading time rendered
 # "1 minutes read" for want of an integer, and every gate passed.
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
 "$PY_BIN" scripts/check/expect.py "${1:-conformance/public/ours}"

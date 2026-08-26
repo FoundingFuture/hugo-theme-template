@@ -3,7 +3,7 @@
 # a subpath, which is where an absolute path breaks.
 # reads: conformance
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 scripts/reference.sh || { echo "conformance:1: could not generate the reference."; exit 1; }
 status=0

@@ -6,7 +6,7 @@
 # translate them. The words gate stops on a bare text node. A scaffold
 # left as Hugo writes it would fail its own first check.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 partials=layouts/_partials
 [ -d "$partials" ] || partials=layouts/partials

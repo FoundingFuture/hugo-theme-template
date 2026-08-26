@@ -11,7 +11,7 @@
 # index is the only way to search, and a reader with the script blocked
 # has an empty box.
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 BUDGET_BYTES="${SEARCH_BUDGET_BYTES:-1572864}"
 target=conformance/public/ours

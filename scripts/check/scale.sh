@@ -3,7 +3,7 @@
 # for a per-page site query to show up. It shows up nowhere else.
 # reads: conformance scripts/scale-config.sh
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 # Git Bash has python and not python3, and the manifests need a reader
 # that parses TOML. scripts/python.sh answers both questions.

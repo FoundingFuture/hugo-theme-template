@@ -9,7 +9,7 @@
 # a bar, then the message to print.
 # reads: c scripts conformance/scripts .github/workflows .gitattributes
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 RULES=scripts/check/portable-rules.txt
 status=0

@@ -4,7 +4,7 @@
 # The contract is what the theme reads and what it defines. It is
 # generated, never written by hand, so it cannot drift from the markup.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 # Git Bash has python and not python3, and the manifests need a reader
 # that parses TOML. scripts/python.sh answers both questions.

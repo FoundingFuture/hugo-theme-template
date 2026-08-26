@@ -1,12 +1,31 @@
-{{- /* Rendered only from three headings up. On a shorter page a table of
-       contents is longer than the reading it saves. */ -}}
-{{- $headings := .Fragments.Headings }}
+{{- /* Rendered only from three headings up. On a shorter page a table
+       of contents is longer than the reading it saves.
+
+       .Fragments.Headings is a tree whose first node is a synthetic
+       root, with no identifier and no title. Ranging it directly put
+       an empty link on every page. Only a node with an identifier is
+       an entry, and the walk descends through the ones that are not. */ -}}
 {{- if ge (len .Fragments.Identifiers) 3 }}
 <nav class="toc" aria-label="{{ i18n "contents" }}">
   <ol>
-    {{- range $headings }}
-    <li><a href="#{{ .ID }}">{{ .Title }}</a></li>
-    {{- end }}
+    {{- partial "inline/toc-branch.html" (dict "headings" .Fragments.Headings) }}
   </ol>
 </nav>
+{{- end }}
+
+{{- define "_partials/inline/toc-branch.html" }}
+  {{- range .headings }}
+    {{- if .ID }}
+    <li>
+      <a href="#{{ .ID }}">{{ .Title }}</a>
+      {{- with .Headings }}
+      <ol>{{ partial "inline/toc-branch.html" (dict "headings" .) }}</ol>
+      {{- end }}
+    </li>
+    {{- else }}
+      {{- with .Headings }}
+        {{- partial "inline/toc-branch.html" (dict "headings" .) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 {{- end }}

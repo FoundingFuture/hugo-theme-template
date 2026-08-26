@@ -5,7 +5,7 @@
 # compared against what was released, rather than against whatever
 # happened to be built last.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 version="${1:-}"
 [ -n "$version" ] || { echo "usage: ./c release v=1.2.0" >&2; exit 2; }

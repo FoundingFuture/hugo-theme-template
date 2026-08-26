@@ -5,7 +5,7 @@
 # build. pre-push runs the gates that need one, minus the gate that
 # needs a browser.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 hooks="$(git rev-parse --git-path hooks)"
 mkdir -p "$hooks"

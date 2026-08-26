@@ -3,7 +3,7 @@
 # theme owns its colours.
 # reads: conformance/public/ours
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 target=conformance/public/ours
 [ -d "$target" ] || { echo "SKIP a11y: no build at $target"; exit 3; }

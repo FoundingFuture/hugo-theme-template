@@ -5,7 +5,7 @@
 # whichever Hugo is installed on the day it starts. It is never a copy
 # frozen when the template was written.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 # The name a person gives is the display name. It goes into theme.toml as
 # is. Hugo, hugo mod and themes.gohugo.io each want a slug of lowercase
@@ -123,6 +123,8 @@ scripts/internationalise.sh
 scripts/install-head.sh
 scripts/install-links.sh
 scripts/install-css.sh
+scripts/install-imports.sh
+scripts/install-highlight.sh
 
 # 8. Install the feature mechanism into the generated layouts.
 scripts/install-features.sh

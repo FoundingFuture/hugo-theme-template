@@ -7,6 +7,13 @@ enableGitInfo = false
 [pagination]
   pagerSize = 3
 
+# Chroma's own colours are written into the markup as inline styles,
+# and one of them fails AA contrast on every code block. Classes let the
+# theme own its code colours, and its stylesheet fix them.
+[markup.highlight]
+  noClasses = false
+  style = "xcode"
+
 [markup.goldmark.renderer]
   unsafe = false
 

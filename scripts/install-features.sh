@@ -9,7 +9,7 @@
 # starter set. Either way a feature arrives with its manifest, its
 # partial, its stylesheet, its words and its fixture page, together.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 # Git Bash has python and not python3, and the manifests need a reader
 # that parses TOML. scripts/python.sh answers both questions.

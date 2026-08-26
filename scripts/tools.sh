@@ -8,7 +8,7 @@
 # ensurepip. A Debian box without python3-venv cannot build a virtual
 # environment with pip in it. That is the common case handled here.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 WRITING_LINT_TAG=v1.0.1
 WRITING_LINT_REPO=FoundingFuture/writing-lint

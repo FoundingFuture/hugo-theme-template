@@ -2,7 +2,7 @@
 # Build the fixture twice and compare. Exits non-zero on the first gate
 # that fails, so the output names one problem rather than a cascade.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 
 

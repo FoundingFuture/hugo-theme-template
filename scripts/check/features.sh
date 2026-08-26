@@ -3,7 +3,7 @@
 # words, and a fixture page for the on state and the off state.
 # reads: data/features layouts templates/feature conformance/content/kitchen-sink/features
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 python="$(scripts/python.sh)" || { echo "SKIP features: no python"; exit 3; }
 "$python" scripts/check/features.py

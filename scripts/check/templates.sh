@@ -3,7 +3,7 @@
 # dead weight or a page that never renders, and both are faults.
 # reads: layouts conformance
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 out="$(cd conformance && hugo --config hugo.toml,config/ours/hugo.toml \
   -d public/unused --printUnusedTemplates --logLevel warn --gc 2>&1)" || {

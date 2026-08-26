@@ -8,7 +8,7 @@
 # None of this appears in the page skeleton, so the conformance diff
 # against the reference stays empty.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 partials=layouts/_partials
 [ -d "$partials" ] || partials=layouts/partials

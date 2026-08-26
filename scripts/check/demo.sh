@@ -2,7 +2,7 @@
 # The demo is the fixture built against the theme, under /demo/.
 # reads: conformance theme.toml
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 scripts/reference.sh || exit 1
 ( cd conformance && hugo --config hugo.toml,config/ours/hugo.toml -d public/demo \

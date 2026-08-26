@@ -7,7 +7,7 @@
 # The static gate stops a feature with no fixture page. This runs at
 # bootstrap, and again whenever a feature is installed.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 dest=conformance/content/kitchen-sink/features
 mkdir -p "$dest"

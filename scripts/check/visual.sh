@@ -4,7 +4,7 @@
 # deliberate design change is a difference too.
 # reads: conformance/public/ours conformance/snapshots/screens
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 command -v node >/dev/null 2>&1 || { echo "SKIP visual: node not installed"; exit 3; }
 
