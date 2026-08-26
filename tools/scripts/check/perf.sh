@@ -3,10 +3,13 @@
 # gate runs in CI and nowhere else.
 # reads: tools/conformance/public/ours tools/lighthouserc.json
 set -uo pipefail
-cd "$(dirname "$0")/../../.." || exit 1
+# lighthouse-ci writes .lighthouseci beside whatever directory it is run
+# from, and it takes no flag for that. Running from tools/ is what keeps
+# the reports out of the theme root.
+cd "$(dirname "$0")/../.." || exit 1
 
 command -v lhci >/dev/null 2>&1 || { echo "SKIP perf: lighthouse-ci not installed"; exit 3; }
-[ -d tools/conformance/public/ours ] || { echo "SKIP perf: no build"; exit 3; }
+[ -d conformance/public/ours ] || { echo "SKIP perf: no build"; exit 3; }
 
 # Lighthouse drives a real browser and looks for one in the places a
 # system package puts it. A Playwright install puts it somewhere else,
@@ -26,4 +29,4 @@ fi
 export CHROME_PATH
 printf '%s\n' "perf: driving $CHROME_PATH"
 
-lhci autorun --config=tools/lighthouserc.json
+lhci autorun --config=lighthouserc.json

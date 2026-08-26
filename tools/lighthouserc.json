@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": "tools/conformance/public/ours",
+      "staticDistDir": "conformance/public/ours",
       "url": [
         "http://localhost/index.html",
         "http://localhost/kitchen-sink/index.html",
