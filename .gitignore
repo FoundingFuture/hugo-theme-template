@@ -25,3 +25,8 @@ __pycache__/
 # Playwright, when somebody points it here. The browsers are hundreds
 # of megabytes, and a bootstrap run commits whatever it finds.
 .playwright/
+
+# stylelint resolves its shared config from the repository, so it may
+# have to be installed here rather than globally. That leaves thirty
+# megabytes at the root, which is the same hazard as the browsers.
+node_modules/

@@ -110,7 +110,7 @@ to install it differs by platform.
 | [Go](https://go.dev/dl/) | `release/module` | resolves the theme as a module |
 | [Node.js](https://nodejs.org/) | runs the five tools below | 20 or later |
 | [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` | every script in the repository |
-| [Stylelint](https://stylelint.io/) | `static/css` | with `stylelint-config-standard` |
+| [Stylelint](https://stylelint.io/) | `static/css` | with `stylelint-config-standard`, installed in the repository |
 | [ESLint](https://eslint.org/) | `static/js` | only when the theme has a script |
 | [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments`, `output/content` | fetched by tag into `.tools/` |
 | [html5validator](https://github.com/svenkreiss/html5validator) | `output/validity` | the Nu validator, so it needs Java |
