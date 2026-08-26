@@ -4,7 +4,7 @@
 # A link leaving the site carries rel with external and noopener. The
 # external gate reads those. The difference between a link a reader
 # follows and a subresource the page fetches then stays visible in the
-# output, rather than in a rule alone.
+# output. It does not live in a rule alone.
 #
 # The href and the link text do not change. The page skeleton is the
 # same, so the conformance diff stays empty.

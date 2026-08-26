@@ -12,7 +12,7 @@ listing the link forms Hugo resolves has to carry one.
 
 Such an anchor still says where it goes. It carries rel with external
 and noopener. The difference between a link and a fetched subresource
-then stays visible in the output, rather than in this rule alone.
+then stays visible in the output. It does not live in this rule alone.
 """
 
 import os

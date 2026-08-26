@@ -23,9 +23,11 @@ python3 scripts/wire-slots.py "$partials"
 # feature a user turns off with one line, rather than one they assemble.
 #
 # Every shipped feature renders. Every partial is reached, so the
-# unused-template check still means something. The comparison build
-# switches them all off and does not ask about unused templates, because
-# switching them off is what leaves them unused.
+# unused-template check still means something.
+#
+# The comparison build switches them all off. It does not ask about
+# unused templates, because switching them off is what leaves them
+# unused.
 for manifest in templates/feature/manifests/*.toml; do
   [ -e "$manifest" ] || continue
   name="$(basename "$manifest" .toml)"
