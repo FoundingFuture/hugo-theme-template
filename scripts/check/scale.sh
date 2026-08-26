@@ -38,9 +38,9 @@ fi
 # The metrics table carries a cache potential column and a cached
 # column. A partial with potential and no caching is the finding.
 printf '%s\n' "$out" > conformance/public/metrics.txt
-hints="$("$PY_BIN" scripts/check/metrics.py conformance/public/metrics.txt)" || true
-if [ -n "$hints" ]; then
-  printf '%s\n' "$hints"
+# The table is printed either way. The exit code, not the output, says
+# whether anything is wrong with it.
+if ! "$PY_BIN" scripts/check/metrics.py conformance/public/metrics.txt; then
   status=1
 fi
 # The count is what was published, not what was written. A build that

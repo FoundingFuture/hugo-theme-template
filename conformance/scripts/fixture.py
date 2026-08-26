@@ -39,7 +39,11 @@ def page(index):
     for section in range(3):
         body.append("## %s" % words(3, index + section).capitalize())
         body.append("")
-        body.append(words(100, index + section * 5))
+        # The length varies, so a partial reporting a reading time
+        # returns different markup and its cache potential means
+        # something. Every post the same length made it read as
+        # perfectly cacheable, which was true of the fixture only.
+        body.append(words(60 + (index * 7 + section * 11) % 180, index + section * 5))
         body.append("")
     return (
         "+++\n"

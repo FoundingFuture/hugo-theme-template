@@ -1,14 +1,11 @@
-{{- /* The neighbours in the section, not in the whole site, so the two
-       links stay inside the reading the page belongs to. */ -}}
-{{- $siblings := where site.RegularPages "Section" .Section }}
-{{- $previous := "" }}
-{{- $next := "" }}
-{{- range $index, $page := $siblings }}
-  {{- if eq $page.RelPermalink $.RelPermalink }}
-    {{- with (index $siblings (add $index 1)) }}{{ $previous = . }}{{ end }}
-    {{- if gt $index 0 }}{{ $next = index $siblings (sub $index 1) }}{{ end }}
-  {{- end }}
-{{- end }}
+{{- /* Hugo keeps the neighbours of a page in its section, so this is a
+       lookup rather than a search.
+
+       Filtering site.RegularPages here instead cost a site-wide query
+       on every page. On the scale fixture that was a quarter of all
+       template time, which is the fault the fixture exists to find. */ -}}
+{{- $previous := .PrevInSection }}
+{{- $next := .NextInSection }}
 {{- if or $previous $next }}
 <nav class="pager">
   {{- with $previous }}
