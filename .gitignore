@@ -11,3 +11,4 @@ public/
 .hugo-toml-*
 conformance/config/site/
 conformance/config/off/
+*.tar.gz

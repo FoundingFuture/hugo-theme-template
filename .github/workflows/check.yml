@@ -20,13 +20,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The template carries no theme, so there is nothing to check on
+      # it. A project made from it has one by its first push.
+      - name: Stop while there is no theme
+        id: state
+        run: |
+          if [ -f BOOTSTRAP ] || [ ! -d layouts ]; then
+            echo "no theme yet, nothing to check"
+            echo "ready=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=yes" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Read the pinned Hugo version
+        if: steps.state.outputs.ready == 'yes'
         id: pin
         run: echo "version=$(cat .hugo-version)" >> "$GITHUB_OUTPUT"
 
       # Installed from the release tarball by version, not through a
       # marketplace action, so the pin is explicit and readable here.
       - name: Install Hugo
+        if: steps.state.outputs.ready == 'yes'
         run: |
           set -euo pipefail
           if [ "${{ matrix.hugo }}" = latest ]; then
@@ -35,22 +49,25 @@ jobs:
           else
             version="${{ steps.pin.outputs.version }}"
           fi
-          curl -fsSL -o hugo.tar.gz \
+          curl -fsSL -o "$RUNNER_TEMP/hugo.tar.gz" \
             "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
           mkdir -p "$HOME/.local/bin"
-          tar -xzf hugo.tar.gz -C "$HOME/.local/bin" hugo
+          tar -xzf "$RUNNER_TEMP/hugo.tar.gz" -C "$HOME/.local/bin" hugo
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "installed hugo ${version}"
 
       - uses: actions/setup-python@v5
+        if: steps.state.outputs.ready == 'yes'
         with:
           python-version: '3.12'
 
       - uses: actions/setup-node@v4
+        if: steps.state.outputs.ready == 'yes'
         with:
           node-version: '20'
 
       - name: Install the tools the gates name
+        if: steps.state.outputs.ready == 'yes'
         run: |
           set -euo pipefail
           pip install --quiet html5validator
@@ -62,6 +79,7 @@ jobs:
       # The checkers live in a private repository, so CI needs a key or a
       # token. Either secret works, and neither is needed to build.
       - name: Reach writing-lint
+        if: steps.state.outputs.ready == 'yes'
         env:
           WRITING_LINT_KEY: ${{ secrets.WRITING_LINT_DEPLOY_KEY }}
           GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
@@ -76,12 +94,14 @@ jobs:
           scripts/tools.sh writing-lint
 
       - name: Gates
+        if: steps.state.outputs.ready == 'yes'
         env:
           CI: "true"
           GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
         run: ./c check
 
       - name: A real site, when one is named
+        if: steps.state.outputs.ready == 'yes'
         run: |
           set -euo pipefail
           [ -s conformance/sites.txt ] || { echo "no site named"; exit 0; }
@@ -93,11 +113,11 @@ jobs:
           done < conformance/sites.txt
 
       - name: Report
-        if: always() && matrix.hugo == 'pinned'
+        if: always() && matrix.hugo == 'pinned' && steps.state.outputs.ready == 'yes'
         run: ./c report || true
 
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.hugo == 'pinned'
+        if: always() && matrix.hugo == 'pinned' && steps.state.outputs.ready == 'yes'
         with:
           name: conformance-report
           path: conformance/public/report

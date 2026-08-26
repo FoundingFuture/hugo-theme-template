@@ -23,10 +23,10 @@ jobs:
           set -euo pipefail
           version="$(curl -fsSL https://api.github.com/repos/gohugoio/hugo/releases/latest \
             | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
-          curl -fsSL -o hugo.tar.gz \
+          curl -fsSL -o "$RUNNER_TEMP/hugo.tar.gz" \
             "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
           mkdir -p "$HOME/.local/bin"
-          tar -xzf hugo.tar.gz -C "$HOME/.local/bin" hugo
+          tar -xzf "$RUNNER_TEMP/hugo.tar.gz" -C "$HOME/.local/bin" hugo
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 

@@ -16,10 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Stop unless the marker is present
+      # Two guards. The marker is deleted by ./c init, so this never runs
+      # twice in a project. is_template is true only on the template
+      # itself, which must never generate a theme into itself: doing so
+      # is what the template exists to avoid.
+      - name: Stop on the template, or once the marker is gone
         id: marker
+        env:
+          IS_TEMPLATE: ${{ github.event.repository.is_template }}
         run: |
-          if [ -f BOOTSTRAP ]; then
+          if [ "${IS_TEMPLATE}" = "true" ]; then
+            echo "this is the template itself, not a project made from it"
+            echo "run=no" >> "$GITHUB_OUTPUT"
+          elif [ -f BOOTSTRAP ]; then
             echo "run=yes" >> "$GITHUB_OUTPUT"
           else
             echo "run=no" >> "$GITHUB_OUTPUT"
@@ -31,10 +40,10 @@ jobs:
           set -euo pipefail
           version="$(curl -fsSL https://api.github.com/repos/gohugoio/hugo/releases/latest \
             | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
-          curl -fsSL -o hugo.tar.gz \
+          curl -fsSL -o "$RUNNER_TEMP/hugo.tar.gz" \
             "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
           mkdir -p "$HOME/.local/bin"
-          tar -xzf hugo.tar.gz -C "$HOME/.local/bin" hugo
+          tar -xzf "$RUNNER_TEMP/hugo.tar.gz" -C "$HOME/.local/bin" hugo
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - uses: actions/setup-python@v5
@@ -44,7 +53,15 @@ jobs:
 
       - name: Generate the theme
         if: steps.marker.outputs.run == 'yes'
-        run: ./c init name="${GITHUB_REPOSITORY##*/}"
+        run: |
+          set -euo pipefail
+          # A repository may be named with capitals or an underscore. A
+          # theme slug may not, so the name is folded rather than refused.
+          slug="$(printf '%s' "${GITHUB_REPOSITORY##*/}" \
+            | tr '[:upper:]' '[:lower:]' | tr '_' '-' \
+            | sed -e 's/[^a-z0-9-]//g' -e 's/^-*//' -e 's/-*$//')"
+          echo "generating $slug"
+          ./c init name="$slug"
 
       - name: Commit
         if: steps.marker.outputs.run == 'yes'
