@@ -16,13 +16,19 @@ WRITING_LINT_REPO=FoundingFuture/writing-lint
 venv=.tools/venv
 
 specs() {
-  # The repository is private. ssh first, by whichever host name resolves,
-  # then a token for CI, which has no key.
-  printf '%s\n' "git+ssh://git@github.com/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
-  printf '%s\n' "git+ssh://git@github-ff/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
+  # Plain https first. It needs no key and no token, which is what a
+  # runner has. For a public repository that is enough.
+  #
+  # The list held only ssh and a token before. CI could reach neither,
+  # so the step failed on every repository made from the template.
+  printf '%s\n' "git+https://github.com/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
   if [ -n "${GH_TOKEN:-}" ]; then
     printf '%s\n' "git+https://${GH_TOKEN}@github.com/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
   fi
+  # ssh, for a private fork and for a workstation with a key. The host
+  # alias is tried too, since a clone may have been made through one.
+  printf '%s\n' "git+ssh://git@github.com/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
+  printf '%s\n' "git+ssh://git@github-ff/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
 }
 
 # The version an entry point would run, asked of the interpreter named
@@ -39,6 +45,9 @@ version_of() {
 
 install_with_uv() {
   command -v uv >/dev/null 2>&1 || return 1
+  # Fail rather than ask. A private repository would otherwise stop the
+  # run at a password prompt that nobody is there to answer.
+  export GIT_TERMINAL_PROMPT=0
   [ -x "$venv/bin/python" ] || uv venv --quiet "$venv" >/dev/null 2>&1 || return 1
   local spec
   while IFS= read -r spec; do
@@ -51,6 +60,7 @@ install_with_uv() {
 
 install_with_venv() {
   command -v python3 >/dev/null 2>&1 || return 1
+  export GIT_TERMINAL_PROMPT=0
   [ -x "$venv/bin/pip" ] || python3 -m venv "$venv" >/dev/null 2>&1 || return 1
   [ -x "$venv/bin/pip" ] || return 1
   local spec
@@ -96,6 +106,7 @@ case "${1:-}" in
     fi
     printf '%s\n' "writing-lint ${WRITING_LINT_TAG} could not be installed." >&2
     printf '%s\n' "Needs uv or python3-venv, and access to ${WRITING_LINT_REPO}." >&2
+    printf '%s\n' "For a private fork, set GH_TOKEN or give the runner a key." >&2
     exit 3
     ;;
   *)

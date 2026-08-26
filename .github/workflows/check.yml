@@ -3,6 +3,13 @@ name: check
 on:
   push:
   pull_request:
+  # A push made with the default token raises no push event, which is
+  # how GitHub stops a workflow from setting itself off. So the commit
+  # that bootstrap.yml writes, holding the whole generated theme, was
+  # never checked by anything. This picks it up when bootstrap finishes.
+  workflow_run:
+    workflows: [bootstrap]
+    types: [completed]
 
 permissions:
   contents: read
@@ -13,6 +20,7 @@ jobs:
   # run on it. This reads what needs none, and is the only thing that
   # ever reads the template's own prose and scripts.
   template:
+    if: github.event_name != 'workflow_run'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

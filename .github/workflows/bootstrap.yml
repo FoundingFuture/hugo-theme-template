@@ -9,6 +9,10 @@ name: bootstrap
 on:
   push:
     branches: [main]
+    # Only a commit touching the marker can be the one that bootstraps.
+    # Without this the workflow woke on every later push, did nothing,
+    # and still finished, which is a run that check.yml would follow.
+    paths: [BOOTSTRAP]
 
 permissions:
   contents: write
