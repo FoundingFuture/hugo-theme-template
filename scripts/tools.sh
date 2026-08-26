@@ -25,12 +25,24 @@ specs() {
   fi
 }
 
+# The version an entry point would run, asked of the interpreter named
+# in its first line. A console script is written by the installer, so
+# that line points at the environment holding the package.
+version_of() {
+  local script="$1" interpreter
+  [ -x "$script" ] || return 0
+  interpreter="$(sed -n '1s|^#!||p' "$script" | awk '{print $1}')"
+  [ -x "$interpreter" ] || return 0
+  "$interpreter" -c 'import writing_lint, sys; sys.stdout.write(writing_lint.__version__)' \
+    2>/dev/null || true
+}
+
 install_with_uv() {
   command -v uv >/dev/null 2>&1 || return 1
   [ -x "$venv/bin/python" ] || uv venv --quiet "$venv" >/dev/null 2>&1 || return 1
   local spec
   while IFS= read -r spec; do
-    if uv pip install --quiet --python "$venv/bin/python" "$spec" >/dev/null 2>&1; then
+    if uv pip install --quiet --reinstall --python "$venv/bin/python" "$spec" >/dev/null 2>&1; then
       return 0
     fi
   done < <(specs)
@@ -43,7 +55,7 @@ install_with_venv() {
   [ -x "$venv/bin/pip" ] || return 1
   local spec
   while IFS= read -r spec; do
-    if "$venv/bin/pip" install --quiet "$spec" >/dev/null 2>&1; then
+    if "$venv/bin/pip" install --quiet --force-reinstall "$spec" >/dev/null 2>&1; then
       return 0
     fi
   done < <(specs)
@@ -52,15 +64,33 @@ install_with_venv() {
 
 case "${1:-}" in
   writing-lint)
+    want="${WRITING_LINT_TAG#v}"
+
+    # A copy already on PATH is used only when it is the pinned version.
+    #
+    # Taking whichever one happened to be installed made the pin a note
+    # rather than a pin. A runner one release behind then read the rules
+    # of that release, while claiming to read these.
     if command -v check-web-content >/dev/null 2>&1; then
-      dirname "$(command -v check-web-content)"
-      exit 0
+      if [ "$(version_of "$(command -v check-web-content)")" = "$want" ]; then
+        dirname "$(command -v check-web-content)"
+        exit 0
+      fi
     fi
-    if [ -x "$venv/bin/check-web-content" ]; then
+
+    # The same test on the fetched copy. Without it a bumped pin never
+    # reached a checkout that had already fetched the older one.
+    if [ "$(version_of "$venv/bin/check-web-content")" = "$want" ]; then
       ( cd "$venv/bin" && pwd -P )
       exit 0
     fi
+
     if install_with_uv || install_with_venv; then
+      got="$(version_of "$venv/bin/check-web-content")"
+      if [ "$got" != "$want" ]; then
+        printf '%s\n' "asked for writing-lint $want and got ${got:-nothing}." >&2
+        exit 3
+      fi
       ( cd "$venv/bin" && pwd -P )
       exit 0
     fi
