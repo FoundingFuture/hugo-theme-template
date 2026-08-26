@@ -58,3 +58,21 @@ fi
 
 # One fixture page a feature, exercising the switch in both positions.
 scripts/feature-fixtures.sh
+
+# Every feature listed in the site config with its default, commented
+# out. A user sees the whole set in one place and flips a line. The
+# alternative is hunting for a name written down nowhere.
+if ! grep -q 'params.features' hugo.toml 2>/dev/null; then
+  {
+    printf '\n%s\n' "# Every feature this theme ships, with the default it ships with."
+    printf '%s\n' "# Uncomment a line to change it. A page may override any of them"
+    printf '%s\n' "# in its own front matter."
+    printf '%s\n' "# [params.features]"
+    for manifest in data/features/*.toml; do
+      [ -e "$manifest" ] || continue
+      name="$(basename "$manifest" .toml)"
+      default="$(sed -n 's/^ *default *= *\(true\|false\).*/\1/p' "$manifest" | head -1)"
+      printf '#   %s = %s\n' "$name" "${default:-true}"
+    done
+  } >> hugo.toml
+fi

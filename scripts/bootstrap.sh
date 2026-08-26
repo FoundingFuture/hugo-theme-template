@@ -69,7 +69,11 @@ mkdir -p i18n data assets static archetypes
 # 6. Pin the floor to the Hugo that generated this.
 if [ -f hugo.toml ]; then
   tmpfile="$(mktemp "$PWD/.hugo-toml-XXXXXX")"
-  sed "s|^\( *min *= *\).*|\1'$version'|" hugo.toml > "$tmpfile"
+  # The floor is the Hugo that generated this. The extended build is
+  # required, because the fixture processes images. The scaffold says
+  # otherwise, and a downloader would believe it.
+  sed -e "s|^\( *min *= *\).*|\1'$version'|" \
+      -e "s|^\( *extended *= *\).*|\1true|" hugo.toml > "$tmpfile"
   mv "$tmpfile" hugo.toml
 fi
 printf '%s\n' "$version" > .hugo-version

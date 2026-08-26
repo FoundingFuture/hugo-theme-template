@@ -115,7 +115,12 @@ cmd_site() {
   bootstrapped
   local site="${ARG[site]}" config dir
   [ -d "$site" ] || { printf '%s\n' "no site at $site" >&2; exit 2; }
-  site="$(cd "$site" && pwd -P)"
+  # Relative to conformance/, because an absolute path from Git Bash
+  # reads as /c/Users/... and the Windows Hugo binary cannot open one.
+  local absolute
+  absolute="$(cd "$site" && pwd -P)"
+  site="$("$PY_BIN" -c 'import os,sys;print(os.path.relpath(sys.argv[1], sys.argv[2]).replace(os.sep, "/"))' \
+    "$absolute" "$ROOT/conformance")"
   scripts/reference.sh
   config=conformance/config/site/hugo.toml
   mkdir -p "$(dirname "$config")"
@@ -237,6 +242,13 @@ cmd_release() {
 }
 
 cmd_help() {
+  if [ "${ARG[sub]:-}" = "check" ]; then
+    printf '%s\n' "Gates run in order, cheapest first, stopping at the first failure."
+    printf '\n%s\n' "Every check is a script under scripts/check, runnable alone."
+    printf '%s\n\n' "Exit codes: 0 pass, 1 findings, 2 usage, 3 missing tool."
+    scripts/check/run.sh --list
+    exit 0
+  fi
   usage 0
 }
 

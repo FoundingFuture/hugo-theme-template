@@ -7,4 +7,8 @@ cd "$(dirname "$0")/../.."
 # that parses TOML. scripts/python.sh answers both questions.
 PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
 
-"$PY_BIN" scripts/check/external.py "${1:-conformance/public/ours}"
+target="${1:-conformance/public/ours}"
+mkdir -p conformance/public
+# Kept for the report, which had nothing to read here before.
+"$PY_BIN" scripts/check/external.py "$target" | tee conformance/public/external.txt
+exit "${PIPESTATUS[0]}"

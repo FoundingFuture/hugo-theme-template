@@ -24,3 +24,13 @@ The body of the details element.
 ## Quick reference
 
 {{< qr text="https://example.org/" />}}
+
+## Embeds
+
+Hugo also ships `youtube`, `vimeo` and `x`. None appears here. Each one
+renders an iframe or a script from another host, and the external gate
+forbids a third-party request.
+
+A theme that wants an embed overrides the shortcode and renders a
+placeholder that links out. Then the page loads nothing from elsewhere,
+and the reader chooses whether to.

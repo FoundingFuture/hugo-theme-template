@@ -10,10 +10,22 @@ cd "$(dirname "$0")/../.."
 WANT_GATE="${1:-}"
 WANT_NAME="${2:-}"
 
+
 GATE_static="portable shellcheck templates contract reserved i18n css js comments metadata features"
 GATE_build="build versions scale"
 GATE_output="conform validity head a11y perf content external nojs feeds visual"
 GATE_release="changelog version listing module demo"
+
+if [ "$WANT_GATE" = "--list" ]; then
+  for gate in static build output release; do
+    eval "names=\$GATE_$gate"
+    printf '%s\n' "$gate"
+    for name in $names; do
+      printf '  %-12s %s\n' "$name" "scripts/check/$name.sh"
+    done
+  done
+  exit 0
+fi
 
 CI="${CI:-}"
 pass=0; fail=0; skip=0
@@ -72,11 +84,21 @@ for gate in $gates; do
   run_gate "$gate" || { status=1; break; }
 done
 
-printf '\n%s\n' "$pass passed, $fail failed, $skip skipped"
+tally="$pass passed, $fail failed, $skip skipped"
+printf '\n%s\n' "$tally"
+# The report reads this. It was reading a file nothing wrote, so the
+# gate section of every report was empty.
+mkdir -p conformance/public
+printf '%s\n' "$tally" > conformance/public/tally.txt
 # A missing tool is a warning on a workstation. In CI it is a failure,
 # because that image carries every tool the pipeline names.
 if [ "$skip" -gt 0 ] && [ -n "$CI" ]; then
   printf '%s\n' "a skipped check is a failure under CI" >&2
   status=1
+fi
+# A run that passed nothing and only skipped reports the missing tool.
+# Otherwise it would report a pass that nobody earned.
+if [ "$status" -eq 0 ] && [ "$pass" -eq 0 ] && [ "$skip" -gt 0 ]; then
+  exit 3
 fi
 exit $status
