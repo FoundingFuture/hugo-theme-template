@@ -20,14 +20,29 @@ report() { printf '%s\n' "$1"; status=1; }
 zip="$(find dist -maxdepth 1 -name "$slug-*.zip" -type f 2>/dev/null | head -1)"
 [ -n "$zip" ] || { echo "dist:1: no zip was written."; exit 1; }
 
+# The listing, read once.
+#
+# The rule: no grep -q on the right of a pipe under pipefail. It bites
+# when the left side writes more than one line. The writer takes
+# SIGPIPE once grep leaves on its first match, and the pipeline hands
+# back 141 rather than the match.
+#
+# This asked whether theme.toml was in the zip and was told 141. It
+# reported the file missing while it sat right there. Whether that
+# happens depends on how the writer buffers, so it passed on one
+# machine and failed on the next.
+listing="$(unzip -Z1 "$zip")"
+
 # One directory at the top, named for the theme. A zip that unpacks
 # loose files scatters them across the site's themes directory.
-tops="$(unzip -Z1 "$zip" | cut -d/ -f1 | sort -u)"
+tops="$(printf '%s\n' "$listing" | cut -d/ -f1 | sort -u)"
 [ "$tops" = "$slug" ] || report "$zip:1: unzips to '$tops', not one directory named '$slug'."
 
 for required in theme.toml LICENSE layouts/baseof.html; do
-  unzip -Z1 "$zip" | grep -qx "$slug/$required" || \
-    report "$zip:1: $required is missing. A theme carries it."
+  case $'\n'"$listing"$'\n' in
+    *$'\n'"$slug/$required"$'\n'*) ;;
+    *) report "$zip:1: $required is missing. A theme carries it." ;;
+  esac
 done
 
 # What must never reach a downloader. A repository holds all of this at
@@ -37,7 +52,7 @@ while IFS= read -r entry; do
     */.git/*|*/.git|*/tmp/*|*/__pycache__/*|*/node_modules/*|*/public/*|*/resources/_gen/*|*/.lighthouseci/*)
       report "$zip:1: carries $entry, which belongs to the repository." ;;
   esac
-done < <(unzip -Z1 "$zip")
+done <<< "$listing"
 
 # Nothing in a theme needs five megabytes. A poster or a font that big
 # is a mistake somebody made once and nobody saw.
@@ -45,5 +60,5 @@ while read -r size name; do
   [ "$size" -gt 5242880 ] && report "$zip:1: $name is $((size / 1048576)) MB. Nothing in a theme is."
 done < <(unzip -Z -1 -l "$zip" 2>/dev/null | awk 'NF >= 2 && $1 ~ /^[0-9]+$/ {print $1, $NF}')
 
-printf '%s\n' "package: $(unzip -Z1 "$zip" | wc -l | tr -d ' ') paths, $(du -h "$zip" | cut -f1) zipped"
+printf '%s\n' "package: $(printf '%s\n' "$listing" | wc -l | tr -d ' ') paths, $(du -h "$zip" | cut -f1) zipped"
 exit $status
