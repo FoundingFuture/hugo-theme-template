@@ -111,8 +111,11 @@ def main():
         stripped = blank(BLOCK, text)
         stripped = blank(COMMENT, stripped)
         stripped = blank(ACTION, stripped)
+        # A tag spans lines as readily as an action does. Stripping one
+        # line at a time leaves its attributes looking like prose.
+        stripped = blank(TAG, stripped)
         for number, line in enumerate(stripped.splitlines(), start=1):
-            prose = TAG.sub(" ", line).strip()
+            prose = line.strip()
             if not prose or prose in allow:
                 continue
             if LETTERS.search(prose):

@@ -35,6 +35,15 @@ for manifest in templates/feature/manifests/*.toml; do
     && cp "templates/feature/css/$name.css" "assets/css/features/$name.css"
 done
 
+# A feature that brings a script brings it here, so the asset the
+# partial reaches for actually exists.
+if [ -d templates/feature/js ]; then
+  mkdir -p assets/js
+  for script in templates/feature/js/*.js; do
+    [ -e "$script" ] && cp "$script" "assets/js/$(basename "$script")"
+  done
+fi
+
 # The words those features render.
 if [ -f templates/feature/i18n.toml ] && ! grep -q '^\[readingTime\]' i18n/en.toml 2>/dev/null; then
   cat templates/feature/i18n.toml >> i18n/en.toml
