@@ -13,8 +13,8 @@ On the scale fixture that is two thousand wasted calls.
 import re
 import sys
 
-# The header names the columns, and the widths vary by run, so the
-# columns are found by name rather than by position.
+# The header names the columns, and the widths vary by run. Columns are
+# found by name rather than by position.
 NUMBER = re.compile(r"^\s*([\d.]+)\s*(m?s)?$")
 
 
