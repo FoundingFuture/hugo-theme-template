@@ -2,6 +2,7 @@
 # A custom front matter key at the top level collides with Hugo's own
 # namespace. Hugo reserves the top level, so a custom key belongs under
 # params, where it cannot clash with a future release.
+# reads: conformance/content
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

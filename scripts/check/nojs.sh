@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Every page resolves without JavaScript. A menu that needs a script
 # is a menu a crawler cannot follow and a reader may never see.
+# reads: conformance/public/ours
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

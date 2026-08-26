@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The tag moves forward, and the theme does not claim a Hugo newer than
 # the one it was built against.
+# reads: theme.toml .hugo-version
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

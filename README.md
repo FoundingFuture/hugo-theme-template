@@ -55,6 +55,29 @@ Hugo doing the building.
 
 ## The gates
 
+### What the scale gate is for
+
+A template running a site-wide query in a per-page loop is fast on
+twenty pages and slow on two thousand. The scale fixture builds two
+thousand posts, so the cost has somewhere to show.
+
+It found one on its first honest run, in this template's own pager
+feature. The partial filtered `site.RegularPages` on every page render.
+Hugo keeps the neighbours of a page in its section, so `PrevInSection`
+answers without a search.
+
+| | before | after |
+|---|---|---|
+| template time | 75.7 s | 11.3 s |
+| scale build | 8 s | 2 s |
+
+The gate weighs cost against cache potential. It does not fail on
+potential alone.
+
+A partial reporting a reading time returns the same words whenever two
+pages read alike. Caching that by page would be a correctness bug
+wearing the clothes of an optimisation.
+
 | Gate | What it reads |
 |---|---|
 | static | the sources, with no build |
@@ -91,12 +114,14 @@ feature off, and the theme with them at their defaults.
 
 With the features off the theme has to match the scaffold exactly. With
 them on, the only differences allowed are the ones the manifests
-declared. A manifest names the container its links and headings sit in,
+declared.
+
+A manifest names the container its links and headings sit in. It names
 the classed elements it adds, and the elements it adds more of. A
-feature that changes anything else fails the build.
+feature changing anything else fails the build.
 
 The h1 is nobody's to add. The reference and the theme are compared on
-the h1 of every page, by itself, so that claim cannot go quiet.
+the h1 of every page, by itself, so the claim cannot go quiet.
 
 Nothing is kept in an ignore list. That is the point. An ignore list
 goes stale, and a declaration cannot.

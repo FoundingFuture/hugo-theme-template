@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # The markup is valid, and every link inside the site resolves.
+# reads: conformance/public/ours
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

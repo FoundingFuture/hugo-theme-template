@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # eslint over the theme's scripts, when it has any.
+# reads: assets/js
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

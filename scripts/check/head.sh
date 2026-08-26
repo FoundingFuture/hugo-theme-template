@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # What every page owes a reader and a crawler.
+# reads: conformance/public/ours
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

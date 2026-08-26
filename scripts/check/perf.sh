@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Lighthouse over four representative pages. Chrome is needed, so this
 # gate runs in CI and nowhere else.
+# reads: conformance/public/ours lighthouserc.json
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

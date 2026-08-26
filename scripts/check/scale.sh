@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Build time and cacheable partials, measured on a fixture large enough
 # for a per-page site query to show up. It shows up nowhere else.
+# reads: conformance scripts/scale-config.sh
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

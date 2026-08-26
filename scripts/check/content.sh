@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The content checker over the fixture, and the docs checker over the
 # markdown the repository itself carries.
+# reads: conformance/content/kitchen-sink README.md CHANGELOG.md docs contract.toml
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

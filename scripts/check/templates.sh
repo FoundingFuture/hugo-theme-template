@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Every file under layouts/ is reachable. An unused template is either
 # dead weight or a page that never renders, and both are faults.
+# reads: layouts conformance
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

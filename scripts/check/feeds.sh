@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The feeds and the sitemap are well formed, and they agree with what
 # was published.
+# reads: conformance/public/ours
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

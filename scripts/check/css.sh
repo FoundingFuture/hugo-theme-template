@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # stylelint over the theme's stylesheets.
+# reads: assets/css
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

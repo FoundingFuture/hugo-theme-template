@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The theme builds under the pinned Hugo and under the newest one. A
 # release that only works on the author's version is not a release.
+# reads: conformance
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

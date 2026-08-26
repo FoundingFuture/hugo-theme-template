@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The docs checker over everything the theme owns. A template comment
 # follows the same rules as a code comment.
+# reads: c scripts conformance/scripts layouts assets docs README.md CHANGELOG.md
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

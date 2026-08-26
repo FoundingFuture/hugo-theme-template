@@ -7,6 +7,7 @@
 # comment of its own, because a pattern written beside its own
 # explanation would match the explanation. Each line is a grep pattern,
 # a bar, then the message to print.
+# reads: c scripts conformance/scripts .github/workflows .gitattributes
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

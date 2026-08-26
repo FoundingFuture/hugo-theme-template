@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # WCAG 2.1 AA over every built page. Contrast findings count, because a
 # theme owns its colours.
+# reads: conformance/public/ours
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

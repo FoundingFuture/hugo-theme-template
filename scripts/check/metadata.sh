@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # What themes.gohugo.io reads, and what a repository must not carry.
+# reads: theme.toml hugo.toml README.md LICENSE .hugo-version images
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

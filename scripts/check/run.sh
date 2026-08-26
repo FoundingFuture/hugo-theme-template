@@ -11,7 +11,7 @@ WANT_GATE="${1:-}"
 WANT_NAME="${2:-}"
 
 
-GATE_static="portable shellcheck templates contract reserved i18n css js comments metadata features"
+GATE_static="coverage portable shellcheck templates contract reserved i18n css js comments metadata features"
 GATE_build="build versions scale"
 GATE_output="conform validity head a11y perf content external nojs feeds visual"
 GATE_release="changelog version listing module demo"

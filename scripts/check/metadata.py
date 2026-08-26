@@ -18,6 +18,10 @@ import sys
 # Present from the first commit, because bootstrap writes them.
 STRUCTURAL = ["name", "license", "licenselink", "homepage", "min_version"]
 FORBIDDEN = ["resources/_gen", "public", ".hugo_build.lock"]
+# A theme is downloaded by everyone who installs it, and nothing it
+# carries needs a megabyte. A bootstrap workflow once committed a
+# twenty-one megabyte tarball here, and nothing noticed.
+MAX_TRACKED_BYTES = 1024 * 1024
 SCREENSHOTS = {"images/screenshot.png": (1500, 1000), "images/tn.png": (900, 600)}
 
 
@@ -125,6 +129,14 @@ def main():
         for bad in FORBIDDEN:
             if path == bad or path.startswith(bad + "/"):
                 findings.append("%s:1: tracked, and must not be." % path)
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            continue
+        if size > MAX_TRACKED_BYTES:
+            findings.append(
+                "%s:1: %.1f MB is tracked. Nothing here needs a megabyte."
+                % (path, size / 1024 / 1024))
 
     for finding in findings:
         print(finding)

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Four builds. The two the fixture compares, one minified, and one under
 # a subpath, which is where an absolute path breaks.
+# reads: conformance
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

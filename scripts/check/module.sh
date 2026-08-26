@@ -7,6 +7,7 @@
 #
 # Running the verb in the fixture, which imports nothing, reported
 # success without testing anything.
+# reads: theme.toml
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

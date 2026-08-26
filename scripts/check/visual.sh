@@ -2,6 +2,7 @@
 # Screenshots against the last tagged release. A difference is reported
 # and lands in the PR report. It does not fail the build, because a
 # deliberate design change is a difference too.
+# reads: conformance/public/ours conformance/snapshots/screens
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

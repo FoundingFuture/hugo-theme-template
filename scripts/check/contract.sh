@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The contract file is generated. A stale one means the documentation
 # and the templates disagree, and the documentation is what a user reads.
+# reads: layouts data contract.toml
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

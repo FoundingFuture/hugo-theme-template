@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # The demo is the fixture built against the theme, under /demo/.
+# reads: conformance theme.toml
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

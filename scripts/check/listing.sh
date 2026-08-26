@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # What themes.gohugo.io needs before it will list the theme. Required to
 # release, not required to develop.
+# reads: theme.toml README.md images
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

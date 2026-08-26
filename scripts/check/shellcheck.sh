@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck over every script the template owns.
+# reads: c scripts conformance/scripts
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 

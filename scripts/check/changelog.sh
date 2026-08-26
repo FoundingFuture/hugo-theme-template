@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # The tag has a changelog section with something in it.
+# reads: CHANGELOG.md
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
