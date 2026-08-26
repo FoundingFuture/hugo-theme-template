@@ -27,5 +27,11 @@ for manifest in data/features/*.toml; do
   [ -e "$manifest" ] || continue
   name="$(basename "$manifest" .toml)"
   [ -e "$dest/$name.md" ] && continue
-  sed -e "s|{{NAME}}|$name|g" templates/feature/page.md.tmpl > "$dest/$name.md"
+  # A feature may ship a fixture page of its own. The generated one
+  # cannot say what that feature has to render.
+  if [ -f "templates/feature/pages/$name.md" ]; then
+    cp "templates/feature/pages/$name.md" "$dest/$name.md"
+  else
+    sed -e "s|{{NAME}}|$name|g" templates/feature/page.md.tmpl > "$dest/$name.md"
+  fi
 done

@@ -1,11 +1,11 @@
 // Filter the list the page already carries.
 //
-// The markup holds every page, so the page works with this script
-// blocked. What the script adds is filtering as the reader types, and a
-// count of what matched.
+// The markup holds every page, so the page works with no script at all.
+// What is added here is filtering as the reader types, and a count of
+// what matched.
 //
-// Nothing is fetched. The index is read from the page itself, which
-// means one request for the page and none after it.
+// Nothing is fetched. The index is read from the page itself, so
+// opening the page costs one request and searching costs none.
 (function () {
   var form = document.querySelector('.search-form');
   var list = document.querySelector('.search-results');

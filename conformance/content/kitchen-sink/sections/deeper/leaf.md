@@ -9,4 +9,5 @@ from here reaches a different place than one resolved from the root.
 
 ## Position
 
-The page has three ancestor sections. Its permalink carries all three.
+The page has three ancestor sections, and its permalink names all
+three of them.

@@ -13,7 +13,7 @@ WANT_NAME="${2:-}"
 
 GATE_static="coverage portable shellcheck templates contract reserved i18n css js comments metadata features"
 GATE_build="build versions scale"
-GATE_output="conform validity head a11y perf content external nojs feeds search visual"
+GATE_output="conform validity head a11y perf content external nojs feeds search expect visual"
 GATE_release="changelog version listing module demo"
 
 if [ "$WANT_GATE" = "--list" ]; then

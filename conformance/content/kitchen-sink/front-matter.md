@@ -23,5 +23,5 @@ the old one. The menu entry adds a row to the main menu.
 
 ## Custom values
 
-A custom key sits under `params`, where Hugo reserves nothing. A key at
+A custom key belongs under `params`, where Hugo reserves nothing. A key at
 the top level would collide with a future Hugo release.

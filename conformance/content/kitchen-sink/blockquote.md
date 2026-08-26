@@ -4,8 +4,8 @@ date = 2026-01-18T08:00:00Z
 description = 'A page holding a plain blockquote and a nested one, so that a blockquote render hook can be observed at both depths.'
 +++
 
-This page exercises blockquotes. One sits at the top level and one sits
-inside another.
+This page exercises blockquotes. One is at the top level and one is
+nested inside another.
 
 ## Plain
 

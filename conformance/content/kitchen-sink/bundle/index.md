@@ -4,8 +4,8 @@ date = 2026-01-06T08:00:00Z
 description = 'A leaf bundle holding two page resources, exercising image resources, alt text and a caption through the figure shortcode.'
 +++
 
-This page exercises a leaf bundle. Two images sit beside the page file
-and are page resources rather than static files.
+This page exercises a leaf bundle. Two images live beside the page
+file, and both are page resources instead of static files.
 
 ## Images
 

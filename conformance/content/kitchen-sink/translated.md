@@ -9,5 +9,5 @@ language, and a theme links the two.
 
 ## Counterpart
 
-The Dutch counterpart sits beside this file. A language switcher offers
-it from here.
+The Dutch counterpart lives beside this file, and a language switcher
+offers it from here.

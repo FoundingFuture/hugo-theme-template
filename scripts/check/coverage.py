@@ -25,7 +25,7 @@ READS = re.compile(r"^#\s*reads:\s*(.+)$", re.MULTILINE)
 EXEMPT = {
     ".git", ".github", ".tools", "public", "resources", "docs",
     "conformance", "templates", "static", "archetypes", "images",
-    "features", "content",
+    "content",
 }
 # A file type no check is expected to read.
 CHECKABLE = {".sh", ".py", ".js", ".css", ".html", ".toml", ".md", ".yml"}

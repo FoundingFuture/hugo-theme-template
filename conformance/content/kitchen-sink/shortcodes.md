@@ -27,18 +27,23 @@ The body of the details element.
 
 ## Embeds
 
-Hugo ships `youtube`, `vimeo` and `x`. Each renders an iframe or a
-script from another host, which the external gate forbids.
+Hugo ships `youtube` and `vimeo`, and each renders an iframe from
+another host, which the external gate forbids.
 
-The `privacy-embeds` component overrides all three with a poster and a
-link. The page loads nothing from elsewhere, and the reader chooses
-whether to leave.
+The `privacy-embeds` component overrides both with a poster and a link.
+The page loads nothing from elsewhere, and the reader chooses whether to
+leave.
 
 {{< youtube id="dQw4w9WgXcQ" >}}
 
 {{< vimeo id="55073825" >}}
 
-{{< x user="hugo" id="1234567890" >}}
+Hugo also ships `x`. The component leaves it alone, and the fixture
+never calls it.
+
+Hugo's implementation fetches from `publish.x.com` while the site is
+built. The build then depends on a third party being reachable and
+willing, and a reference build cannot rest on that.
 
 A site that does not mount the component gets Hugo's own renderings
 back. The shortcode names in the content stay portable either way.

@@ -1,3 +1,7 @@
-{{- /* Hugo computes .ReadingTime from .WordCount at 200 words a minute.
-       Round up, so a 30-second piece reads 1 min, never 0. */ -}}
-<p class="reading-time">{{ i18n "readingTime" (dict "Count" (math.Ceil .ReadingTime)) }}</p>
+{{- /* .ReadingTime is already a whole number of minutes, rounded up, so
+       a 30-second piece reads 1 min and never 0.
+
+       Passing it through math.Ceil returned a float, and Hugo's plural
+       selection reads 1.0 as other, so a one-minute page said
+       "1 minutes read". */ -}}
+<p class="reading-time">{{ i18n "readingTime" (dict "Count" .ReadingTime) }}</p>
