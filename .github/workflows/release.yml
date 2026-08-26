@@ -69,13 +69,7 @@ jobs:
         run: |
           set -euo pipefail
           name="${GITHUB_REPOSITORY##*/}"
-          mkdir -p ".dist/$name"
-          for entry in *; do
-            case "$entry" in
-              tools|.dist|c) continue ;;
-            esac
-            cp -R "$entry" ".dist/$name/"
-          done
+          tools/scripts/package.sh .dist "$name"
           ( cd .dist && zip -qr "../$name-${GITHUB_REF_NAME}.zip" "$name" )
 
       # The changelog section is parsed once, by release.sh, and put in

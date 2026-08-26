@@ -13,6 +13,8 @@ tools/conformance/config/site/
 tools/conformance/config/off/
 *.tar.gz
 tools/.contract-fresh.*
+tools/.package.*
+.dist/
 tools/conformance/config/scale/
 
 # What a full run leaves behind. htmltest caches its results under tmp/,

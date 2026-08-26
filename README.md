@@ -144,7 +144,7 @@ Bootstrap replaces both, so no generated project ever sees them.
 | Gate | What it reads |
 |---|---|
 | static | the sources, with no build |
-| build | four builds, and the scale fixture |
+| build | four builds, the scale fixture, and the zip a downloader gets |
 | output | the built pages |
 | release | the tag, the changelog and the module path |
 

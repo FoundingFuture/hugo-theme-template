@@ -10,6 +10,33 @@ for one. The reader chooses whether to leave.
 `params.privacyEmbeds.fetchPosters` is set, and neither fetches anything
 at view time.
 
+## Using it
+
+The site mounts the component. Nothing else is needed, because the
+component works through shortcode names the content already uses:
+
+```toml
+[module]
+  [[module.mounts]]
+    source = "themes/THEME/features/privacy-embeds/layouts"
+    target = "layouts"
+  [[module.mounts]]
+    source = "themes/THEME/features/privacy-embeds/assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "themes/THEME/features/privacy-embeds/i18n"
+    target = "i18n"
+```
+
+A mount source is read from the root of the site, not from the theme.
+`THEME` is the directory the theme was installed into. A site developing
+the theme at its own root drops the prefix.
+
+## Removing it
+
+Drop the three mounts. Hugo's own `youtube` and `vimeo` come back, so
+the shortcode names in the content stay portable either way.
+
 ## Unsupported
 
 `x` is not overridden, and the fixture does not call it.

@@ -24,15 +24,20 @@ which is what publishes the index:
 
 [module]
   [[module.mounts]]
-    source = "features/search/layouts"
+    source = "themes/THEME/features/search/layouts"
     target = "layouts"
   [[module.mounts]]
-    source = "features/search/assets"
+    source = "themes/THEME/features/search/assets"
     target = "assets"
   [[module.mounts]]
-    source = "features/search/i18n"
+    source = "themes/THEME/features/search/i18n"
     target = "i18n"
 ```
+
+A mount source is read from the root of the site, not from the theme.
+`THEME` is the directory the theme was installed into. A site developing
+the theme at its own root drops the prefix and mounts
+`features/search/layouts`.
 
 A page uses it by setting `layout = 'search'` in its front matter.
 

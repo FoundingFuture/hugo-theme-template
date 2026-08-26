@@ -163,6 +163,25 @@ To use the theme in a site, set `theme = "{{SLUG}}"` in the site's
 configuration and clone this repository into `themes/{{SLUG}}`. A module
 import of `github.com/{{OWNER}}/{{REPO}}` does the same without the clone.
 
+## What a downloader gets
+
+The release carries a zip of the theme and nothing that checks it.
+Everything at the root except `c` and `tools/`, and no dotfiles, so no
+`.github` and no `.gitignore`. That leaves `layouts/`, `assets/`,
+`i18n/`, `data/`, `static/`, `archetypes/` and `features/`. Then the two
+config files, the licence, the changelog, the README and the generated
+contract.
+
+`build/package` assembles that zip on every run, installs it under
+`themes/` in a site holding nothing else, and builds. It then builds
+once more per component. Each is configured out of the toml block in
+that component's own README. What the component promises then has to
+appear.
+
+The fixture cannot see any of this. It mounts the repository itself. A
+path that only resolves here looks right to it, and fails for everybody
+else.
+
 ## Releasing
 
 1. Write the version's section in `CHANGELOG.md`: `## vX.Y.Z, YYYY-MM-DD`

@@ -31,11 +31,19 @@ Render every enabled feature registered for one slot, in weight order.
         {{- $enabled = $enabled | append (dict
               "weight" (default 50 $manifest.weight)
               "name" $name
+              "level" (default "toggle" $manifest.level)
               "partial" $manifest.partial) }}
       {{- end }}
     {{- end }}
   {{- end }}
+  {{- /* A component lives in a directory the site mounts, and a site
+         that has not mounted it does not have its partial. Not mounting
+         it is how a component is turned off, so its absence is an
+         answer rather than a fault. A toggle is part of the theme and
+         is always there, so a missing one still fails the build. */ -}}
   {{- range sort $enabled "weight" }}
-    {{- partial .partial $page }}
+    {{- if or (ne .level "component") (templates.Exists (printf "_partials/%s" .partial)) }}
+      {{- partial .partial $page }}
+    {{- end }}
   {{- end }}
 {{- end }}

@@ -15,5 +15,8 @@ passes on it with no finding.
 - `./c site=` builds any real Hugo site against the theme.
 - Two components: `privacy-embeds` and `search`. A third, tag
   narrowing, waits for the site that has the page it narrows.
+- The release zip is assembled by one script, installed into a bare
+  site and built on every run. A component is installed there out of
+  the instructions in its own README.
 - A tracked file over a megabyte fails, and a directory no check reads
   fails.
