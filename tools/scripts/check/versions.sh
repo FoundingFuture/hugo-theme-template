@@ -10,6 +10,8 @@ if ! command -v hugo-latest >/dev/null 2>&1; then
   exit 3
 fi
 status=0
+tools/scripts/configs.sh >/dev/null || { echo "versions: the configs could not be written."; exit 1; }
+
 for binary in hugo hugo-latest; do
   if ! ( cd tools/conformance && "$binary" --config hugo.toml,config/ours/hugo.toml \
       -d "public/version-$binary" --panicOnWarning --logLevel warn --gc ) >/dev/null 2>&1; then

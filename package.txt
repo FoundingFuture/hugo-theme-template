@@ -1,0 +1,37 @@
+# Everything at the root of this repository, in one of two lists.
+#
+#   ship  goes into dist/<slug>/, the directory a downloader unzips
+#         into themes/<slug>/
+#   keep  stays here
+#
+# A path in neither list fails static/coverage, the same rule that
+# makes every check name what it reads. An include list fails closed:
+# something new is not shipped until somebody says it is. The list this
+# replaced named what to leave out, and it went stale the day a
+# directory moved.
+
+ship CHANGELOG.md
+ship LICENSE
+ship README.md
+ship archetypes
+ship assets
+ship data
+ship features
+ship hugo.toml
+ship i18n
+ship images
+ship layouts
+ship static
+ship theme.toml
+
+keep .gitattributes
+keep .github
+keep .gitignore
+keep .hugo-version
+keep BOOTSTRAP
+keep c
+keep contract.toml
+keep dist
+keep docs
+keep package.txt
+keep tools

@@ -85,7 +85,9 @@ root is its own theme and one command, so the theme reads as a theme.
 ## What conformance means
 
 A fixture site builds twice. Once against the scaffold of the installed
-Hugo, once against the theme under development. Two things are compared.
+Hugo, once against the theme under development. Both are read the same
+way, as a theme directory. The scaffold as `hugo new theme` wrote it,
+this theme as `./c package` wrote it. Two things are compared.
 
 The file list, so the theme publishes the same pages, feeds, aliases
 and sitemap entries. Then the skeleton of every page. That is the
@@ -144,7 +146,7 @@ Bootstrap replaces both, so no generated project ever sees them.
 | Gate | What it reads |
 |---|---|
 | static | the sources, with no build |
-| build | four builds, the scale fixture, and a site built on the shipped zip |
+| build | the artefact, a site that installed it, four builds and the scale fixture |
 | output | the built pages |
 | release | the tag, the changelog and the module path |
 

@@ -17,6 +17,10 @@ import subprocess
 import sys
 
 CHECKS = "tools/scripts/check"
+# What ships and what stays. Every path at the root is in one list or
+# the other. A directory added tomorrow is then a decision somebody
+# made, rather than one an exclusion list made for them.
+PACKAGE = "package.txt"
 # The runner dispatches and reads nothing of its own.
 NOT_A_CHECK = {"run.sh"}
 READS = re.compile(r"^#\s*reads:\s*(.+)$", re.MULTILINE)
@@ -57,6 +61,26 @@ def declared():
     return paths, missing
 
 
+def listed():
+    """The root paths package.txt names, and any finding about the list."""
+    if not os.path.exists(PACKAGE):
+        return None, ["%s:1: missing. Name what ships and what stays." % PACKAGE]
+    names = set()
+    findings = []
+    with open(PACKAGE, encoding="utf-8") as handle:
+        for number, line in enumerate(handle, 1):
+            line = line.split("#", 1)[0].strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) != 2 or parts[0] not in ("ship", "keep"):
+                findings.append(
+                    "%s:%d: expected 'ship <path>' or 'keep <path>'." % (PACKAGE, number))
+                continue
+            names.add(parts[1])
+    return names, findings
+
+
 def covered(path, paths):
     parts = path.split("/")
     for depth in range(len(parts), 0, -1):
@@ -88,10 +112,19 @@ def main():
                 "%s:1: no check names this. Add it to a check's reads: line."
                 % top)
 
+    names, package_findings = listed()
+    findings.extend(package_findings)
+    if names is not None:
+        roots = {path.split("/")[0] for path in tracked()}
+        for root in sorted(roots - names):
+            findings.append(
+                "%s:1: %s is in neither list. Ship it or keep it." % (PACKAGE, root))
+
     for finding in findings:
         print(finding)
     if not findings:
-        print("coverage: %d paths named across the checks" % len(paths))
+        print("coverage: %d paths named across the checks, %d at the root"
+              % (len(paths), len(names or ())))
     return 1 if findings else 0
 
 

@@ -65,12 +65,10 @@ jobs:
           ./c check
           ./c check gate=release
 
-      - name: Build the zip a downloader gets
-        run: |
-          set -euo pipefail
-          name="${GITHUB_REPOSITORY##*/}"
-          tools/scripts/package.sh .dist "$name"
-          ( cd .dist && zip -qr "../$name-${GITHUB_REF_NAME}.zip" "$name" )
+      # Written by the same script the gates ran on. Nothing is
+      # assembled here, so nothing here can differ from what was tested.
+      - name: The artefact
+        run: ./c package
 
       # The changelog section is parsed once, by release.sh, and put in
       # the annotated tag. Reading it back from the tag is what keeps the
@@ -86,7 +84,7 @@ jobs:
         with:
           body_path: .release-body.md
           generate_release_notes: false
-          files: '*.zip'
+          files: 'dist/*.zip'
 
       - uses: actions/upload-pages-artifact@v3
         with:

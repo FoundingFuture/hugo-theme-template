@@ -21,6 +21,8 @@ run() {
   fi
   rm -f tools/conformance/.build-err
 }
+tools/scripts/configs.sh >/dev/null || { echo "build: the configs could not be written."; exit 1; }
+
 run "reference" hugo.toml,config/hugo/hugo.toml hugo
 run "theme" hugo.toml,config/ours/hugo.toml ours
 run "minified" hugo.toml,config/ours/hugo.toml minified --minify

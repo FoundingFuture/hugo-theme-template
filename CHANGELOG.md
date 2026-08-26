@@ -15,8 +15,13 @@ passes on it with no finding.
 - `./c site=` builds any real Hugo site against the theme.
 - Two components: `privacy-embeds` and `search`. A third, tag
   narrowing, waits for the site that has the page it narrows.
-- The release zip is assembled by one script, installed into a bare
-  site and built on every run. A component is installed there out of
-  the instructions in its own README.
+- The artefact is the deliverable. `./c package` writes `dist/<slug>/`
+  from the include list in `package.txt`, and everything consumes it:
+  the fixture, the demo, the release and the install gate.
+- `build/install` unzips it into a bare site and builds. A component
+  is installed there out of the toml block in its own README.
+- The theme carries no baseURL, no title and no menu. Hugo merges a
+  theme's menus into every site that adopts it, and navigation is the
+  site's to decide.
 - A tracked file over a megabyte fails, and a directory no check reads
   fails.

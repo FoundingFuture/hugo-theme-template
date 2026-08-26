@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Check the theme's own metadata.
 
+The files it reads come out of the artefact, dist/<slug>/. That is what
+themes.gohugo.io clones and what a downloader unzips. A file present
+here and missing there is a file nobody receives. What the repository
+must not carry is still asked of the repository, since a commit is what
+carries it.
+
 Two modes. The default is structural: the files exist, the versions
 agree, and no build output is tracked. That holds from the first commit.
 
@@ -23,6 +29,27 @@ FORBIDDEN = ["resources/_gen", "public", ".hugo_build.lock"]
 # twenty-one megabyte tarball here, and nothing noticed.
 MAX_TRACKED_BYTES = 1024 * 1024
 SCREENSHOTS = {"images/screenshot.png": (1500, 1000), "images/tn.png": (900, 600)}
+
+
+def artefact():
+    """Where the theme is, as somebody who installed it would find it."""
+    root = os.environ.get("ARTEFACT")
+    if root:
+        return root
+    try:
+        slug = subprocess.run(["tools/scripts/slug.sh"], capture_output=True,
+                              text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "."
+    path = os.path.join("dist", slug)
+    return path if os.path.isdir(path) else "."
+
+
+SHIPPED = artefact()
+
+
+def shipped(name):
+    return os.path.join(SHIPPED, name)
 
 
 def scalar(text, key):
@@ -63,8 +90,8 @@ def tracked():
 def listing_checks():
     """What themes.gohugo.io needs before it can list the theme."""
     findings = []
-    if os.path.exists("theme.toml"):
-        with open("theme.toml", encoding="utf-8") as handle:
+    if os.path.exists(shipped("theme.toml")):
+        with open(shipped("theme.toml"), encoding="utf-8") as handle:
             text = handle.read()
         for key in ("description", "tags", "features", "demosite"):
             value = scalar(text, key)
@@ -76,18 +103,18 @@ def listing_checks():
         findings.append("theme.toml:1: missing.")
 
     for path, want in SCREENSHOTS.items():
-        if not os.path.exists(path):
+        if not os.path.exists(shipped(path)):
             findings.append("%s:1: missing. themes.gohugo.io shows it." % path)
             continue
-        size = png_size(path)
+        size = png_size(shipped(path))
         if size is None:
             findings.append("%s:1: not a PNG." % path)
         elif size != want:
             findings.append("%s:1: is %dx%d, must be %dx%d."
                             % (path, size[0], size[1], want[0], want[1]))
 
-    if os.path.exists("README.md"):
-        with open("README.md", encoding="utf-8") as handle:
+    if os.path.exists(shipped("README.md")):
+        with open(shipped("README.md"), encoding="utf-8") as handle:
             readme = handle.read()
         for target in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", readme):
             if not target.startswith(("http://", "https://")):
@@ -106,10 +133,10 @@ def main():
 
     findings = []
 
-    if not os.path.exists("theme.toml"):
+    if not os.path.exists(shipped("theme.toml")):
         findings.append("theme.toml:1: missing. themes.gohugo.io reads it.")
     else:
-        with open("theme.toml", encoding="utf-8") as handle:
+        with open(shipped("theme.toml"), encoding="utf-8") as handle:
             text = handle.read()
         for key in STRUCTURAL:
             if scalar(text, key) is None:
@@ -120,8 +147,8 @@ def main():
         with open(".hugo-version", encoding="utf-8") as handle:
             pinned = handle.read().strip()
 
-    if os.path.exists("hugo.toml"):
-        with open("hugo.toml", encoding="utf-8") as handle:
+    if os.path.exists(shipped("hugo.toml")):
+        with open(shipped("hugo.toml"), encoding="utf-8") as handle:
             config = handle.read()
         minimum = scalar(config, "min")
         if minimum is None:
@@ -133,7 +160,7 @@ def main():
                 findings.append(
                     "hugo.toml:1: min %s is newer than .hugo-version %s." % (got, pinned))
 
-    if not os.path.exists("LICENSE"):
+    if not os.path.exists(shipped("LICENSE")):
         findings.append("LICENSE:1: missing.")
 
     for path in tracked():

@@ -1,28 +1,50 @@
 #!/usr/bin/env bash
-# Assemble the theme a downloader gets. Everything at the root that is
-# the theme, and nothing that checks it.
+# Write the artefact: dist/<slug>/, and dist/<slug>-<version>.zip.
 #
-# The list lives here and nowhere else. The release workflow builds the
-# zip from it, and a gate builds a site against it. A name that moves is
-# then caught on the run that moves it, rather than on release day.
-# reads: theme.toml
+# That directory is what a downloader unzips into themes/<slug>/. It
+# is what everything else consumes too. The fixture builds on it, the
+# demo builds on it, the release attaches it, and the install gate
+# unzips it. Nothing reads this repository as a theme.
+#
+# What goes in is named in package.txt, one path per line. Data, not
+# code, so shipping a new directory is an edit to a list.
+# reads: package.txt theme.toml
 set -euo pipefail
 cd "$(dirname "$0")/../.." || exit 1
 
-dest="${1:?usage: package.sh DEST [NAME]}"
-name="${2:-$(basename "$PWD")}"
+[ -f package.txt ] || { printf '%s\n' "package.txt is missing." >&2; exit 1; }
 
-rm -rf "${dest:?}/$name"
-mkdir -p "$dest/$name"
+slug="${1:-$(tools/scripts/slug.sh)}"
+version="${RELEASE_TAG:-$(git describe --tags --abbrev=0 2>/dev/null || true)}"
+[ -n "$version" ] || version="v0.0.0-dev"
 
-# The glob passes over dotfiles, which is the answer we want. A theme
-# carries no .github, no .gitignore and no .hugo-version. Those belong
-# to the project that develops it.
-for entry in *; do
-  case "$entry" in
-    tools|c) continue ;;
-  esac
-  cp -R "$entry" "$dest/$name/"
-done
+dest="dist/$slug"
+rm -rf "${dest:?}"
+mkdir -p "$dest"
 
-printf '%s\n' "$dest/$name"
+shipped=0
+while read -r verb path; do
+  case "$verb" in ""|\#*) continue ;; esac  # docs-style:ignore
+  [ "$verb" = ship ] || continue
+  # A theme need not carry every shipped path. The images arrive when
+  # somebody takes the screenshots, and the listing gate is what asks
+  # for them.
+  [ -e "$path" ] || continue
+  cp -R "$path" "$dest/"
+  shipped=$((shipped + 1))
+done < <(sed 's/#.*//' package.txt)
+
+[ "$shipped" -gt 0 ] || { printf '%s\n' "package.txt ships nothing." >&2; exit 1; }
+
+# Every zip for this theme goes, including the ones an earlier version
+# left. The release attaches dist/*.zip, and a stale zip would ride
+# along with the one this run wrote.
+zip="dist/$slug-$version.zip"
+rm -f dist/"$slug"-*.zip
+if command -v zip >/dev/null 2>&1; then
+  ( cd dist && zip -qr "$(basename "$zip")" "$slug" )
+else
+  printf '%s\n' "package: zip is not installed, so only the directory was written" >&2
+fi
+
+printf '%s\n' "$dest"

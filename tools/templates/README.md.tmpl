@@ -160,34 +160,50 @@ Nothing in the site is changed. CI does the same on every push for each
 repository listed in `tools/conformance/sites.txt`.
 
 To use the theme in a site, set `theme = "{{SLUG}}"` in the site's
-configuration and clone this repository into `themes/{{SLUG}}`. A module
-import of `github.com/{{OWNER}}/{{REPO}}` does the same without the clone.
+configuration and unzip a release into `themes/{{SLUG}}`. A module
+import of `github.com/{{OWNER}}/{{REPO}}` does the same without the
+download.
 
-## What a downloader gets
+## What ships
 
-The release carries a zip of the theme and nothing that checks it.
-Everything at the root except `c` and `tools/`, and no dotfiles, so no
-`.github` and no `.gitignore`. That leaves `layouts/`, `assets/`,
-`i18n/`, `data/`, `static/`, `archetypes/` and `features/`. Then the two
-config files, the licence, the changelog, the README and the generated
-contract.
+| Path | Why |
+|---|---|
+| `layouts/`, `assets/`, `i18n/`, `data/`, `static/`, `archetypes/` | the theme |
+| `features/` | the components, each with its README |
+| `hugo.toml` | the theme's own defaults |
+| `theme.toml`, `images/` | what themes.gohugo.io reads |
+| `LICENSE`, `README.md`, `CHANGELOG.md` | what a downloader reads |
 
-Nothing in it is built. A theme is the source a site reads while that
-site is built. The site decides what gets minified, fingerprinted and
-switched on. One file in the zip is generated: `assets/css/chroma.css`,
+`./c package` writes it to `dist/{{SLUG}}/` and zips it, and `./c check`
+tests it. What goes in is named in `package.txt`, one path per line. A
+path in neither of its two lists fails `static/coverage`, the same rule
+that makes every check name what it reads.
+
+What stays behind: `tools/`, `c`, `docs/`, `contract.toml`, `.github/`
+and the version pin. Nothing under `dist/` is committed.
+
+Nothing in the zip is built. A theme is the source a site reads while
+that site is built. The site decides what gets minified, fingerprinted
+and switched on. One file in it is generated, `assets/css/chroma.css`,
 from a named Chroma style. The theme owns the code colours that way,
 rather than inheriting them as inline styles.
 
-`build/package` assembles that zip on every run and drops it under
-`themes/` in a site holding nothing else. That site is then built, which
-is the only question a theme can be asked. It is built once more per
-component. Each is configured out of the toml block in
-that component's own README. What the component promises then has to
-appear.
+## What tests it
 
-The fixture cannot see any of this. It mounts the repository itself. A
-path that only resolves here looks right to it, and fails for everybody
-else.
+`build/package` looks in the box. One directory named for the theme,
+the files a theme must carry, and nothing a downloader should ever
+receive.
+
+`build/install` is the one that matters. It unzips the artefact into a
+site made with `hugo new site`, writes a config naming the theme and
+nothing else, and builds. Then once per component, configured out of
+the fenced toml block in that component's own README. The README is
+executed rather than paraphrased, so one that drifts fails the gate.
+
+The fixture builds on the same artefact, so `theme = "{{SLUG}}"` is how
+both sides of the conformance comparison are read. `./c serve` is the
+one exception. It mounts the sources directly, because live reload
+cannot wait for a repack, and it says so when it starts.
 
 ## Releasing
 

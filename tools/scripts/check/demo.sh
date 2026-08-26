@@ -5,6 +5,8 @@ set -uo pipefail
 cd "$(dirname "$0")/../../.." || exit 1
 
 tools/scripts/reference.sh || exit 1
+tools/scripts/configs.sh >/dev/null || { echo "demo: the configs could not be written."; exit 1; }
+
 ( cd tools/conformance && hugo --config hugo.toml,config/ours/hugo.toml -d public/demo \
     --baseURL "${DEMO_URL:-https://example.org/demo/}" \
     --panicOnWarning --logLevel warn --gc ) >/dev/null 2>&1 || {

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# reads: tools/scripts/check
+# reads: tools/scripts/check package.txt
 # Every check names the paths it reads, and every path is named.
 #
 # The comment checker walked tools/scripts/ and layouts/ and not

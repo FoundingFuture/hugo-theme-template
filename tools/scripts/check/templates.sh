@@ -5,6 +5,8 @@
 set -uo pipefail
 cd "$(dirname "$0")/../../.." || exit 1
 
+tools/scripts/configs.sh >/dev/null || { echo "templates: the configs could not be written."; exit 1; }
+
 out="$(cd tools/conformance && hugo --config hugo.toml,config/ours/hugo.toml \
   -d public/unused --printUnusedTemplates --logLevel warn --gc 2>&1)" || {
     printf '%s\n' "$out" | sed -n 's/^/layouts:1: /p' | head -20

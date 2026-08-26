@@ -5,17 +5,21 @@
 # feature is a component, and the way to turn one off is not to mount
 # it. That is what makes it level two.
 #
-# So this writes the whole mount list without the components, rather
-# than adding to the theme's.
-#
-# Hugo replaces the mounts array when two configs declare one, which is
-# what lets a later file take mounts away.
+# The theme is read as a theme, the way the scaffold and a downloader
+# read it. What differs from the build with the features on is the
+# parameters, and the components nothing mounts.
 set -euo pipefail
 cd "$(dirname "$0")/../.." || exit 1
 
+slug="$(tools/scripts/slug.sh)"
+
+# A bare key after a table header belongs to that table. The two keys
+# naming the theme come first, before anything opens one.
 printf '%s\n' "# Written by conform.sh. Do not edit."
+printf 'theme = "%s"\n' "$slug"
+printf 'themesDir = "../../dist"\n'
 printf '%s\n' "[params]"
-# Outranks front matter, so a fixture page turning its own feature on
+# Outranks front matter. A fixture page turning its own feature on
 # does not keep it on here.
 printf '%s\n' "  featuresOff = true"
 printf '%s\n' "[params.features]"
@@ -24,10 +28,6 @@ for manifest in data/features/*.toml; do
   printf '  "%s" = false\n' "$(basename "$manifest" .toml)"
 done
 printf '%s\n' "[module]"
-for dir in layouts archetypes assets i18n static data; do
-  [ -d "$dir" ] || continue
-  printf '  [[module.mounts]]\n    source = "../../%s"\n    target = "%s"\n' "$dir" "$dir"
-done
 for dir in content assets i18n static; do
   [ -d "tools/conformance/$dir" ] || continue
   printf '  [[module.mounts]]\n    source = "%s"\n    target = "%s"\n' "$dir" "$dir"

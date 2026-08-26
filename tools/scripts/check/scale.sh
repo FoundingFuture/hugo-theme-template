@@ -14,6 +14,8 @@ BUDGET_SECONDS="${SCALE_BUDGET_SECONDS:-20}"
 [ -d tools/conformance/scale-content ] || "$PY_BIN" tools/conformance/scripts/fixture.py --size 2000 || {
   echo "tools/conformance/scale-content:1: could not generate the scale fixture."; exit 1; }
 
+tools/scripts/configs.sh >/dev/null || { echo "scale: the configs could not be written."; exit 1; }
+
 mkdir -p tools/conformance/config/scale
 tools/scripts/scale-config.sh > tools/conformance/config/scale/hugo.toml
 

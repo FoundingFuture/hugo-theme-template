@@ -11,10 +11,12 @@ public/
 .hugo-toml-*
 tools/conformance/config/site/
 tools/conformance/config/off/
+tools/conformance/config/ours/
+tools/conformance/config/dev/
 *.tar.gz
 tools/.contract-fresh.*
-tools/.package.*
-.dist/
+tools/.install.*
+dist/
 tools/conformance/config/scale/
 
 # What a full run leaves behind. htmltest caches its results under tmp/,

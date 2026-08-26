@@ -15,11 +15,16 @@ PUB=public
 say() { printf '%s\n' "$*"; }
 fail() { printf '%s\n' "$1" >&2; exit 1; }
 
-# 1. The reference is regenerated every run, so it never goes stale.
+# 1. The artefact, and the configs that read it. Both builds then read
+#    a theme directory: the scaffold's, and this theme's package.
+say "conform: writing the artefact and the configs"
+"$ROOT/tools/scripts/configs.sh"
+
+# 2. The reference is regenerated every run, so it never goes stale.
 say "conform: regenerating the reference"
 "$ROOT/tools/scripts/reference.sh"
 
-# 2. Both builds, with the strict flags that turn a warning into a failure.
+# 3. Both builds, with the strict flags that turn a warning into a failure.
 build() {
   local config="$1" dest="$2"
   shift 2
@@ -42,12 +47,10 @@ build hugo.toml,config/ours/hugo.toml ours --printUnusedTemplates
 # with the features on is where that check means something.
 # The directory is gitignored, because the file in it is generated. A
 # fresh clone therefore does not have it yet.
-mkdir -p config/off
-"$ROOT/tools/scripts/off-config.sh" > config/off/hugo.toml
 say "conform: building with every feature off"
 build hugo.toml,config/off/hugo.toml ours-off
 
-# 3. File list. A difference means the theme publishes a different set of
+# 4. File list. A difference means the theme publishes a different set of
 #    pages, feeds, aliases or sitemap entries than the scaffold does.
 listing() {
   find "$1" -type f \

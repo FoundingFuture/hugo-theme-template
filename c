@@ -37,7 +37,7 @@ parse() {
           *) printf '%s\n' "unknown key: $key" >&2; usage 2 ;;
         esac
         ;;
-      init|check|conform|serve|release|snapshot|fixture|docs|report|feature|clean|version|help)
+      init|check|conform|serve|release|snapshot|fixture|docs|report|feature|package|clean|version|help)
         if [ -z "$VERB" ]; then
           VERB="$item"
         else
@@ -91,6 +91,7 @@ theme_config() {
   local theme="$1"
   case "$theme" in
     ours) printf 'hugo.toml,config/ours/hugo.toml\n' ;;
+    dev)  printf 'hugo.toml,config/dev/hugo.toml\n' ;;
     hugo|reference) printf 'hugo.toml,config/hugo/hugo.toml\n' ;;
     *)
       [ -d "tools/conformance/themes/$theme" ] || {
@@ -123,7 +124,10 @@ cmd_site() {
   absolute="$(cd "$site" && pwd -P)"
   site="$("$PY_BIN" -c 'import os,sys;print(os.path.relpath(sys.argv[1], sys.argv[2]).replace(os.sep, "/"))' \
     "$absolute" "$ROOT/conformance")"
+  tools/scripts/configs.sh >/dev/null
   tools/scripts/reference.sh
+  local slug
+  slug="$(tools/scripts/slug.sh)"
   config=tools/conformance/config/site/hugo.toml
   mkdir -p "$(dirname "$config")"
 
@@ -133,17 +137,11 @@ cmd_site() {
   {
     printf '%s\n' "# Written by ./c site=. Do not edit."
     printf '%s\n' "#"
-    printf '%s\n' "# The theme key is emptied. The site names a theme of its own,"
-    printf '%s\n' "# and that directory is not here. The theme under test is"
-    printf '%s\n' "# mounted from the repository root instead."
-    printf '%s\n' "theme = []"
+    printf '%s\n' "# The site's own theme is replaced by the one under test,"
+    printf '%s\n' "# read out of dist/ the way a downloader reads it."
+    printf 'theme = "%s"\n' "$slug"
+    printf '%s\n' 'themesDir = "../../dist"'
     printf '%s\n' "[module]"
-    for dir in layouts archetypes assets i18n static data; do
-      # The test runs from the repository root. The path written is
-      # relative to tools/conformance/, which is where Hugo reads it.
-      [ -d "$dir" ] || continue
-      printf '  [[module.mounts]]\n    source = "../%s"\n    target = "%s"\n' "$dir" "$dir"
-    done
     for dir in content assets static i18n data layouts archetypes; do
       [ -d "$site/$dir" ] || continue
       printf '  [[module.mounts]]\n    source = "%s"\n    target = "%s"\n' "$site/$dir" "$dir"
@@ -163,6 +161,7 @@ cmd_site() {
 cmd_build() {
   local theme="${ARG[theme]:-all}"
   bootstrapped
+  tools/scripts/configs.sh >/dev/null
   tools/scripts/reference.sh
   case "$theme" in
     all)
@@ -175,8 +174,14 @@ cmd_build() {
 
 cmd_serve() {
   bootstrapped
-  local theme="${ARG[theme]:-ours}" config
+  local theme="${ARG[theme]:-dev}" config
+  tools/scripts/configs.sh >/dev/null
   tools/scripts/reference.sh
+  # serve reads the sources, so an edit shows up without a repack.
+  # Everything else reads the artefact. The one place the two shapes
+  # differ is a component's mount, and the install gate is what holds
+  # that honest.
+  [ "$theme" = dev ] && say "serve reads the sources. check reads the package."
   config="$(theme_config "$theme")"
   ( cd tools/conformance && hugo server --config "$config" )
 }
@@ -245,10 +250,15 @@ cmd_report() {
   "$PY_BIN" tools/conformance/scripts/report.py
 }
 
+cmd_package() {
+  bootstrapped
+  tools/scripts/package.sh
+}
+
 cmd_clean() {
   rm -rf tools/conformance/public resources/_gen tools/conformance/resources/_gen \
-         tools/.deps .hugo_build.lock tools/conformance/.hugo_build.lock public
-  say "removed build output and fetched tools"
+         tools/.deps .hugo_build.lock tools/conformance/.hugo_build.lock public dist
+  say "removed build output, the artefact and fetched tools"
 }
 
 cmd_feature() {
@@ -298,6 +308,7 @@ case "$VERB" in
   report)    cmd_report ;;
   feature)   cmd_feature ;;
   release)   cmd_release ;;
+  package)   cmd_package ;;
   clean)     cmd_clean ;;
   version)   cmd_version ;;
   help)      cmd_help ;;
@@ -305,14 +316,15 @@ case "$VERB" in
 esac
 
 # USAGE
-# ./c theme=ours                  build the fixture against the theme at the root
+# ./c theme=ours                  build the fixture against the packaged theme
 # ./c theme=hugo                  build against the scaffold of the installed Hugo
 # ./c theme=all                   both, into public/ours and public/hugo
-# ./c theme=ours serve            hugo server with live reload
+# ./c serve                       hugo server, reading the sources, live reload
 # ./c init name="My Theme"        bootstrap, one-shot. The slug is derived
 # ./c init name=x owner=y repo=z  and the URLs in theme.toml are filled in
 # ./c check                       every gate in order, stop at first failure
 # ./c check gate=static           one gate: static, build, output, release
+# ./c package                     write dist/<slug>/ and the zip a downloader gets
 # ./c check name=head             one script by name
 # ./c conform                     theme=all, then file-list and skeleton diff
 # ./c release v=1.2.0             gate release, tag, push, publish
@@ -327,7 +339,7 @@ esac
 # ./c feature new name=x          write the manifest, partial, css, i18n key and fixture page
 # ./c feature on name=x
 # ./c feature off name=x
-# ./c clean                       remove public/, resources/_gen, tools/.deps/, the lock file
+# ./c clean                       remove public/, dist/, resources/_gen, tools/.deps/
 # ./c version                     print the installed Hugo version and .hugo-version
 # ./c help
 # END

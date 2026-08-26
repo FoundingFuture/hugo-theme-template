@@ -133,6 +133,26 @@ if [ -f hugo.toml ]; then
 fi
 printf '%s\n' "$version" > .hugo-version
 
+# 6b. A theme decides none of these. The scaffold's config carries a
+#     baseURL, a title and a menu. Hugo merges a theme's menus into
+#     every site that adopts it, then drops an entry whose
+#     page is missing. A downloader's navigation would depend on the
+#     sections they happen to have. What stays is what the theme owns:
+#     the Hugo floor, the highlighting it styles, and its features.
+if [ -f hugo.toml ]; then
+  tmpfile="$(mktemp "$PWD/.hugo-toml-XXXXXX")"
+  awk '
+    /^\[\[?menus/            { skip = 1; next }
+    /^\[/ && $0 !~ /^\[\[?menus/ { skip = 0 }
+    skip                     { next }
+    /^ *baseURL *=/          { next }
+    /^ *title *=/            { next }
+    /^ *locale *=/           { next }
+    { print }
+  ' hugo.toml > "$tmpfile"
+  mv "$tmpfile" hugo.toml
+fi
+
 # 7. The scaffold ships English inside its markup. A theme that does
 #    that is broken for whoever installs it. The words gate says so, so
 #    the strings move into i18n before the first check runs.
