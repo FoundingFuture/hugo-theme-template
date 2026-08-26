@@ -1,20 +1,25 @@
 #!/usr/bin/env bash
-# The contract file is generated. A stale one means the documentation
-# and the templates disagree, and the documentation is what a user reads.
-# reads: layouts data contract.toml
+# The contract file and the front matter document are both generated. A
+# stale one means the documentation and the templates disagree, and the
+# documentation is what a user reads.
+# reads: layouts data contract.toml docs/front-matter.md
 set -uo pipefail
 cd "$(dirname "$0")/../../.." || exit 1
 
-tools/scripts/docs.sh --stdout > .contract-fresh.toml 2>/dev/null || {
-  rm -f .contract-fresh.toml
+fresh="$(mktemp -d tools/.contract-fresh.XXXXXX)" || exit 1
+trap 'rm -rf "$fresh"' EXIT
+
+tools/scripts/docs.sh --into "$fresh" 2>/dev/null || {
   echo "contract.toml:1: could not regenerate the contract."
   exit 1
 }
+
 status=0
-if ! diff -q contract.toml .contract-fresh.toml >/dev/null 2>&1; then
-  echo "contract.toml:1: stale. Run ./c docs."
-  diff -u contract.toml .contract-fresh.toml | head -30
-  status=1
-fi
-rm -f .contract-fresh.toml
+for name in contract.toml docs/front-matter.md; do
+  if ! diff -q "$name" "$fresh/$name" >/dev/null 2>&1; then
+    echo "$name:1: stale. Run ./c docs."
+    diff -u "$name" "$fresh/$name" | head -30
+    status=1
+  fi
+done
 exit $status

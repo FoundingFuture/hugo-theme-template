@@ -132,16 +132,34 @@ def front_matter_doc():
     return "".join(lines)
 
 
-def main():
-    text = render()
-    if "--stdout" in sys.argv:
-        sys.stdout.write(text)
-        return 0
-    with open("contract.toml", "w", encoding="utf-8") as handle:
-        handle.write(text)
-    os.makedirs("docs", exist_ok=True)
-    with open("docs/front-matter.md", "w", encoding="utf-8") as handle:
+def write_pair(root):
+    """Write both generated files under root, in their usual places."""
+    with open(os.path.join(root, "contract.toml"), "w", encoding="utf-8") as handle:
+        handle.write(render())
+    os.makedirs(os.path.join(root, "docs"), exist_ok=True)
+    with open(os.path.join(root, "docs", "front-matter.md"), "w", encoding="utf-8") as handle:
         handle.write(front_matter_doc())
+
+
+def main():
+    argv = sys.argv[1:]
+    if "--stdout" in argv:
+        sys.stdout.write(render())
+        return 0
+
+    # --into writes the same pair somewhere else. Both files are
+    # generated from the same templates, so the gate that asks whether
+    # they are stale has to compare both, and comparing them means
+    # having a fresh copy of each that is not the checked-in one.
+    if "--into" in argv:
+        index = argv.index("--into") + 1
+        if index >= len(argv):
+            sys.stderr.write("--into needs a directory\n")
+            return 1
+        write_pair(argv[index])
+        return 0
+
+    write_pair(".")
     print("contract.toml and docs/front-matter.md regenerated")
     return 0
 

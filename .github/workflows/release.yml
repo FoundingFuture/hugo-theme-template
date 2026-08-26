@@ -72,16 +72,25 @@ jobs:
           mkdir -p ".dist/$name"
           for entry in *; do
             case "$entry" in
-              conformance|scripts|templates|.dist|c|lighthouserc.json) continue ;;
+              tools|.dist|c) continue ;;
             esac
             cp -R "$entry" ".dist/$name/"
           done
           ( cd .dist && zip -qr "../$name-${GITHUB_REF_NAME}.zip" "$name" )
 
+      # The changelog section is parsed once, by release.sh, and put in
+      # the annotated tag. Reading it back from the tag is what keeps the
+      # tag message and the release notes from ever disagreeing. The
+      # release gate fails on a missing section, so this cannot be empty.
+      - name: The release notes, from the tag
+        run: |
+          set -euo pipefail
+          git tag -l --format='%(contents:body)' "$GITHUB_REF_NAME" > .release-body.md
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: /dev/null
+          body_path: .release-body.md
           generate_release_notes: false
           files: '*.zip'
 
