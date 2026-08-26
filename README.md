@@ -70,16 +70,20 @@ workstation and a failure in CI, where the image carries every tool.
 A feature is an optional element the theme renders, registered to a slot
 and switched by one line. `./c feature list` shows them.
 
-The mechanism ships wired and empty. A feature arrives whole, with its
-manifest, partial, stylesheet, words and a fixture page. The static gate
-fails until every piece is there.
+Twelve features ship installed. Seven are on and five are off, and one
+line in the config moves any of them. A feature is never edited out of a
+template.
 
 ```sh
-./c feature available     what the template ships and has not installed
-./c feature add name=x    install one of those, whole
+./c feature list          every feature, installed or available
+./c feature add name=x    install one the template ships
 ./c feature new name=x    start one of your own
 ./c feature off name=x    write the switch into the fixture config
 ```
+
+`./c feature add` is the path for anything beyond the starter set. The
+catalogue it copies from stays in `templates/feature/`, so a feature
+removed from a project can be put back.
 
 A manifest declares what the feature adds to the rendered page. The
 fixture builds three times. The reference scaffold, the theme with every
@@ -87,8 +91,12 @@ feature off, and the theme with them at their defaults.
 
 With the features off the theme has to match the scaffold exactly. With
 them on, the only differences allowed are the ones the manifests
-declared. A feature that changes a heading it never mentioned fails the
-build.
+declared. A manifest names the container its links and headings sit in,
+the classed elements it adds, and the elements it adds more of. A
+feature that changes anything else fails the build.
+
+The h1 is nobody's to add. The reference and the theme are compared on
+the h1 of every page, by itself, so that claim cannot go quiet.
 
 Nothing is kept in an ignore list. That is the point. An ignore list
 goes stale, and a declaration cannot.
