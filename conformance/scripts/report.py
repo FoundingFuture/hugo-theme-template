@@ -10,6 +10,7 @@ the page. A workflow artifact is opened from a file path, with no server
 behind it.
 """
 
+import glob
 import html
 import json
 import os
@@ -19,6 +20,7 @@ import sys
 OUT = "conformance/public/report"
 PUB = "conformance/public"
 SNAPSHOT = "conformance/snapshots/skeleton"
+SCREENS = "conformance/snapshots/screens"
 
 STYLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "report.css")
 
@@ -100,6 +102,56 @@ def page_differences(before, after):
     return rows
 
 
+def lighthouse():
+    """The scores, as Lighthouse wrote them, one row a page."""
+    reports = sorted(glob.glob(os.path.join(".lighthouseci", "lhr-*.json")))
+    if not reports:
+        return as_none("Lighthouse did not run.")
+    rows = ["<table><tr><th>Page</th><th>Performance</th><th>Accessibility</th>"
+            "<th>Best practices</th><th>SEO</th></tr>"]
+    for path in reports:
+        try:
+            with open(path, encoding="utf-8") as handle:
+                report = json.load(handle)
+        except (OSError, ValueError):
+            continue
+        url = report.get("finalDisplayedUrl") or report.get("finalUrl", "")
+        page = "/" + url.split("/", 3)[-1] if url.count("/") > 2 else url
+        cells = []
+        for name in ("performance", "accessibility", "best-practices", "seo"):
+            score = report.get("categories", {}).get(name, {}).get("score")
+            cells.append("%d" % round(score * 100) if score is not None else "-")
+        rows.append("<tr><td>%s</td>%s</tr>"
+                    % (html.escape(page),
+                       "".join("<td>%s</td>" % c for c in cells)))
+    rows.append("</table>")
+    return "".join(rows)
+
+
+def screenshots():
+    """Every page whose picture moved, with the two images and the diff."""
+    diffs = sorted(glob.glob(os.path.join(PUB, "screens", "*-diff.png")))
+    if not diffs:
+        if not os.path.isdir(SCREENS):
+            return as_none("No baseline until the first release. ./c release writes one.")
+        return as_none("No screenshot moved since the last tag.")
+    blocks = []
+    for diff in diffs:
+        name = os.path.basename(diff)[: -len("-diff.png")]
+        before = os.path.join(SCREENS, name + ".png")
+        after = os.path.join(PUB, "screens", name + ".png")
+        blocks.append(
+            "<h3>%s</h3><div class=\"shots\">%s</div>"
+            % (html.escape(name),
+               "".join('<figure><figcaption>%s</figcaption>'
+                       '<img src="%s" alt="%s of %s"></figure>'
+                       % (label, os.path.relpath(image, OUT), label, html.escape(name))
+                       for label, image in (("before", before), ("after", after),
+                                            ("diff", diff))
+                       if os.path.exists(image))))
+    return "".join(blocks)
+
+
 def build_times():
     """The measured scale build, beside the budget it is held to."""
     raw = read(os.path.join(PUB, "scale.txt"))
@@ -160,6 +212,8 @@ def main():
         parts.append(section("Against the last release",
                              as_none("No page changed shape since the last tag.")))
 
+    parts.append(section("Lighthouse", lighthouse()))
+    parts.append(section("Screenshots against the last release", screenshots()))
     parts.append(section("Build time", build_times()))
 
     external = read(os.path.join(PUB, "external.txt"))

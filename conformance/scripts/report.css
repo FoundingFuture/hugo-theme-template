@@ -14,3 +14,7 @@ pre { overflow-x:auto; background:color-mix(in srgb, var(--fg) 6%, transparent);
 .add { color:var(--add); } .del { color:var(--del); }
 .muted { color:var(--muted); }
 .none { color:var(--muted); font-style:italic; }
+
+.shots { display: flex; flex-wrap: wrap; gap: 1rem; }
+.shots figure { margin: 0; max-inline-size: 18rem; }
+.shots img { max-inline-size: 100%; block-size: auto; border: 1px solid var(--line); }

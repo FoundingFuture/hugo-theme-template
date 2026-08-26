@@ -211,5 +211,6 @@ jobs:
         with:
           header: conformance
           message: |
-            The conformance report for this branch is attached to the run
+            The conformance report for this branch is attached to
+            [run ${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             as the `conformance-report` artifact.
