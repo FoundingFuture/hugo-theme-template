@@ -51,6 +51,10 @@ jobs:
             "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_linux-amd64.tar.gz"
           mkdir -p "$HOME/.local/bin"
           tar -xzf "$RUNNER_TEMP/hugo.tar.gz" -C "$HOME/.local/bin" hugo
+          # The gates build under the pinned Hugo and the newest one.
+          # At bootstrap those are the same release, since the theme is
+          # generated from the newest, so the second name points at it.
+          cp "$HOME/.local/bin/hugo" "$HOME/.local/bin/hugo-latest"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - uses: actions/setup-python@v5
@@ -71,6 +75,47 @@ jobs:
           ./c init name="${GITHUB_REPOSITORY##*/}" \
                   owner="${GITHUB_REPOSITORY_OWNER}" \
                   repo="${GITHUB_REPOSITORY##*/}"
+
+      # The run that generates the theme is the one that verifies it.
+      #
+      # A push made with the default token raises no push event, so the
+      # commit below sets off no workflow of its own. Handing that to
+      # check.yml through workflow_run does not work either: ./c init
+      # deletes this file, and workflow_run resolves the workflow it
+      # waits on from the default branch, where it no longer is.
+      #
+      # So the gates run here, before the commit. A theme that cannot
+      # pass them is not committed, and the marker stays for a retry.
+      - uses: actions/setup-node@v4
+        if: steps.marker.outputs.run == 'yes'
+        with:
+          node-version: '20'
+
+      - name: Install the tools the gates name
+        if: steps.marker.outputs.run == 'yes'
+        run: |
+          set -euo pipefail
+          pip install --quiet html5validator
+          npm install --global --silent pa11y-ci @lhci/cli stylelint \
+            stylelint-config-standard eslint playwright pixelmatch pngjs
+          PLAYWRIGHT_BROWSERS_PATH="${GITHUB_WORKSPACE}/.playwright" \
+            npx --yes playwright install --with-deps chromium
+          ht="$(curl -fsSL https://api.github.com/repos/wjdp/htmltest/releases/latest \
+            | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$RUNNER_TEMP/htmltest.tar.gz" \
+            "https://github.com/wjdp/htmltest/releases/download/v${ht}/htmltest_${ht}_linux_amd64.tar.gz"
+          tar -xzf "$RUNNER_TEMP/htmltest.tar.gz" -C "$HOME/.local/bin" htmltest
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck libxml2-utils
+
+      - name: Every gate, on what was just generated
+        if: steps.marker.outputs.run == 'yes'
+        env:
+          CI: "true"
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright
+        run: ./c check
 
       - name: Commit
         if: steps.marker.outputs.run == 'yes'
