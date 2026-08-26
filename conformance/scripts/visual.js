@@ -1,10 +1,13 @@
 // Screenshots of the pages a design change is most likely to move.
 //
-// The pages are served over HTTP, not opened as files. A built page
-// links its stylesheet by an absolute path, and under file:// that path
-// resolves from the root of the disk, so nothing loaded and every
-// screenshot was of an unstyled page. They matched each other perfectly
-// and the gate could not have seen a design change.
+// The pages are served over HTTP, not opened as files.
+//
+// A built page links its stylesheet by an absolute path. Under file://
+// that path resolves from the root of the disk, so no stylesheet ever
+// loaded.
+//
+// Every screenshot was of an unstyled page. They all matched, and the
+// gate could not have seen a design change.
 //
 // A difference is reported and lands in the pull request report. It does
 // not fail the build. A deliberate design change is a difference too,
@@ -36,8 +39,9 @@ const WRITE = process.argv.includes('--write');
 async function main() {
   // pixelmatch ships as an ES module, so require cannot load it.
   //
-  // A bare dynamic import cannot find it either, because ES resolution
-  // ignores NODE_PATH and a global install is nowhere near this file.
+  // A bare dynamic import cannot find it either. ES resolution ignores
+  // NODE_PATH, and a global install is nowhere near here.
+  //
   // require.resolve does honour NODE_PATH, so the path is found the
   // CommonJS way and imported as a file URL.
   let chromium, pixelmatch, PNG;

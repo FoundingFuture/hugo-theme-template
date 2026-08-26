@@ -17,12 +17,12 @@ if [ -z "${NODE_PATH:-}" ] && command -v npm >/dev/null 2>&1; then
 fi
 
 # No baseline is not a missing tool. A repository has none until it
-# tags a release, and saying SKIP made CI fail for want of a screenshot
+# tags a release. Saying SKIP made CI fail for want of a screenshot
 # nobody had taken yet.
 #
 # Saying nothing is no better. What covers the pages until then is the
-# comparison against the Hugo scaffold, which conform makes every run,
-# so the gate says which comparison is standing in.
+# comparison against the Hugo scaffold, which conform makes every run.
+# The gate names it, rather than passing quietly.
 if [ ! -d conformance/snapshots/screens ]; then
   printf '%s\n' "visual: no baseline until the first release."
   printf '%s\n' "visual: compared against the Hugo scaffold instead, by conform."

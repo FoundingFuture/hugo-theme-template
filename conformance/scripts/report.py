@@ -136,10 +136,11 @@ def main():
     parts.append(section("Page skeletons against the scaffold",
                          skel or as_none("Every page has the shape the scaffold gives it.")))
 
-    # Before the first release there is nothing to compare against, and
-    # an empty snapshot would read as every page being new. What stands
-    # in until then is the comparison against the Hugo scaffold, which
-    # conform makes on every run and which is two sections above.
+    # Before the first release there is nothing to compare against.
+    # An empty snapshot would read as every page being new.
+    #
+    # What stands in until then is the comparison against the Hugo
+    # scaffold. conform makes it on every run, two sections above.
     if not has_snapshot():
         parts.append(section("Against the last release", as_none(
             "No baseline until the first release. Until then the pages are "
