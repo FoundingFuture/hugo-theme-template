@@ -80,6 +80,7 @@ printf '%s\n' "$version" > .hugo-version
 scripts/internationalise.sh
 scripts/install-head.sh
 scripts/install-links.sh
+scripts/install-css.sh
 
 # 8. Install the feature mechanism into the generated layouts.
 scripts/install-features.sh

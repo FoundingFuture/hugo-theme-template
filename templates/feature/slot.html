@@ -12,6 +12,9 @@ Render every enabled feature registered for one slot, in weight order.
        feature at all against the reference scaffold. It outranks front
        matter, which nothing else does. */ -}}
 {{- if not site.Params.featuresoff }}
+  {{- /* Collected into a slice first. Ranging the data map walks it in
+         key order, which is alphabetical and not what the weights say. */ -}}
+  {{- $enabled := slice }}
   {{- range $name, $manifest := hugo.Data.features }}
     {{- if eq $manifest.slot $slot }}
       {{- $on := $manifest.default }}
@@ -25,8 +28,14 @@ Render every enabled feature registered for one slot, in weight order.
       {{- end }}
       {{- $kinds := $manifest.kinds | default (slice $page.Kind) }}
       {{- if and $on (in $kinds $page.Kind) }}
-        {{- partial $manifest.partial $page }}
+        {{- $enabled = $enabled | append (dict
+              "weight" (default 50 $manifest.weight)
+              "name" $name
+              "partial" $manifest.partial) }}
       {{- end }}
     {{- end }}
+  {{- end }}
+  {{- range sort $enabled "weight" }}
+    {{- partial .partial $page }}
   {{- end }}
 {{- end }}
