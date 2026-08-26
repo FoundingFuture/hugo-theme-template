@@ -16,6 +16,8 @@ images = ['a.png']
 This page exercises the front matter keys a theme reads. Each key below
 changes something observable in the built output.
 
+<!--more-->
+
 ## Keys in use
 
 The slug renames the published path. The alias publishes a redirect at

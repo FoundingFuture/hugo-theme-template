@@ -7,6 +7,8 @@ description = 'A page calling the shortcodes Hugo ships, so a theme that overrid
 This page exercises the shortcodes Hugo ships. A theme may override any
 of them, and the skeleton records what changes.
 
+<!--more-->
+
 ## Figure
 
 {{< figure src="/kitchen-sink/bundle/a.png" alt="A grey square shown through the figure shortcode" caption="A caption" >}}
@@ -23,7 +25,7 @@ The body of the details element.
 
 ## Quick reference
 
-{{< qr text="https://example.org/" />}}
+{{< qr text="https://example.org/" alt="A QR code linking to the example site" />}}
 
 ## Embeds
 

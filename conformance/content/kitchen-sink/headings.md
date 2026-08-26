@@ -13,6 +13,8 @@ The page is exempt from the content rules on purpose. Its whole reason
 for existing is to carry heading levels four, five and six, which those
 rules forbid.
 
+<!--more-->
+
 ## Second level
 
 Text under the second level.

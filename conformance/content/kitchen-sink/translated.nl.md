@@ -9,6 +9,8 @@ description = 'De Nederlandse tegenhanger van de vertaalde pagina, zodat een taa
 Deze pagina oefent vertaling. Een tegenhanger bestaat in de eerste taal,
 en een thema verbindt de twee.
 
+<!--more-->
+
 ## Tegenhanger
 
 De Engelse tegenhanger staat naast dit bestand.

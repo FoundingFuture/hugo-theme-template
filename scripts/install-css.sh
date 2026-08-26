@@ -32,6 +32,10 @@ cat > "$target" <<'HOOK'
 {{- with resources.Get "css/chroma.css" }}
   {{- $sheets = $sheets | append . }}
 {{- end }}
+{{- /* The rules that keep a link visible and reachable. */ -}}
+{{- with resources.Get "css/a11y.css" }}
+  {{- $sheets = $sheets | append . }}
+{{- end }}
 {{- $features := slice }}
 {{- range $name, $manifest := hugo.Data.features }}
   {{- $on := $manifest.default }}

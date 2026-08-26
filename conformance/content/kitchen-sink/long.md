@@ -7,6 +7,8 @@ description = 'A long page carrying twelve headings, enough for a table of conte
 This page exercises a table of contents. Twelve headings follow, which
 is more than a short page and enough to need navigation.
 
+<!--more-->
+
 ## Structure
 
 Alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu. Zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma. Lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega. Pi rho sigma tau upsilon phi chi psi omega ridge harbour lantern gravel meadow cinder.

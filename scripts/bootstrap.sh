@@ -125,9 +125,11 @@ scripts/install-links.sh
 scripts/install-css.sh
 scripts/install-imports.sh
 scripts/install-highlight.sh
+scripts/install-a11y-css.sh
 
 # 8. Install the feature mechanism into the generated layouts.
 scripts/install-features.sh
+scripts/install-top.sh
 
 # 9. The contract is generated from the templates, and the static gate
 #    compares the committed file against a fresh one. Without this the

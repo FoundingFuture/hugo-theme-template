@@ -7,6 +7,8 @@ description = 'A page holding fenced code with and without a language, and a hig
 This page exercises code rendering. A theme styles three cases here, and
 a render hook may replace any of them.
 
+<!--more-->
+
 ## Fenced with a language
 
 ```go

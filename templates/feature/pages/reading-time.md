@@ -13,6 +13,8 @@ This page exercises the reading-time feature. It is deliberately short,
 so the reading time is one minute and the singular form is the one that
 renders.
 
+<!--more-->
+
 ## Off state
 
 A page setting the same switch to false shows no reading time. The

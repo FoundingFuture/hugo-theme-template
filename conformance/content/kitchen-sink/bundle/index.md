@@ -7,6 +7,8 @@ description = 'A leaf bundle holding two page resources, exercising image resour
 This page exercises a leaf bundle. Two images live beside the page
 file, and both are page resources instead of static files.
 
+<!--more-->
+
 ## Images
 
 ![A grey square used as bundle test artwork](a.png)

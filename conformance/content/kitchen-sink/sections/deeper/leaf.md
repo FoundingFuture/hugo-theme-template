@@ -7,6 +7,8 @@ description = 'A regular page three levels below the root, where a relative link
 This page exercises a leaf page at depth three. A relative link resolved
 from here reaches a different place than one resolved from the root.
 
+<!--more-->
+
 ## Position
 
 The page has three ancestor sections, and its permalink names all

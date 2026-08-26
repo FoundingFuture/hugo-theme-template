@@ -7,6 +7,8 @@ description = 'A page holding every Goldmark extension the conformance config en
 This page exercises the Goldmark extensions. Each block below needs its
 own configuration, and a theme needs styling for each one.
 
+<!--more-->
+
 ## Table
 
 | Column | Meaning |

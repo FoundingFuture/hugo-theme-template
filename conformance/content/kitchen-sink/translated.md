@@ -7,6 +7,8 @@ description = 'A page with a counterpart in the second site language, so a langu
 This page exercises translation. A counterpart exists in the second
 language, and a theme links the two.
 
+<!--more-->
+
 ## Counterpart
 
 The Dutch counterpart lives beside this file, and a language switcher

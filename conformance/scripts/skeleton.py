@@ -16,7 +16,7 @@ Chrome is excluded. A link in a nav or a footer belongs to the theme
 rather than the page. Comparing it would report every menu.
 
 Usage:
-    skeleton.py DIR [--out DIR] [--assert-single-h1] [--assert-description]
+    skeleton.py DIR [--out DIR]
 """
 
 import argparse
@@ -258,20 +258,13 @@ def main():
     parser = argparse.ArgumentParser(description="Reduce built pages to their shape.")
     parser.add_argument("root", help="a built site, such as public/ours")
     parser.add_argument("--out", help="write one JSON file per page into this directory")
-    parser.add_argument("--assert-single-h1", action="store_true")
-    parser.add_argument("--assert-description", action="store_true")
     args = parser.parse_args()
 
-    findings = []
+    # Asserting belongs to head.sh, which owns the rules about what a
+    # page must carry. Two copies of a rule drift apart.
     tree = {}
     for rel, full in pages(args.root):
-        page = read(full)
-        tree[rel] = page.document()
-        head = page.head()
-        if args.assert_single_h1 and page.document()["h1_count"] != 1:
-            findings.append(f"{rel}:1: {page.document()['h1_count']} h1 headings. One per page.")
-        if args.assert_description and not head["description"]:
-            findings.append(f"{rel}:1: no meta description.")
+        tree[rel] = read(full).document()
 
     if args.out:
         os.makedirs(args.out, exist_ok=True)
@@ -284,9 +277,7 @@ def main():
         json.dump(tree, sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")
 
-    for finding in findings:
-        print(finding, file=sys.stderr)
-    return 1 if findings else 0
+    return 0
 
 
 if __name__ == "__main__":

@@ -8,6 +8,8 @@ weight = 5
 This page exercises a nested section with a weight. The weight orders it
 ahead of its siblings in a list.
 
+<!--more-->
+
 ## Depth
 
 A theme that handles one level of nesting does not always handle two.

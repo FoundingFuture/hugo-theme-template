@@ -11,11 +11,8 @@
         "--no-sandbox"
       ]
     },
-    "ignore": [
-      "axe.forms.label",
-      "WCAG2AA.Principle1.Guideline1_3.1_3_1.F68"
-    ]
+    "hideElements": "input[type=checkbox][disabled]"
   },
   "urls": [],
-  "_why": "Goldmark renders a task list as a disabled checkbox with no label, and a theme cannot label it: the markup comes from the renderer, not from a template. Nothing else here is ignored, and the list is read by whoever changes it."
+  "_why": "Goldmark renders a task list as a disabled checkbox with no label. The markup comes from the renderer, so no template can label it. Only that element is hidden, not the rule, so any other unlabelled form control still fails."
 }

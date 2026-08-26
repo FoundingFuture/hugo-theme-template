@@ -8,6 +8,8 @@ summary = 'A summary written in front matter, which a list shows in place of the
 This page exercises a front matter summary. The body opens with a
 paragraph that no list should show.
 
+<!--more-->
+
 ## Precedence
 
 Front matter beats a divider. A theme reading `.Summary` gets the front

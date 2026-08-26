@@ -8,6 +8,8 @@ description = 'A page whose expiry date has passed, which must not appear in the
 This page exercises an expiry date in the past. Hugo leaves it out of a
 normal build.
 
+<!--more-->
+
 ## Expected handling
 
 No file is written for this page. No list names it.

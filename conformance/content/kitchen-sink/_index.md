@@ -9,6 +9,8 @@ description = 'The section holding one page per Hugo feature, each page naming t
 The kitchen sink exercises cascade. Every page below inherits
 `section_colour` from the front matter of this section.
 
+<!--more-->
+
 ## Page inventory
 
 Each page names one feature. A theme that renders the section renders

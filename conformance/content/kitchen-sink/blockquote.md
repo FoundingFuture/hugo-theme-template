@@ -7,6 +7,8 @@ description = 'A page holding a plain blockquote and a nested one, so that a blo
 This page exercises blockquotes. One is at the top level and one is
 nested inside another.
 
+<!--more-->
+
 ## Plain
 
 > A quotation at the top level, holding one sentence.

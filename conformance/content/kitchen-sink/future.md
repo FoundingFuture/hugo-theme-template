@@ -8,6 +8,8 @@ description = 'A page whose publish date lies a year ahead, which must not appea
 This page exercises a future publish date. Hugo leaves it out of a
 normal build.
 
+<!--more-->
+
 ## Expected handling
 
 No file is written for this page. No list names it.

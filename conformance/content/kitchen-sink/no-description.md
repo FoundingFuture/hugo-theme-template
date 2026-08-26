@@ -11,6 +11,8 @@ truncate it somewhere sensible rather than emitting the whole thing into
 a meta tag where a search engine will cut it off mid word and show the
 reader a ragged fragment instead of a sentence that ends.
 
+<!--more-->
+
 ## Expected handling
 
 The head partial falls back to a truncated summary.

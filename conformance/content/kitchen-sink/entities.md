@@ -7,6 +7,8 @@ description = 'A page whose title carries an ampersand, quotation marks and angl
 This page exercises character escaping in a title. An ampersand,
 quotation marks and angle brackets all appear in it.
 
+<!--more-->
+
 ## Where it shows
 
 The title appears in the heading, in the page title element and in the

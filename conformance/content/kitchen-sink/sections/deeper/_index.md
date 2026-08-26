@@ -7,6 +7,8 @@ description = 'A section three levels below the site root, testing whether bread
 This page exercises a third level of section nesting. An ancestor menu
 and a breadcrumb trail both have to reach back up from here.
 
+<!--more-->
+
 ## Ancestors
 
 Three ancestors sit above this page. The trail runs to the home page.

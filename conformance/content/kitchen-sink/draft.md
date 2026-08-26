@@ -8,6 +8,8 @@ description = 'A page marked as a draft, which must not appear in the built outp
 This page exercises the draft flag. Hugo leaves it out of a normal
 build.
 
+<!--more-->
+
 ## Expected handling
 
 No file is written for this page. No list names it.

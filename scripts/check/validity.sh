@@ -39,6 +39,9 @@ if [ "$ran" -eq 0 ]; then
   echo "SKIP validity: neither html5validator nor htmltest is installed"
   exit 3
 fi
-"$PY_BIN" conformance/scripts/skeleton.py "$target" --assert-single-h1 --assert-description \
-  >/dev/null || status=1
+# The h1 and the description belong to head.sh, which runs beside this
+# in the same gate. A second copy lived here and drifted.
+#
+# It counted only the content, so a site title in the header read as no
+# h1 at all. It also judged the redirect stubs as pages.
 exit $status
