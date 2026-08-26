@@ -1,0 +1,11 @@
+[watchOnYouTube]
+other = "Watch this video on YouTube"
+
+[watchOnVimeo]
+other = "Watch this video on Vimeo"
+
+[readOnX]
+other = "Read this post on X"
+
+[embedElsewhere]
+other = "Hosted on {{ .Service }}. Nothing is loaded until the link is followed."

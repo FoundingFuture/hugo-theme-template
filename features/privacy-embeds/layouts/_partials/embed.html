@@ -1,0 +1,15 @@
+{{- /* One rendering for every service. A figure holding a link, and a
+       poster when the build could fetch one.
+
+       The link carries rel external and noopener, which the external
+       gate reads. */ -}}
+{{- $poster := .poster }}
+<figure class="embed embed-{{ lower .service }}">
+  <a class="embed-link" rel="external noopener" href="{{ .href }}">
+    {{- with $poster }}
+    <img src="{{ . }}" alt="" loading="lazy">
+    {{- end }}
+    <span class="embed-title">{{ .title }}</span>
+  </a>
+  <figcaption class="embed-caption">{{ i18n "embedElsewhere" (dict "Service" .service) }}</figcaption>
+</figure>

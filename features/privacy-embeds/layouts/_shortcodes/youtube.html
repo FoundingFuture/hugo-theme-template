@@ -1,0 +1,25 @@
+{{- /* A poster and a link, in place of an iframe from another host.
+
+       Hugo's own youtube shortcode embeds a player, which loads the
+       page from youtube.com and tells them who is reading before the
+       reader has asked for anything.
+
+       Nothing here is fetched at view time. The poster is fetched when
+       the site is built, or a plain link stands in when it cannot be.
+       The reader chooses whether to leave. */ -}}
+{{- $id := or (.Get "id") (.Get 0) }}
+{{- $title := or (.Get "title") (i18n "watchOnYouTube") }}
+{{- with $id }}
+  {{- $poster := "" }}
+  {{- if site.Params.privacyEmbeds.fetchPosters }}
+    {{- $url := printf "https://i.ytimg.com/vi/%s/hqdefault.jpg" . }}
+    {{- with try (resources.GetRemote $url) }}
+      {{- with .Value }}
+        {{- $poster = (. | resources.Copy (printf "embeds/youtube-%s.jpg" $id)).RelPermalink }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- partial "embed.html" (dict
+        "href" (printf "https://www.youtube.com/watch?v=%s" .)
+        "poster" $poster "title" $title "service" "YouTube") }}
+{{- end }}

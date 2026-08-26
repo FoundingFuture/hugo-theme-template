@@ -26,7 +26,10 @@ SLOTS = {
     "page.before-body", "page.after-body", "page.footer",
     "list.item", "list.after", "body.end",
 }
-REQUIRED = ("name", "slot", "weight", "default", "partial")
+REQUIRED = ("name", "slot", "weight", "default")
+# A component works through its shortcodes or its output formats, so it
+# renders through no slot and needs no partial.
+NO_SLOT = "none"
 
 
 def partials_dir():
@@ -70,21 +73,34 @@ def main():
                 if key not in manifest:
                     findings.append("%s:1: no %s." % (path, key))
             slot = manifest.get("slot")
-            if slot and slot not in SLOTS:
+            if slot and slot != NO_SLOT and slot not in SLOTS:
                 findings.append("%s:1: slot %s is not a slot." % (path, slot))
             partial = manifest.get("partial")
+            if slot != NO_SLOT and not partial:
+                findings.append("%s:1: no partial, and it claims a slot." % path)
             if partial:
                 declared[os.path.basename(partial)] = path
                 target = os.path.join(root, partial)
                 if not os.path.exists(target):
                     findings.append("%s:1: partial %s does not exist." % (path, partial))
+            # A component keeps its stylesheet and its words in its own
+            # directory, which the site mounts. A toggle keeps them in
+            # the theme.
+            feature = manifest.get("name") or os.path.splitext(name)[0]
+            roots = ["."]
+            component = os.path.join("features", feature)
+            if os.path.isdir(component):
+                roots.insert(0, component)
+
             sheet = manifest.get("css")
-            if sheet and not os.path.exists(os.path.join("assets", sheet)):
+            if sheet and not any(os.path.exists(os.path.join(root, "assets", sheet))
+                                 for root in roots):
                 findings.append("%s:1: css %s does not exist." % (path, sheet))
             for key in manifest.get("i18n", []):
-                if not key_defined(key):
-                    findings.append("%s:1: i18n key %s is not in i18n/en.toml." % (path, key))
-            feature = manifest.get("name") or os.path.splitext(name)[0]
+                if not any(key_defined(key, root) for root in roots):
+                    findings.append(
+                        "%s:1: i18n key %s is defined nowhere it would be read."
+                        % (path, key))
             page = "conformance/content/kitchen-sink/features/%s.md" % feature
             if not os.path.exists(page):
                 findings.append(
@@ -103,10 +119,11 @@ def main():
     return 1 if findings else 0
 
 
-def key_defined(key):
-    if not os.path.exists("i18n/en.toml"):
+def key_defined(key, root="."):
+    path = os.path.join(root, "i18n", "en.toml")
+    if not os.path.exists(path):
         return False
-    with open("i18n/en.toml", encoding="utf-8") as handle:
+    with open(path, encoding="utf-8") as handle:
         text = handle.read()
     return bool(re.search(r"^\s*\[%s\]" % re.escape(key), text, re.MULTILINE) or
                 re.search(r"^\s*%s\s*=" % re.escape(key), text, re.MULTILINE))

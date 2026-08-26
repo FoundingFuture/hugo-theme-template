@@ -1,0 +1,19 @@
+.embed {
+  margin-inline: 0;
+}
+
+.embed-link {
+  display: block;
+  text-decoration: none;
+}
+
+.embed-link img {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+.embed-caption {
+  color: var(--muted, #666);
+  font-size: 0.9em;
+}

@@ -40,7 +40,7 @@ def skeleton(root):
 def declarations():
     """Every addition the manifests allow, by kind."""
     allowed = {"marked": set(), "links": set(), "images": set(),
-               "counts": set(), "headings": set()}
+               "counts": set(), "headings": set(), "removes": set()}
     if tomllib is None or not os.path.isdir(MANIFESTS):
         return allowed, False
     for name in sorted(os.listdir(MANIFESTS)):
@@ -94,9 +94,10 @@ def compare(before, after, allowed):
                 findings.append(
                     "%s:1: %d more <%s> than with the feature off, and no manifest declares it."
                     % (path, count - was, element))
-            if count < was:
+            if count < was and element not in allowed["removes"]:
                 findings.append(
-                    "%s:1: %d fewer <%s> when a feature was on." % (path, was - count, element))
+                    "%s:1: %d fewer <%s> when a feature was on, and no manifest "
+                    "declares removing one." % (path, was - count, element))
         added = [row for row in new.get("marked", []) if row not in old.get("marked", [])]
         for selector, _text in added:
             if selector not in allowed["marked"]:

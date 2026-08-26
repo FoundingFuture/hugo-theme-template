@@ -27,10 +27,18 @@ The body of the details element.
 
 ## Embeds
 
-Hugo also ships `youtube`, `vimeo` and `x`. None appears here. Each one
-renders an iframe or a script from another host, and the external gate
-forbids a third-party request.
+Hugo ships `youtube`, `vimeo` and `x`. Each renders an iframe or a
+script from another host, which the external gate forbids.
 
-A theme that wants an embed overrides the shortcode and renders a
-placeholder that links out. Then the page loads nothing from elsewhere,
-and the reader chooses whether to.
+The `privacy-embeds` component overrides all three with a poster and a
+link. The page loads nothing from elsewhere, and the reader chooses
+whether to leave.
+
+{{< youtube id="dQw4w9WgXcQ" >}}
+
+{{< vimeo id="55073825" >}}
+
+{{< x user="hugo" id="1234567890" >}}
+
+A site that does not mount the component gets Hugo's own renderings
+back. The shortcode names in the content stay portable either way.

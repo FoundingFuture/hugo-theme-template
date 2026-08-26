@@ -22,6 +22,19 @@
   [[module.mounts]]
     source = "../data"
     target = "data"
+  # A level-two feature: a component with its own layouts, assets and
+  # words. A site that does not mount it never sees it, which is what
+  # makes it level two rather than a toggle.
+  [[module.mounts]]
+    source = "../features/privacy-embeds/layouts"
+    target = "layouts"
+  [[module.mounts]]
+    source = "../features/privacy-embeds/assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "../features/privacy-embeds/i18n"
+    target = "i18n"
+
   [[module.mounts]]
     source = "content"
     target = "content"

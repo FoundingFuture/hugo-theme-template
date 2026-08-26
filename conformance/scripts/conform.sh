@@ -43,9 +43,9 @@ build hugo.toml,config/ours/hugo.toml ours --printUnusedTemplates
 # The directory is gitignored, because the file in it is generated. A
 # fresh clone therefore does not have it yet.
 mkdir -p config/off
-"$PY_BIN" scripts/features-off.py > config/off/hugo.toml
+"$ROOT/scripts/off-config.sh" > config/off/hugo.toml
 say "conform: building with every feature off"
-build hugo.toml,config/ours/hugo.toml,config/off/hugo.toml ours-off
+build hugo.toml,config/off/hugo.toml ours-off
 
 # 3. File list. A difference means the theme publishes a different set of
 #    pages, feeds, aliases or sitemap entries than the scaffold does.

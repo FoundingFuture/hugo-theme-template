@@ -1,0 +1,10 @@
+# A Hugo theme component. A site imports it beside the base theme, and a
+# site that does not import it never sees it.
+#
+# The component overrides three shortcodes Hugo ships. A page written
+# against the originals renders here without an edit, and renders under
+# any other theme with the originals, so the content stays portable.
+[module]
+  [module.hugoVersion]
+    extended = true
+    min = "0.158.0"

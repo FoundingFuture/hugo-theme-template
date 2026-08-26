@@ -37,9 +37,13 @@ for manifest in templates/feature/manifests/*.toml; do
   [ -e "$manifest" ] || continue
   name="$(basename "$manifest" .toml)"
   cp "$manifest" "data/features/$name.toml"
-  cp "templates/feature/partials/$name.html" "$partials/features/$name.html"
+  # A component renders through its shortcodes and has no partial. Its
+  # stylesheet is mounted from its own directory rather than copied.
+  [ -f "templates/feature/partials/$name.html" ] \
+    && cp "templates/feature/partials/$name.html" "$partials/features/$name.html"
   [ -f "templates/feature/css/$name.css" ] \
     && cp "templates/feature/css/$name.css" "assets/css/features/$name.css"
+  true
 done
 
 # A feature that brings a script brings it here, so the asset the

@@ -1,0 +1,9 @@
+{{- /* The same trade as youtube.html. A link the reader may follow, and
+       no request to another host until they do. */ -}}
+{{- $id := or (.Get "id") (.Get 0) }}
+{{- $title := or (.Get "title") (i18n "watchOnVimeo") }}
+{{- with $id }}
+  {{- partial "embed.html" (dict
+        "href" (printf "https://vimeo.com/%s" .)
+        "poster" "" "title" $title "service" "Vimeo") }}
+{{- end }}

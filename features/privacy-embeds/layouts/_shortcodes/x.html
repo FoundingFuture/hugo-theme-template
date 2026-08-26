@@ -1,0 +1,9 @@
+{{- /* Hugo's own x shortcode loads a script from platform.x.com, which
+       is a third-party request and a tracker. This is a link. */ -}}
+{{- $id := or (.Get "id") (.Get 1) }}
+{{- $user := or (.Get "user") (.Get 0) }}
+{{- with $id }}
+  {{- partial "embed.html" (dict
+        "href" (printf "https://x.com/%s/status/%s" $user .)
+        "poster" "" "title" (i18n "readOnX") "service" "X") }}
+{{- end }}
