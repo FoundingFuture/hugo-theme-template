@@ -64,7 +64,7 @@ say() { printf '%s\n' "$*"; }
 
 bootstrapped() {
   [ -d layouts ] || {
-    say "no theme yet. Run ./c init name=<slug> first."
+    say "no theme yet. Run ./c init name=<name> first."
     exit 2
   }
 }
@@ -291,7 +291,7 @@ esac
 # ./c theme=hugo                  build against the scaffold of the installed Hugo
 # ./c theme=all                   both, into public/ours and public/hugo
 # ./c theme=ours serve            hugo server with live reload
-# ./c init name=my-theme          bootstrap, one-shot
+# ./c init name="My Theme"        bootstrap, one-shot. The slug is derived
 # ./c check                       every gate in order, stop at first failure
 # ./c check gate=static           one gate: static, build, output, release
 # ./c check name=head             one script by name

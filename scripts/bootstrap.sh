@@ -7,13 +7,17 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# The name a person gives is the display name. It goes into theme.toml as
+# is. Hugo, hugo mod and themes.gohugo.io each want a slug of lowercase
+# letters, digits and hyphens. The slug becomes a directory, a module path
+# and a URL. It is derived here, once, and never asked for.
 NAME="${1:-}"
 [ -n "$NAME" ] || { echo "usage: scripts/bootstrap.sh NAME" >&2; exit 2; }
-case "$NAME" in
-  *[!a-z0-9-]* | -* | *- )
-    printf '%s\n' "name must be lowercase letters, digits and hyphens: $NAME" >&2
-    exit 2 ;;
-esac
+SLUG="$(printf '%s' "$NAME" \
+  | tr '[:upper:]' '[:lower:]' \
+  | sed -e 's/[^a-z0-9]\{1,\}/-/g' -e 's/^-//' -e 's/-$//')"
+[ -n "$SLUG" ] || { printf '%s\n' "no letters or digits in name: $NAME" >&2; exit 2; }
+[ "$SLUG" = "$NAME" ] || printf '%s\n' "theme slug: $SLUG (from \"$NAME\")"
 
 # 0.146 introduced this layout, but the fixture uses languages.*.label,
 # which replaced languageName in 0.158. --panicOnWarning turns the
@@ -38,8 +42,8 @@ lowest="$(printf '%s\n%s\n' "$MIN_VERSION" "$version" | sort -t. -k1,1n -k2,2n -
 # filesystems is also slower than a rename.
 tmp="$(mktemp -d "$PWD/.bootstrap-XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT
-hugo new theme "$NAME" --themesDir "$tmp" >/dev/null || fail "hugo new theme failed."
-src="$tmp/$NAME"
+hugo new theme "$SLUG" --themesDir "$tmp" >/dev/null || fail "hugo new theme failed."
+src="$tmp/$SLUG"
 [ -d "$src" ] || fail "hugo wrote nothing to $src."
 
 # 4. Move the scaffold to the root, resolving what the two sides both own.
@@ -60,9 +64,9 @@ done
 
 # 5. Write what Hugo does not generate.
 year="$(date +%Y)"
-sed -e "s|{{NAME}}|$NAME|g" -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" \
+sed -e "s|{{NAME}}|$NAME|g" -e "s|{{SLUG}}|$SLUG|g" -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" \
   templates/theme.toml.tmpl > theme.toml
-sed -e "s|{{NAME}}|$NAME|g" -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" \
+sed -e "s|{{NAME}}|$NAME|g" -e "s|{{SLUG}}|$SLUG|g" -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" \
   templates/README.md.tmpl > README.md
 mkdir -p i18n data assets static archetypes
 
@@ -101,7 +105,7 @@ rm -f BOOTSTRAP
 
 cat <<EOF
 
-Generated $NAME from Hugo $version.
+Generated $NAME ($SLUG) from Hugo $version.
 
   git add -A && git commit -m "Generate theme scaffold from Hugo $version"
 

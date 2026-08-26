@@ -55,13 +55,9 @@ jobs:
         if: steps.marker.outputs.run == 'yes'
         run: |
           set -euo pipefail
-          # A repository may be named with capitals or an underscore. A
-          # theme slug may not, so the name is folded rather than refused.
-          slug="$(printf '%s' "${GITHUB_REPOSITORY##*/}" \
-            | tr '[:upper:]' '[:lower:]' | tr '_' '-' \
-            | sed -e 's/[^a-z0-9-]//g' -e 's/^-*//' -e 's/-*$//')"
-          echo "generating $slug"
-          ./c init name="$slug"
+          # The repository name is the theme's name as given. Bootstrap
+          # derives the slug Hugo needs and prints it.
+          ./c init name="${GITHUB_REPOSITORY##*/}"
 
       - name: Commit
         if: steps.marker.outputs.run == 'yes'
