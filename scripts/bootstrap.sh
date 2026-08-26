@@ -84,9 +84,14 @@ scripts/install-links.sh
 # 8. Install the feature mechanism into the generated layouts.
 scripts/install-features.sh
 
+# 9. The contract is generated from the templates, and the static gate
+#    compares the committed file against a fresh one. Without this the
+#    first check fails on a file that never existed.
+scripts/docs.sh
+
 rm -f BOOTSTRAP
 
-# 9. Prove the pair before handing back.
+# 10. Prove the pair before handing back.
 ./c conform || fail "the fresh scaffold does not conform. The suite is wrong, not the theme."
 
 cat <<EOF

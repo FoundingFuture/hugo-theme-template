@@ -12,3 +12,4 @@ public/
 conformance/config/site/
 conformance/config/off/
 *.tar.gz
+conformance/config/scale/

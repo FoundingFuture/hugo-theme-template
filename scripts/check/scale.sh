@@ -8,8 +8,11 @@ BUDGET_SECONDS="${SCALE_BUDGET_SECONDS:-20}"
 [ -d conformance/scale-content ] || python3 conformance/scripts/fixture.py --size 2000 || {
   echo "conformance/scale-content:1: could not generate the scale fixture."; exit 1; }
 
+mkdir -p conformance/config/scale
+scripts/scale-config.sh > conformance/config/scale/hugo.toml
+
 start="$(date +%s)"
-out="$( cd conformance && hugo --config hugo.toml,config/ours/hugo.toml,config/scale/hugo.toml -d public/scale \
+out="$( cd conformance && hugo --config hugo.toml,config/scale/hugo.toml -d public/scale \
   --templateMetrics --templateMetricsHints --logLevel warn --gc 2>&1 )" || {
     printf '%s\n' "conformance:1: the scale build failed."
     printf '%s\n' "$out" | tail -10
@@ -28,7 +31,13 @@ fi
 if printf '%s' "$out" | awk '/cumulative/{seen=1} seen && $NF ~ /cached/ {print}' | grep -q .; then
   printf '%s\n' "$out" | grep -i 'cached' | head -10
 fi
-pages="$(find conformance/scale-content -name '*.md' | wc -l | tr -d ' ')"
+# The count is what was published, not what was written. A build that
+# renders nothing used to report the pages it was given and pass.
+pages="$(find conformance/public/scale -name '*.html' | wc -l | tr -d ' ')"
+if [ "$pages" -lt 100 ]; then
+  printf '%s\n' "conformance:1: the scale build published $pages pages. It is not building the fixture."
+  exit 1
+fi
 printf '%s\n' "scale: ${elapsed}s for ${pages} pages"
 
 # The report reads this on every run. Twenty seconds is a ceiling. A
