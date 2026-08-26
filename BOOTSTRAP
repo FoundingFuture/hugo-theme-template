@@ -1,0 +1,5 @@
+This repository has not been bootstrapped yet.
+
+Run ./c init name=<theme-slug> to generate the theme from the installed
+Hugo. The command deletes this file. Until then the repository holds the
+pipeline and no theme.
