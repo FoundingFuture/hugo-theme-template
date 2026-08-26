@@ -172,9 +172,16 @@ Everything at the root except `c` and `tools/`, and no dotfiles, so no
 config files, the licence, the changelog, the README and the generated
 contract.
 
-`build/package` assembles that zip on every run, installs it under
-`themes/` in a site holding nothing else, and builds. It then builds
-once more per component. Each is configured out of the toml block in
+Nothing in it is built. A theme is the source a site reads while that
+site is built, and the site decides what gets minified, fingerprinted
+and switched on. The one generated file is `assets/css/chroma.css`,
+which comes from a named Chroma style so the theme owns the code
+colours rather than inheriting them as inline styles.
+
+`build/package` assembles that zip on every run and drops it under
+`themes/` in a site holding nothing else. That site is then built, which
+is the only question a theme can be asked. It is built once more per
+component. Each is configured out of the toml block in
 that component's own README. What the component promises then has to
 appear.
 

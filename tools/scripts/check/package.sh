@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# The theme as a downloader gets it. Assemble the distribution, install
-# it under themes/ in a site that has nothing else, and build.
+# The theme as a downloader gets it. Assemble the zip, drop it under
+# themes/ in a site that has nothing else, and build that site.
+#
+# A theme is never built. It is the source a site reads while the site
+# is built. The only question worth asking is whether a site that
+# adopted it still builds.
 #
 # The fixture mounts this repository as the theme. A component's
 # directory is then wherever the fixture's own config says it is. A
@@ -63,7 +67,7 @@ build() {
   out="$( cd "$work" && hugo --gc --destination "public-$label" 2>&1 )"
   code=$?
   if [ "$code" -ne 0 ]; then
-    printf '%s\n' "package:1: the $label install does not build."
+    printf '%s\n' "package:1: a site with the $label install does not build."
     printf '%s\n' "$out" | grep -i error | head -3
     status=1
     return 1
