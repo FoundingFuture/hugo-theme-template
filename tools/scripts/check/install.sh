@@ -16,12 +16,15 @@ set -uo pipefail
 cd "$(dirname "$0")/../../.." || exit 1
 
 command -v hugo >/dev/null 2>&1 || { echo "SKIP install: hugo not installed"; exit 3; }
-command -v unzip >/dev/null 2>&1 || { echo "SKIP install: unzip not installed"; exit 3; }
+# Git Bash has python and not python3, and unpacking a zip needs a
+# reader either way. tools/scripts/python.sh answers both questions.
+PY_BIN="$(tools/scripts/python.sh 2>/dev/null || echo python3)"
+command -v "$PY_BIN" >/dev/null 2>&1 || { echo "SKIP install: $PY_BIN not installed"; exit 3; }
 
 slug="$(tools/scripts/slug.sh)"
 tools/scripts/package.sh "$slug" >/dev/null || { echo "install:1: nothing to install."; exit 1; }
 zip="$(find dist -maxdepth 1 -name "$slug-*.zip" -type f | head -1)"
-[ -n "$zip" ] || { echo "install:1: no zip to unzip."; exit 1; }
+[ -n "$zip" ] || { echo "install:1: no zip to unpack."; exit 1; }
 
 work="$(mktemp -d tools/.install.XXXXXX)" || exit 1
 trap 'rm -rf "$work"' EXIT
@@ -32,7 +35,7 @@ report() { printf '%s\n' "$1"; status=1; }
 site="$work/site"
 hugo new site "$site" --format toml >/dev/null 2>&1 || { echo "install:1: hugo new site failed."; exit 1; }
 mkdir -p "$site/themes"
-unzip -q "$zip" -d "$site/themes"
+"$PY_BIN" tools/scripts/archive.py extract "$zip" "$site/themes"
 
 mkdir -p "$site/content/posts" "$site/content/find"
 cat > "$site/content/posts/one.md" <<'EOF'

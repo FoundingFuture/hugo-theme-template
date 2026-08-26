@@ -20,6 +20,8 @@ passes on it with no finding.
   the fixture, the demo, the release and the install gate.
 - `build/install` unzips it into a bare site and builds. A component
   is installed there out of the toml block in its own README.
+- The zip is written and read by Python. zip and unzip are not needed,
+  and Git for Windows ships neither.
 - The theme carries no baseURL, no title and no menu. Hugo merges a
   theme's menus into every site that adopts it, and navigation is the
   site's to decide.

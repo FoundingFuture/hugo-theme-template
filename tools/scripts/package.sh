@@ -41,10 +41,13 @@ done < <(sed 's/#.*//' package.txt)
 # along with the one this run wrote.
 zip="dist/$slug-$version.zip"
 rm -f dist/"$slug"-*.zip
-if command -v zip >/dev/null 2>&1; then
-  ( cd dist && zip -qr "$(basename "$zip")" "$slug" )
-else
-  printf '%s\n' "package: zip is not installed, so only the directory was written" >&2
-fi
+# Written by Python rather than by zip, which Git for Windows does not
+# ship. One less thing to install, and one less row in the table of
+# what a theme author needs.
+PY_BIN="$(tools/scripts/python.sh 2>/dev/null || echo python3)"
+"$PY_BIN" tools/scripts/archive.py write "$dest" "$zip" || {
+  printf '%s\n' "package: $PY_BIN could not write $zip" >&2
+  exit 1
+}
 
 printf '%s\n' "$dest"

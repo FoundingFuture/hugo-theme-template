@@ -71,10 +71,11 @@ Every action goes through `./c`, locally and in CI, so a green run here
 predicts a green run there. Run `./c help` for the table.
 
 ```sh
+./c package          write dist/<slug>/ and the zip a downloader gets
 ./c conform          build against the scaffold and against the theme, then diff
 ./c check            every gate in order, stopping at the first failure
 ./c check gate=static   one gate
-./c serve            the fixture site with live reload
+./c serve            the fixture site, reading the sources, with live reload
 ```
 
 `./c` is the only thing at the root that is not the theme. Everything it
