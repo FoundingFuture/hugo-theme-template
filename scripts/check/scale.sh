@@ -31,10 +31,10 @@ fi
 pages="$(find conformance/scale-content -name '*.md' | wc -l | tr -d ' ')"
 printf '%s\n' "scale: ${elapsed}s for ${pages} pages"
 
-# The report reads this on every run. A budget of twenty seconds is a
-# ceiling, and a scaffold that finishes in one says nothing about the
-# theme that replaces it. The measured number is what shows a backport
-# the day its own templates land.
+# The report reads this on every run. Twenty seconds is a ceiling. A
+# scaffold finishing in one says nothing about the theme that will
+# replace it. The measured number is what shows a backport its own
+# cost, the day its own templates land.
 mkdir -p conformance/public
 printf '%s\t%s\t%s\n' "$elapsed" "$pages" "$BUDGET_SECONDS" \
   > conformance/public/scale.txt

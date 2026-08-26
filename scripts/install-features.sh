@@ -22,7 +22,7 @@ python3 scripts/wire-slots.py "$partials"
 # The starter set is installed and switched on. A feature that ships is a
 # feature a user turns off with one line, rather than one they assemble.
 #
-# Every shipped feature renders, so every partial is reached and the
+# Every shipped feature renders. Every partial is reached, so the
 # unused-template check still means something. The comparison build
 # switches them all off and does not ask about unused templates, because
 # switching them off is what leaves them unused.

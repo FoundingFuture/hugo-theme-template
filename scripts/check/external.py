@@ -10,9 +10,9 @@ A link a reader may follow is not a subresource. An anchor pointing at
 another site costs nothing until somebody clicks it. A fixture page
 listing the link forms Hugo resolves has to carry one.
 
-Such an anchor still has to say where it goes. It carries rel with
-external and noopener, so the difference between a link and a fetched
-subresource is visible in the output and not only in this rule.
+Such an anchor still says where it goes. It carries rel with external
+and noopener. The difference between a link and a fetched subresource
+then stays visible in the output, rather than in this rule alone.
 """
 
 import os

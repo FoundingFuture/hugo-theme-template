@@ -5,8 +5,8 @@ A slot renders every enabled feature registered for it. The insertion
 points are the ones the slot table names, found by the markup the Hugo
 scaffold writes. A template already wired is left alone.
 
-A slot with no enabled feature renders nothing, so a theme whose
-features are all switched off still matches the reference scaffold.
+A slot with no enabled feature renders nothing. A theme with every
+feature switched off still matches the reference scaffold.
 """
 
 import os
@@ -65,9 +65,9 @@ def main():
     if wire("layouts/page.html", [
         (r"(?m)^[ \t]*<h1>", before("page.before-title")),
         (r"(?m)^[ \t]*\{\{ \$dateMachine", before("page.after-title")),
-        # Both sit above the body. meta is the dateline and its
-        # neighbours; before-body is for anything that introduces the
-        # reading, such as a table of contents.
+        # Both sit above the body. meta holds the dateline and its
+        # neighbours. before-body holds whatever introduces the reading,
+        # such as a table of contents.
         (r"(?m)^[ \t]*\{\{ \.Content \}\}", before("page.meta")),
         (r"(?m)^[ \t]*\{\{ \.Content \}\}", before("page.before-body")),
         (r"(?m)^[ \t]*\{\{ \.Content \}\}", after("page.after-body")),
@@ -79,8 +79,8 @@ def main():
         path = "layouts/%s" % name
         if wire(path, [
             (r"(?m)^[ \t]*</section>", before("list.item")),
-            # Between the end of the range and the end of the block, so
-            # it renders once after the rows rather than once a row.
+            # Between the end of the range and the end of the block.
+            # It then renders once after the rows, not once a row.
             (r"(?ms)^([ \t]*)\{\{ end \}\}\n(\{\{ end \}\})",
              lambda m: "%s{{ end }}\n%s%s\n%s" % (
                  m.group(1), m.group(1), CALL % "list.after", m.group(2))),

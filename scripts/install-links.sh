@@ -2,12 +2,12 @@
 # Give the generated theme a link render hook.
 #
 # A link leaving the site carries rel with external and noopener. The
-# external gate reads those, so the difference between a link a reader
-# follows and a subresource the page fetches stays visible in the built
-# output rather than living only in a rule.
+# external gate reads those. The difference between a link a reader
+# follows and a subresource the page fetches then stays visible in the
+# output, rather than in a rule alone.
 #
-# The href and the link text do not change, so the page skeleton is the
-# same and the conformance diff stays empty.
+# The href and the link text do not change. The page skeleton is the
+# same, so the conformance diff stays empty.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

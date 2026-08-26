@@ -2,9 +2,10 @@
 # Write one fixture page per installed feature.
 #
 # Each page turns its own feature on in front matter and names the
-# element the manifest declares. The sibling page turns it off. The
-# static gate stops a feature that has no fixture page, so this runs at
-# bootstrap and again whenever a feature is installed.
+# element the manifest declares. The comparison build turns it off.
+#
+# The static gate stops a feature with no fixture page. This runs at
+# bootstrap, and again whenever a feature is installed.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
