@@ -87,9 +87,18 @@ jobs:
           npm install --global --silent pa11y-ci @lhci/cli stylelint stylelint-config-standard eslint
           # visual.sh needs these three, and skipped without them.
           npm install --global --silent playwright pixelmatch pngjs
-          npx --yes playwright install --with-deps chromium
-          curl -fsSL https://github.com/wjdp/htmltest/releases/latest/download/htmltest_linux_amd64.tar.gz \
-            | tar -xz -C "$HOME/.local/bin" htmltest || true
+          PLAYWRIGHT_BROWSERS_PATH="${GITHUB_WORKSPACE}/.playwright" \
+            npx --yes playwright install --with-deps chromium
+          # The asset carries its version in the name, so the
+          # latest/download URL is a 404 and always has been. The tool
+          # was never installed, and the gate skipped without saying so.
+          ht="$(curl -fsSL https://api.github.com/repos/wjdp/htmltest/releases/latest \
+            | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$RUNNER_TEMP/htmltest.tar.gz" \
+            "https://github.com/wjdp/htmltest/releases/download/v${ht}/htmltest_${ht}_linux_amd64.tar.gz"
+          tar -xzf "$RUNNER_TEMP/htmltest.tar.gz" -C "$HOME/.local/bin" htmltest
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck libxml2-utils
 
       # The checkers live in a private repository, so CI needs a key or a
@@ -113,6 +122,9 @@ jobs:
         if: steps.state.outputs.ready == 'yes'
         env:
           CI: "true"
+          # Lighthouse drives the browser Playwright installed. The gate
+          # finds one by itself, and this saves it the search.
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright
           GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
         run: ./c check
 
