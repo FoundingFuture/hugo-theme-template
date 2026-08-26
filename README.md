@@ -97,9 +97,9 @@ finds it. A system Chrome or Chromium works as well.
 
 ### Checking the template itself
 
-The template carries no theme, so most gates have nothing to read. `./c
-check` in it runs the `template` gate, which is the subset needing no
-theme: coverage, portability, ShellCheck and the comment rules.
+The template carries no theme, so most gates have nothing to read.
+`./c check` in it runs the `template` gate, the subset needing no theme:
+coverage, portability, ShellCheck and the comment rules.
 
 Without it the template's own README and changelog were read by nothing,
 because bootstrap replaces both and no generated project ever sees
