@@ -1,4 +1,7 @@
 DirectoryPath: "conformance/public/ours"
+# Beside the build rather than at the repository root, where it
+# left a tmp/ directory that nothing had asked for.
+OutputDir: "conformance/public/.htmltest"
 IgnoreDirectoryMissingTrailingSlash: true
 CheckExternal: false
 EnforceHTTPS: false

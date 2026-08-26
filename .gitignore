@@ -13,3 +13,11 @@ conformance/config/site/
 conformance/config/off/
 *.tar.gz
 conformance/config/scale/
+
+# What a full run leaves behind. htmltest caches its results under tmp/,
+# lighthouse-ci writes its reports, and python writes bytecode. None of
+# it is the theme, and git add -A would take all of it.
+tmp/
+.lighthouseci/
+__pycache__/
+*.pyc
