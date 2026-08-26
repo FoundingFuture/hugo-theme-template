@@ -49,7 +49,7 @@ jobs:
             chmod 600 ~/.ssh/id_ed25519
             ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
           fi
-          scripts/tools.sh writing-lint
+          tools/scripts/tools.sh writing-lint
 
       - name: What needs no theme
         if: steps.state.outputs.run == 'yes'
@@ -164,7 +164,7 @@ jobs:
             chmod 600 ~/.ssh/id_ed25519
             ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
           fi
-          scripts/tools.sh writing-lint
+          tools/scripts/tools.sh writing-lint
 
       - name: Gates
         if: steps.state.outputs.ready == 'yes'
@@ -177,13 +177,13 @@ jobs:
         if: steps.state.outputs.ready == 'yes'
         run: |
           set -euo pipefail
-          [ -s conformance/sites.txt ] || { echo "no site named"; exit 0; }
+          [ -s tools/conformance/sites.txt ] || { echo "no site named"; exit 0; }
           while IFS= read -r repo; do
             case "$repo" in ""|\#*) continue ;; esac
             git clone --depth 1 "$repo" .site-under-test
             ./c site=.site-under-test
             rm -rf .site-under-test
-          done < conformance/sites.txt
+          done < tools/conformance/sites.txt
 
       - name: Report
         if: always() && matrix.hugo == 'pinned' && steps.state.outputs.ready == 'yes'
@@ -193,19 +193,19 @@ jobs:
         if: always() && matrix.hugo == 'pinned' && steps.state.outputs.ready == 'yes'
         with:
           name: conformance-report
-          path: conformance/public/report
+          path: tools/conformance/public/report
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: conformance-output-${{ matrix.hugo }}
-          path: conformance/public
+          path: tools/conformance/public
 
       - name: Comment on the pull request
         if: always() && github.event_name == 'pull_request' && matrix.hugo == 'pinned'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: conformance
+          header: tools/conformance
           message: |
             The conformance report for this branch is attached to
             [run ${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})

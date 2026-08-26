@@ -1,0 +1,66 @@
+# Mount the repository root as the theme. No symlink, which a Windows
+# checkout mishandles, and no module download, which would need a network.
+#
+# A site-side mount listed after a theme mount for the same target wins,
+# which is the normal site-over-theme order.
+# A site importing the search component adds the json output to its
+# home page. That is what publishes the index, and it belongs to the
+# site rather than the component, because the site decides what it
+# publishes.
+[outputs]
+  home = ["html", "rss", "json"]
+
+[module]
+  [[module.mounts]]
+    source = "../../layouts"
+    target = "layouts"
+  [[module.mounts]]
+    source = "../../archetypes"
+    target = "archetypes"
+  [[module.mounts]]
+    source = "../../assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "../../i18n"
+    target = "i18n"
+  [[module.mounts]]
+    source = "../../static"
+    target = "static"
+  [[module.mounts]]
+    source = "../../data"
+    target = "data"
+  # A level-two feature: a component with its own layouts, assets and
+  # words. A site that does not mount it never sees it, which is what
+  # makes it level two rather than a toggle.
+  [[module.mounts]]
+    source = "../../features/search/layouts"
+    target = "layouts"
+  [[module.mounts]]
+    source = "../../features/search/assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "../../features/search/i18n"
+    target = "i18n"
+
+  [[module.mounts]]
+    source = "../../features/privacy-embeds/layouts"
+    target = "layouts"
+  [[module.mounts]]
+    source = "../../features/privacy-embeds/assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "../../features/privacy-embeds/i18n"
+    target = "i18n"
+
+  [[module.mounts]]
+    source = "content"
+    target = "content"
+  [[module.mounts]]
+    source = "assets"
+    target = "assets"
+  [[module.mounts]]
+    source = "i18n"
+    target = "i18n"
+  [[module.mounts]]
+    source = "static"
+    target = "static"

@@ -54,7 +54,7 @@ jobs:
             chmod 600 ~/.ssh/id_ed25519
             ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
           fi
-          scripts/tools.sh writing-lint
+          tools/scripts/tools.sh writing-lint
 
       - name: Every gate, then the release gate
         env:
@@ -87,6 +87,6 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: conformance/public/demo
+          path: tools/conformance/public/demo
 
       - uses: actions/deploy-pages@v4

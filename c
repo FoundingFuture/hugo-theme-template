@@ -10,12 +10,12 @@ set -euo pipefail
 cd "$(dirname "$0")" || exit 1
 
 # Git Bash has python and not python3, and the manifests need a reader
-# that parses TOML. scripts/python.sh answers both questions.
-PY_BIN="$(scripts/python.sh 2>/dev/null || echo python3)"
+# that parses TOML. tools/scripts/python.sh answers both questions.
+PY_BIN="$(tools/scripts/python.sh 2>/dev/null || echo python3)"
 
 
 ROOT="$(pwd -P)"
-STAGE=conformance/public
+STAGE=tools/conformance/public
 VERB=""
 declare -A ARG=()
 
@@ -73,7 +73,7 @@ bootstrapped() {
 
 cmd_version() {
   local installed pinned
-  installed="$(scripts/hugo-version.sh)"
+  installed="$(tools/scripts/hugo-version.sh)"
   pinned="$(cat .hugo-version 2>/dev/null || echo "none")"
   say "hugo installed: $installed"
   say "hugo pinned:    $pinned"
@@ -83,7 +83,7 @@ cmd_init() {
   need name
   # The owner and the repository are optional. Given, they go into
   # theme.toml. Absent, bootstrap reads them from the git remote.
-  scripts/bootstrap.sh "${ARG[name]}" "${ARG[owner]:-}" "${ARG[repo]:-}"
+  tools/scripts/bootstrap.sh "${ARG[name]}" "${ARG[owner]:-}" "${ARG[repo]:-}"
 }
 
 # Resolve theme= into the config files that select it.
@@ -93,8 +93,8 @@ theme_config() {
     ours) printf 'hugo.toml,config/ours/hugo.toml\n' ;;
     hugo|reference) printf 'hugo.toml,config/hugo/hugo.toml\n' ;;
     *)
-      [ -d "conformance/themes/$theme" ] || {
-        printf '%s\n' "no theme at conformance/themes/$theme" >&2; exit 2; }
+      [ -d "tools/conformance/themes/$theme" ] || {
+        printf '%s\n' "no theme at tools/conformance/themes/$theme" >&2; exit 2; }
       printf 'hugo.toml,config/%s/hugo.toml\n' "$theme"
       ;;
   esac
@@ -106,7 +106,7 @@ build_one() {
   local config
   config="$(theme_config "$theme")"
   say "build $theme -> $dest"
-  ( cd conformance && hugo --config "$config" -d "public/$dest" \
+  ( cd tools/conformance && hugo --config "$config" -d "public/$dest" \
       --panicOnWarning --printPathWarnings --printUnusedTemplates \
       --printI18nWarnings --logLevel warn --gc "$@" )
 }
@@ -117,14 +117,14 @@ cmd_site() {
   bootstrapped
   local site="${ARG[site]}" config dir
   [ -d "$site" ] || { printf '%s\n' "no site at $site" >&2; exit 2; }
-  # Relative to conformance/, because an absolute path from Git Bash
+  # Relative to tools/conformance/, because an absolute path from Git Bash
   # reads as /c/Users/... and the Windows Hugo binary cannot open one.
   local absolute
   absolute="$(cd "$site" && pwd -P)"
   site="$("$PY_BIN" -c 'import os,sys;print(os.path.relpath(sys.argv[1], sys.argv[2]).replace(os.sep, "/"))' \
     "$absolute" "$ROOT/conformance")"
-  scripts/reference.sh
-  config=conformance/config/site/hugo.toml
+  tools/scripts/reference.sh
+  config=tools/conformance/config/site/hugo.toml
   mkdir -p "$(dirname "$config")"
 
   # Every mount goes in this one file. Hugo replaces the mounts array
@@ -140,7 +140,7 @@ cmd_site() {
     printf '%s\n' "[module]"
     for dir in layouts archetypes assets i18n static data; do
       # The test runs from the repository root. The path written is
-      # relative to conformance/, which is where Hugo reads it.
+      # relative to tools/conformance/, which is where Hugo reads it.
       [ -d "$dir" ] || continue
       printf '  [[module.mounts]]\n    source = "../%s"\n    target = "%s"\n' "$dir" "$dir"
     done
@@ -150,12 +150,12 @@ cmd_site() {
     done
   } > "$config"
 
-  # The site's own config merges under the conformance config, so its
-  # taxonomies and menus apply while the conformance settings still win.
+  # The site's own config merges under the tools/conformance config, so its
+  # taxonomies and menus apply while the tools/conformance settings still win.
   local extra=""
   [ -f "$site/hugo.toml" ] && extra="$site/hugo.toml,"
   say "build $site against the theme"
-  ( cd conformance && hugo --config "hugo.toml,${extra}config/site/hugo.toml" \
+  ( cd tools/conformance && hugo --config "hugo.toml,${extra}config/site/hugo.toml" \
       -d public/site --panicOnWarning --printPathWarnings \
       --printI18nWarnings --logLevel warn --gc )
 }
@@ -163,7 +163,7 @@ cmd_site() {
 cmd_build() {
   local theme="${ARG[theme]:-all}"
   bootstrapped
-  scripts/reference.sh
+  tools/scripts/reference.sh
   case "$theme" in
     all)
       build_one hugo hugo
@@ -176,51 +176,51 @@ cmd_build() {
 cmd_serve() {
   bootstrapped
   local theme="${ARG[theme]:-ours}" config
-  scripts/reference.sh
+  tools/scripts/reference.sh
   config="$(theme_config "$theme")"
-  ( cd conformance && hugo server --config "$config" )
+  ( cd tools/conformance && hugo server --config "$config" )
 }
 
 cmd_conform() {
   bootstrapped
-  conformance/scripts/conform.sh
+  tools/conformance/scripts/conform.sh
 }
 
 cmd_check() {
   local gate="${ARG[gate]:-}" name="${ARG[name]:-}"
   # With no theme, only the checks that need none can run. That is the
   # template repository itself, which otherwise held its own prose and
-  # scripts to nothing, because a project replaces the README it reads.
+  # tools/scripts to nothing, because a project replaces the README it reads.
   if [ ! -d layouts ]; then
     if [ -n "$gate" ] && [ "$gate" != template ]; then
       say "no theme yet, so gate=$gate cannot run. Try ./c check gate=template."
       exit 2
     fi
     say "no theme here, so reading what needs none"
-    scripts/check/run.sh template "$name"
+    tools/scripts/check/run.sh template "$name"
     return
   fi
-  scripts/check/run.sh "$gate" "$name"
+  tools/scripts/check/run.sh "$gate" "$name"
 }
 
 cmd_snapshot() {
   bootstrapped
   ARG[theme]=ours
   cmd_build
-  rm -rf conformance/snapshots/skeleton
-  mkdir -p conformance/snapshots/skeleton
-  "$PY_BIN" conformance/scripts/skeleton.py "$STAGE/ours" \
-    --out conformance/snapshots/skeleton
+  rm -rf tools/conformance/snapshots/skeleton
+  mkdir -p tools/conformance/snapshots/skeleton
+  "$PY_BIN" tools/conformance/scripts/skeleton.py "$STAGE/ours" \
+    --out tools/conformance/snapshots/skeleton
   # The screenshots are part of the snapshot. Without this the visual
   # gate had no baseline to compare against, ever.
   if command -v node >/dev/null 2>&1; then
-    mkdir -p conformance/snapshots/screens
+    mkdir -p tools/conformance/snapshots/screens
     # The same global module path the visual gate needs.
     if [ -z "${NODE_PATH:-}" ] && command -v npm >/dev/null 2>&1; then
       NODE_PATH="$(npm root -g 2>/dev/null || true)"
       export NODE_PATH
     fi
-    if node conformance/scripts/visual.js --write; then
+    if node tools/conformance/scripts/visual.js --write; then
       say "screenshots refreshed"
     else
       say "screenshots not written. playwright, pixelmatch and pngjs are needed."
@@ -233,21 +233,21 @@ cmd_snapshot() {
 
 cmd_fixture() {
   local size="${ARG[size]:-2000}"
-  "$PY_BIN" conformance/scripts/fixture.py --size "$size"
+  "$PY_BIN" tools/conformance/scripts/fixture.py --size "$size"
 }
 
 cmd_docs() {
   bootstrapped
-  scripts/docs.sh
+  tools/scripts/docs.sh
 }
 
 cmd_report() {
-  "$PY_BIN" conformance/scripts/report.py
+  "$PY_BIN" tools/conformance/scripts/report.py
 }
 
 cmd_clean() {
-  rm -rf conformance/public resources/_gen conformance/resources/_gen \
-         .tools .hugo_build.lock conformance/.hugo_build.lock public
+  rm -rf tools/conformance/public resources/_gen tools/conformance/resources/_gen \
+         tools/.deps .hugo_build.lock tools/conformance/.hugo_build.lock public
   say "removed build output and fetched tools"
 }
 
@@ -255,12 +255,12 @@ cmd_feature() {
   bootstrapped
   local sub="${ARG[sub]:-list}"
   case "$sub" in
-    list) scripts/feature.sh list ;;
-    available) scripts/feature.sh available ;;
-    add)  need name; scripts/feature.sh add "${ARG[name]}" ;;
-    new)  need name; scripts/feature.sh new "${ARG[name]}" ;;
-    on)   need name; scripts/feature.sh on "${ARG[name]}" ;;
-    off)  need name; scripts/feature.sh off "${ARG[name]}" ;;
+    list) tools/scripts/feature.sh list ;;
+    available) tools/scripts/feature.sh available ;;
+    add)  need name; tools/scripts/feature.sh add "${ARG[name]}" ;;
+    new)  need name; tools/scripts/feature.sh new "${ARG[name]}" ;;
+    on)   need name; tools/scripts/feature.sh on "${ARG[name]}" ;;
+    off)  need name; tools/scripts/feature.sh off "${ARG[name]}" ;;
     *) printf '%s\n' "unknown feature action: $sub" >&2; usage 2 ;;
   esac
 }
@@ -268,15 +268,15 @@ cmd_feature() {
 cmd_release() {
   bootstrapped
   need v
-  scripts/release.sh "${ARG[v]}"
+  tools/scripts/release.sh "${ARG[v]}"
 }
 
 cmd_help() {
   if [ "${ARG[sub]:-}" = "check" ]; then
     printf '%s\n' "Gates run in order, cheapest first, stopping at the first failure."
-    printf '\n%s\n' "Every check is a script under scripts/check, runnable alone."
+    printf '\n%s\n' "Every check is a script under tools/scripts/check, runnable alone."
     printf '%s\n\n' "Exit codes: 0 pass, 1 findings, 2 usage, 3 missing tool."
-    scripts/check/run.sh --list
+    tools/scripts/check/run.sh --list
     exit 0
   fi
   usage 0
@@ -316,7 +316,7 @@ esac
 # ./c check name=head             one script by name
 # ./c conform                     theme=all, then file-list and skeleton diff
 # ./c release v=1.2.0             gate release, tag, push, publish
-# ./c snapshot                    refresh conformance/snapshots/ from the current ours build
+# ./c snapshot                    refresh tools/conformance/snapshots/ from the current ours build
 # ./c fixture size=2000           generate the scale fixture
 # ./c site=../some-site           build a real site against ours
 # ./c docs                        regenerate contract.toml and docs/front-matter.md
@@ -327,7 +327,7 @@ esac
 # ./c feature new name=x          write the manifest, partial, css, i18n key and fixture page
 # ./c feature on name=x
 # ./c feature off name=x
-# ./c clean                       remove public/, resources/_gen, .tools/, the lock file
+# ./c clean                       remove public/, resources/_gen, tools/.deps/, the lock file
 # ./c version                     print the installed Hugo version and .hugo-version
 # ./c help
 # END

@@ -1,0 +1,11 @@
+DirectoryPath: "tools/conformance/public/ours"
+# Beside the build rather than at the repository root, where it
+# left a tmp/ directory that nothing had asked for.
+OutputDir: "tools/conformance/public/.htmltest"
+IgnoreDirectoryMissingTrailingSlash: true
+CheckExternal: false
+EnforceHTTPS: false
+# A share link carries no recipient on purpose: the reader's mail client
+# asks for one. htmltest reads an empty recipient as a fault, which is
+# right for a contact address and wrong for this.
+CheckMailto: false

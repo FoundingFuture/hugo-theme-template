@@ -1,18 +1,18 @@
-conformance/themes/
-conformance/public/
-conformance/scale-content/
-.tools/
-conformance/resources/_gen/
-conformance/.hugo_build.lock
+tools/conformance/themes/
+tools/conformance/public/
+tools/conformance/scale-content/
+tools/.deps/
+tools/conformance/resources/_gen/
+tools/conformance/.hugo_build.lock
 resources/_gen/
 .hugo_build.lock
 public/
 .bootstrap-*
 .hugo-toml-*
-conformance/config/site/
-conformance/config/off/
+tools/conformance/config/site/
+tools/conformance/config/off/
 *.tar.gz
-conformance/config/scale/
+tools/conformance/config/scale/
 
 # What a full run leaves behind. htmltest caches its results under tmp/,
 # lighthouse-ci writes its reports, and python writes bytecode. None of

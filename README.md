@@ -77,6 +77,11 @@ predicts a green run there. Run `./c help` for the table.
 ./c serve            the fixture site with live reload
 ```
 
+`./c` is the only thing at the root that is not the theme. Everything it
+runs lives under `tools/`. The gate scripts, the fixture site, the
+feature catalogue, and the configuration each linter reads. A project's
+root is its own theme and one command, so the theme reads as a theme.
+
 ## What conformance means
 
 A fixture site builds twice. Once against the scaffold of the installed
@@ -183,8 +188,8 @@ feature is never edited out of a template.
 ```
 
 `./c feature add` is the path for anything beyond the starter set. The
-catalogue it copies from stays in `templates/feature/`, so a feature
-removed from a project can be put back.
+catalogue it copies from stays in `tools/templates/feature/`, so a feature removed from a
+project can be put back.
 
 ### Two levels
 
