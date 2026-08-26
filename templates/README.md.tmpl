@@ -1,11 +1,35 @@
 # {{NAME}}
 
 A Hugo theme, generated from the scaffold of Hugo {{HUGO_VERSION}}.
+Hugo knows it as `{{SLUG}}`.
 
-## Commands
+## Working on it
 
 ```sh
-./c init name="{{NAME}}"   generate the theme, once. Hugo knows it as {{SLUG}}
-./c serve                run the fixture site with live reload
+./c check                every gate in order, stopping at the first failure
+./c serve                the fixture site, with live reload on a template edit
 ./c conform              build against the scaffold and against this theme, then diff
+./c feature list         every feature, installed or available
+./c help                 the rest
 ```
+
+`./c check` passes on the theme as generated. Every change from here is
+measured against that.
+
+## What conformance means
+
+A fixture site builds twice. Once against the scaffold of the installed
+Hugo, once against this theme.
+
+The file list and the shape of every page are compared. The theme has to
+publish the same pages, and put the same headings, links and images on
+them.
+
+Markup and styling are free to differ. What a reader can find on the
+page is not.
+
+## Before releasing
+
+`theme.toml` needs a description, tags, features and a demo site, and
+`images/screenshot.png` and `images/tn.png` have to exist at 1500x1000
+and 900x600. `./c check gate=release` lists what is missing.

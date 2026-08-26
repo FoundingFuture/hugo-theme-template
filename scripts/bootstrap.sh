@@ -63,11 +63,42 @@ for entry in "$src"/* "$src"/.[!.]*; do
 done
 
 # 5. Write what Hugo does not generate.
+#
+#    The owner comes from wherever the project already knows it. CI
+#    has it in the environment, and a clone has it in the remote.
+#
+#    A placeholder left in theme.toml is a URL going nowhere. The
+#    release gate then fails on it later rather than sooner.
 year="$(date +%Y)"
-sed -e "s|{{NAME}}|$NAME|g" -e "s|{{SLUG}}|$SLUG|g" -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" \
-  templates/theme.toml.tmpl > theme.toml
-sed -e "s|{{NAME}}|$NAME|g" -e "s|{{SLUG}}|$SLUG|g" -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" \
-  templates/README.md.tmpl > README.md
+#    The repository name is not the slug. One may be called My-Theme
+#    while Hugo knows it as my-theme, and the URL has to name the
+#    repository. A module path is case sensitive, and module.sh reads
+#    that path out of homepage.
+if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+  OWNER="${GITHUB_REPOSITORY%%/*}"
+  REPO="${GITHUB_REPOSITORY##*/}"
+else
+  remote="$(git config --get remote.origin.url 2>/dev/null || true)"
+  remote="${remote%.git}"
+  OWNER="$(printf '%s' "$remote" | sed -n 's|.*[:/]\([^/:]*\)/[^/]*$|\1|p')"
+  REPO="$(printf '%s' "$remote" | sed -n 's|.*/\([^/]*\)$|\1|p')"
+fi
+[ -n "${OWNER:-}" ] || OWNER=OWNER
+[ -n "${REPO:-}" ] || REPO="$SLUG"
+if [ "$OWNER" = OWNER ]; then
+  printf '%s\n' "no owner found, so theme.toml keeps the placeholder"
+fi
+
+render() {
+  sed -e "s|{{NAME}}|$NAME|g" -e "s|{{SLUG}}|$SLUG|g" -e "s|{{OWNER}}|$OWNER|g" \
+      -e "s|{{REPO}}|$REPO|g" \
+      -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" "$1"
+}
+render templates/theme.toml.tmpl > theme.toml
+render templates/README.md.tmpl > README.md
+# The template's own changelog is the template's history, not this
+# theme's. A project inheriting it would ship somebody else's releases.
+render templates/CHANGELOG.md.tmpl > CHANGELOG.md
 mkdir -p i18n data assets static archetypes
 
 # 6. Pin the floor to the Hugo that generated this.
@@ -98,6 +129,11 @@ scripts/install-features.sh
 #    first check fails on a file that never existed.
 scripts/docs.sh
 
+# The one-shot pieces go, now that they have run. Keeping them leaves
+# a project with a README template that overwrites its own README.
+# The bootstrap workflow can never fire again either.
+rm -f templates/README.md.tmpl templates/theme.toml.tmpl templates/CHANGELOG.md.tmpl
+rm -f .github/workflows/bootstrap.yml
 rm -f BOOTSTRAP
 
 # 10. Prove the pair before handing back.
