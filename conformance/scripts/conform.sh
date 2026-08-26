@@ -58,9 +58,9 @@ fi
 
 # 4. Skeleton. Same pages is not the same as the same page.
 #
-#    The build compared here is the one with every feature off. A
-#    feature that is on is meant to change the page, and what it may
-#    change is checked against its manifest in the next step.
+#    The build compared here has every feature off. A feature that is
+#    on is meant to change the page. What it may change is checked
+#    against its manifest in the next step.
 say "conform: comparing the page skeletons"
 python3 scripts/skeleton.py "$PUB/hugo" > "$PUB/skeleton-hugo.json"
 python3 scripts/skeleton.py "$PUB/ours-off" > "$PUB/skeleton-ours.json"

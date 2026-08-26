@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Write the pull request report as one self-contained page.
 
-A reviewer reads one page and sees what the branch changed: which gates
+A reviewer reads one page and sees what the branch changed. Which gates
 ran, which files appeared or vanished, which page skeletons moved, and
-what the last release looked like beside what this build looks like.
+what the last release looked like beside this build.
 
-Nothing here is fetched. The page carries its own styling, because a
-workflow artifact is opened from a file path with no server behind it.
+Nothing here is fetched. The styling is read from report.css and put in
+the page, because a workflow artifact is opened from a file path with no
+server behind it.
 """
 
 import html
@@ -19,24 +20,7 @@ OUT = "conformance/public/report"
 PUB = "conformance/public"
 SNAPSHOT = "conformance/snapshots/skeleton"
 
-STYLE = """
-:root { color-scheme: light dark; --bg:#fff; --fg:#111; --line:#d0d0d0;
-        --add:#1a7f37; --del:#b3261e; --muted:#666; }
-@media (prefers-color-scheme: dark) {
-  :root { --bg:#111; --fg:#eee; --line:#333; --add:#4ac26b; --del:#ff7b72; --muted:#999; }
-}
-body { background:var(--bg); color:var(--fg); margin:0 auto; max-width:60rem;
-       padding:2rem 1rem; font:16px/1.6 system-ui, sans-serif; }
-h1 { font-size:1.6rem; } h2 { font-size:1.2rem; margin-top:2.5rem; }
-table { border-collapse:collapse; width:100%; }
-th, td { border-bottom:1px solid var(--line); padding:.4rem .6rem; text-align:left;
-         vertical-align:top; }
-pre { overflow-x:auto; background:color-mix(in srgb, var(--fg) 6%, transparent);
-      padding:.8rem; border-radius:4px; }
-.add { color:var(--add); } .del { color:var(--del); }
-.muted { color:var(--muted); }
-.none { color:var(--muted); font-style:italic; }
-"""
+STYLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "report.css")
 
 
 def read(path):
@@ -169,7 +153,7 @@ def main():
         "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
         "<meta name=\"viewport\" content=\"width=device-width\">\n"
         "<title>Conformance report</title>\n<style>%s</style>\n</head>\n<body>\n%s\n"
-        "</body>\n</html>\n" % (STYLE, "\n".join(parts)))
+        "</body>\n</html>\n" % (read(STYLE_PATH) or "", "\n".join(parts)))
     target = os.path.join(OUT, "index.html")
     with open(target, "w", encoding="utf-8") as handle:
         handle.write(document)

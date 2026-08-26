@@ -2,13 +2,13 @@
 """The reference and the theme agree on the h1 of every page.
 
 Bootstrap takes one h1 off the scaffold. The scaffold puts the site
-title in an h1 in the header and the page title in a second h1 below it,
-and a page with two of them has no single heading.
+title in an h1 in the header, and the page title in a second h1 below
+it. A page with two of them has no single heading.
 
-The one taken away sits in the header, outside the content, so no page's
-own h1 moves. That claim held when it was made. This is what keeps it
-holding, because the skeleton comparison could be loosened later and the
-h1 would go quiet rather than fail.
+The one taken away sits in the header, outside the content, so no
+page's own h1 moves. That claim held when it was made, and this is what
+keeps it holding. The skeleton comparison could be loosened later, and
+then the h1 would go quiet rather than fail.
 """
 
 import json

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Write the scale fixture.
 
-A template that runs a site-wide query inside a per-page loop is fast on
+A template running a site-wide query inside a per-page loop is fast on
 twenty pages and slow on two thousand. The cost shows up here and
-nowhere else, so the fixture exists to make it show up.
+nowhere else. The fixture exists to make it show up.
 
 The content is generated, not committed, and its directory is
-gitignored. It sits outside content/, so only the scale build mounts it.
-A fixture of two thousand pages inside content/ would slow every other
+gitignored. It sits outside content/, so only the scale build mounts
+it. Two thousand pages inside content/ would slow every other
 build and drown every other gate in tag pages.
 """
 

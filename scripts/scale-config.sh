@@ -2,10 +2,11 @@
 # Print the config the scale build uses.
 #
 # Every mount goes in one file. Hugo replaces the mounts array when two
-# configs both declare one, rather than joining them, so a file holding
-# only the scale mount would drop the theme and the fixture with it. That
-# is what made the scale build render nothing while still reporting a
-# time.
+# configs both declare one, rather than joining them. A file holding
+# only the scale mount would drop the theme and the fixture with it.
+#
+# That is what made the scale build render nothing, while still
+# reporting a time.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

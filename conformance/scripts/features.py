@@ -102,9 +102,9 @@ def compare(before, after, allowed):
             if selector not in allowed["marked"]:
                 findings.append(
                     "%s:1: %s appeared, and no manifest declares it." % (path, selector))
-        # A link is allowed when the container it sits in was declared.
-        # That is what lets a table of contents or a breadcrumb trail add
-        # links without opening the door to every other link.
+        # A link is allowed when its container was declared. That lets
+        # a table of contents add links, without opening the door to
+        # every other link on the page.
         for row in new.get("links", []):
             if row in old.get("links", []):
                 continue

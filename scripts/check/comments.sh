@@ -9,7 +9,7 @@ bin="$(scripts/tools.sh writing-lint 2>/dev/null)" || {
 [ -x "$bin/check-docs" ] || { echo "SKIP comments: check-docs not on PATH"; exit 3; }
 
 targets="c"
-for path in scripts layouts assets docs README.md CHANGELOG.md; do
+for path in scripts conformance/scripts layouts assets docs README.md CHANGELOG.md; do
   [ -e "$path" ] && targets="$targets $path"
 done
 # shellcheck disable=SC2086

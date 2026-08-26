@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """Reduce a built page to the shape a reader sees.
 
-One JSON document per HTML file: the h1, the heading outline, the links
+One JSON document per HTML file. The h1, the heading outline, the links
 and images inside the content, a count of the block elements, and every
-classed element with the text it carries. Two themes that render the
-same pages agree here, whatever their markup and their stylesheet.
+classed element with the text it carries.
+
+Two themes that render the same pages agree here, whatever their markup
+and their stylesheet.
 
 The classed elements are what makes a feature visible. A feature
-declares what it adds, as tag and class, and the declaration is checked
-against what actually appeared.
+declares what it adds, as a tag and a class. The declaration is then
+checked against what actually appeared.
 
-Chrome is excluded. A link in a nav or a footer belongs to the theme, not
-to the page, and comparing it would report every menu as a difference.
+Chrome is excluded. A link in a nav or a footer belongs to the theme
+rather than the page, and comparing it would report every menu.
 
 Usage:
     skeleton.py DIR [--out DIR] [--assert-single-h1] [--assert-description]
@@ -39,8 +41,8 @@ class Skeleton(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.h1 = []
         self.marked = []
-        # The classed elements open around the cursor, innermost last. A
-        # link records the nearest one, so a feature can declare the
+        # The classed elements open around the cursor, innermost last.
+        # A link records the nearest one. A feature can then declare the
         # links it adds by naming the container it puts them in.
         self.classed = []
         self.headings = []
@@ -117,9 +119,9 @@ class Skeleton(HTMLParser):
             # rest of the document.
             return
 
-        # A heading is a heading first, whatever classes it carries. A
-        # link inside one is recorded as well as the heading, which is
-        # why the frames are a stack and not a single slot.
+        # A heading is a heading first, whatever classes it carries.
+        # A link inside one is recorded as well as the heading. That is
+        # why the frames are a stack rather than a single slot.
         if tag == "h1":
             self.push(tag, "h1", None)
         elif tag in HEADINGS:
@@ -150,8 +152,8 @@ class Skeleton(HTMLParser):
             self.chrome_depth = max(0, self.chrome_depth - 1)
 
     def handle_data(self, data):
-        # Every open frame collects the text, so a heading holding a link
-        # records its own words and the link records the same words.
+        # Every open frame collects the text. A heading holding a link
+        # records its own words, and so does the link.
         for frame in self.frames:
             frame["buffer"].append(data)
 

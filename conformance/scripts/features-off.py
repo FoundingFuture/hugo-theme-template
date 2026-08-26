@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Print a config that switches every feature off.
 
-Generated rather than kept, so a feature added today is off in the
+Generated rather than kept. A feature added today is off in the
 comparison build today, with no second place to remember.
 """
 

@@ -1,8 +1,8 @@
 // Screenshots of the pages a design change is most likely to move.
 //
 // A difference is reported and lands in the pull request report. It does
-// not fail the build, because a deliberate design change is a difference
-// too, and only a person can tell the two apart.
+// not fail the build. A deliberate design change is a difference too,
+// and only a person can tell the two apart.
 const fs = require('fs');
 const path = require('path');
 
