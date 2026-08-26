@@ -187,8 +187,19 @@ cmd_conform() {
 }
 
 cmd_check() {
-  bootstrapped
   local gate="${ARG[gate]:-}" name="${ARG[name]:-}"
+  # With no theme, only the checks that need none can run. That is the
+  # template repository itself, which otherwise held its own prose and
+  # scripts to nothing, because a project replaces the README it reads.
+  if [ ! -d layouts ]; then
+    if [ -n "$gate" ] && [ "$gate" != template ]; then
+      say "no theme yet, so gate=$gate cannot run. Try ./c check gate=template."
+      exit 2
+    fi
+    say "no theme here, so reading what needs none"
+    scripts/check/run.sh template "$name"
+    return
+  fi
   scripts/check/run.sh "$gate" "$name"
 }
 

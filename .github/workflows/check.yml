@@ -9,6 +9,55 @@ permissions:
   pull-requests: write
 
 jobs:
+  # The template repository holds no theme, so the gates below cannot
+  # run on it. This reads what needs none, and is the only thing that
+  # ever reads the template's own prose and scripts.
+  template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stop where a theme exists
+        id: state
+        run: |
+          if [ -f BOOTSTRAP ] || [ ! -d layouts ]; then
+            echo "run=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=no, a theme is here and the full gates cover it" >&2
+            echo "run=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.state.outputs.run == 'yes'
+        with:
+          python-version: '3.12'
+
+      - name: Install shellcheck
+        if: steps.state.outputs.run == 'yes'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+
+      - name: Reach writing-lint
+        if: steps.state.outputs.run == 'yes'
+        env:
+          WRITING_LINT_KEY: ${{ secrets.WRITING_LINT_DEPLOY_KEY }}
+          GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${WRITING_LINT_KEY:-}" ]; then
+            mkdir -p ~/.ssh && chmod 700 ~/.ssh
+            printf '%s\n' "$WRITING_LINT_KEY" > ~/.ssh/id_ed25519
+            chmod 600 ~/.ssh/id_ed25519
+            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          scripts/tools.sh writing-lint
+
+      - name: What needs no theme
+        if: steps.state.outputs.run == 'yes'
+        env:
+          CI: "true"
+          GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
+        run: ./c check gate=template
+
   gates:
     runs-on: ubuntu-latest
     strategy:

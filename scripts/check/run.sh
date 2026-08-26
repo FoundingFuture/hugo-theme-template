@@ -18,6 +18,12 @@ WANT_NAME="${2:-}"
 # reported four unused variables that were the whole schedule.
 gate_checks() {
   case "$1" in
+    # What can be read with no theme present.
+    #
+    # The template repository holds no theme, so this is the only gate
+    # that runs there. Without it, the template's own prose is read by
+    # nothing, because a project replaces the README and never sees it.
+    template) echo "coverage portable shellcheck comments" ;;
     static)  echo "coverage portable shellcheck templates contract reserved i18n css js comments metadata features" ;;
     build)   echo "build versions scale" ;;
     output)  echo "conform validity head a11y perf content external nojs feeds search expect visual" ;;
@@ -27,7 +33,7 @@ gate_checks() {
 }
 
 if [ "$WANT_GATE" = "--list" ]; then
-  for gate in static build output release; do
+  for gate in template static build output release; do
     names="$(gate_checks "$gate")"
     printf '%s\n' "$gate"
     for name in $names; do
@@ -94,7 +100,7 @@ gates="static build output"
 status=0
 for gate in $gates; do
   case "$gate" in
-    static|build|output|release) ;;
+    template|static|build|output|release) ;;
     *) printf '%s\n' "unknown gate: $gate" >&2; exit 2 ;;
   esac
   run_gate "$gate" || { status=1; break; }
