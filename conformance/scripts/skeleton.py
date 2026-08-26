@@ -58,9 +58,7 @@ class Skeleton(HTMLParser):
         self.main_depth = 0
         self.chrome_depth = 0
         self.seen_main = False
-        self.capture = None
-        self.buffer = []
-        self.pending = None
+        self.frames = []
 
     # A page with <main> defines its content that way. A page without one
     # counts everything outside the chrome elements.
@@ -70,13 +68,19 @@ class Skeleton(HTMLParser):
         return bool(self.main_depth) or not self.seen_main
 
     def container(self):
+        """The nearest classed element open around the cursor."""
         return self.classed[-1][1] if self.classed else ""
 
     def handle_starttag(self, tag, attrs):
         attr = dict(attrs)
+        # Read the container before this element joins the stack, or an
+        # element would be recorded as its own container.
+        parent = self.container()
         if tag not in VOID and attr.get("class"):
-            first = attr["class"].split()[0] if attr["class"].split() else ""
-            self.classed.append((tag, "%s.%s" % (tag, first) if first else tag))
+            names = attr["class"].split()
+            label = "%s.%s" % (tag, names[0]) if names else tag
+            self.classed.append((tag, label))
+
         if tag == "main":
             self.seen_main = True
             self.main_depth += 1
@@ -102,27 +106,40 @@ class Skeleton(HTMLParser):
             self.h1_total += 1
         if not self.in_content():
             return
+
         if tag in self.counts:
             self.counts[tag] += 1
-        elif tag == "img":
+        if tag == "img":
             self.images.append([attr.get("src", ""), attr.get("alt")])
-        elif tag == "a" and "href" in attr:
-            self.flush()
-            self.capture = "a"
-            self.pending = (attr["href"], self.container())
-        elif tag == "h1":
-            self.flush()
-            self.capture = "h1"
-        elif attr.get("class"):
-            self.flush()
-            self.capture = tag
-            self.pending = attr["class"]
+            return
+        if tag in VOID:
+            # It never closes, so a frame opened here would swallow the
+            # rest of the document.
+            return
+
+        # A heading is a heading first, whatever classes it carries. A
+        # link inside one is recorded as well as the heading, which is
+        # why the frames are a stack and not a single slot.
+        if tag == "h1":
+            self.push(tag, "h1", None)
         elif tag in HEADINGS:
-            self.flush()
-            self.capture = tag
-            self.pending = (attr.get("id", ""), self.container())
+            self.push(tag, "heading", (attr.get("id", ""), parent))
+        elif tag == "a" and "href" in attr:
+            self.push(tag, "link", (attr["href"], parent))
+        elif attr.get("class"):
+            self.push(tag, "marked", attr["class"])
+
+    def push(self, tag, kind, pending):
+        self.frames.append({"tag": tag, "kind": kind, "pending": pending,
+                            "buffer": []})
 
     def handle_endtag(self, tag):
+        for index in range(len(self.frames) - 1, -1, -1):
+            if self.frames[index]["tag"] == tag:
+                for frame in self.frames[index:]:
+                    self.emit(frame)
+                del self.frames[index:]
+                break
         for index in range(len(self.classed) - 1, -1, -1):
             if self.classed[index][0] == tag:
                 del self.classed[index:]
@@ -131,30 +148,33 @@ class Skeleton(HTMLParser):
             self.main_depth = max(0, self.main_depth - 1)
         elif tag in CHROME:
             self.chrome_depth = max(0, self.chrome_depth - 1)
-        if self.capture == tag:
-            self.flush()
 
     def handle_data(self, data):
-        if self.capture:
-            self.buffer.append(data)
+        # Every open frame collects the text, so a heading holding a link
+        # records its own words and the link records the same words.
+        for frame in self.frames:
+            frame["buffer"].append(data)
+
+    def emit(self, frame):
+        text = " ".join("".join(frame["buffer"]).split())
+        kind = frame["kind"]
+        if kind == "link":
+            href, parent = frame["pending"]
+            self.links.append([href, text, parent])
+        elif kind == "h1":
+            self.h1.append(text)
+        elif kind == "heading":
+            identifier, parent = frame["pending"]
+            self.headings.append([int(frame["tag"][1]), identifier, text, parent])
+        elif kind == "marked":
+            for name in (frame["pending"] or "").split():
+                self.marked.append(["%s.%s" % (frame["tag"], name), text])
 
     def flush(self):
-        if not self.capture:
-            return
-        text = " ".join("".join(self.buffer).split())
-        if self.capture == "a":
-            href, container = self.pending
-            self.links.append([href, text, container])
-        elif self.capture == "h1":
-            self.h1.append(text)
-        elif self.capture in HEADINGS:
-            level = int(self.capture[1])
-            identifier, container = self.pending
-            self.headings.append([level, identifier, text, container])
-        else:
-            for name in (self.pending or "").split():
-                self.marked.append(["%s.%s" % (self.capture, name), text])
-        self.capture, self.buffer, self.pending = None, [], None
+        """Close every frame still open at the end of the document."""
+        for frame in self.frames:
+            self.emit(frame)
+        self.frames = []
 
     def document(self):
         return {
