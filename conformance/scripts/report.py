@@ -2,12 +2,12 @@
 """Write the pull request report as one self-contained page.
 
 A reviewer reads one page and sees what the branch changed. Which gates
-ran, which files appeared or vanished, which page skeletons moved, and
+ran. Which files appeared or vanished. Which page skeletons moved, and
 what the last release looked like beside this build.
 
 Nothing here is fetched. The styling is read from report.css and put in
-the page, because a workflow artifact is opened from a file path with no
-server behind it.
+the page. A workflow artifact is opened from a file path, with no server
+behind it.
 """
 
 import html

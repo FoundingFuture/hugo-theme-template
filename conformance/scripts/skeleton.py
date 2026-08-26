@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Reduce a built page to the shape a reader sees.
 
-One JSON document per HTML file. The h1, the heading outline, the links
-and images inside the content, a count of the block elements, and every
-classed element with the text it carries.
+One JSON document per HTML file. The h1 and the heading outline. The
+links and images inside the content. A count of the block elements, and
+every classed element with the text it carries.
 
 Two themes that render the same pages agree here, whatever their markup
 and their stylesheet.
@@ -13,7 +13,7 @@ declares what it adds, as a tag and a class. The declaration is then
 checked against what actually appeared.
 
 Chrome is excluded. A link in a nav or a footer belongs to the theme
-rather than the page, and comparing it would report every menu.
+rather than the page. Comparing it would report every menu.
 
 Usage:
     skeleton.py DIR [--out DIR] [--assert-single-h1] [--assert-description]
