@@ -33,7 +33,7 @@ parse() {
       *=*)
         key="${item%%=*}"
         case "$key" in
-          theme|name|gate|size|site|v) ARG["$key"]="${item#*=}" ;;
+          theme|name|owner|repo|gate|size|site|v) ARG["$key"]="${item#*=}" ;;
           *) printf '%s\n' "unknown key: $key" >&2; usage 2 ;;
         esac
         ;;
@@ -81,7 +81,9 @@ cmd_version() {
 
 cmd_init() {
   need name
-  scripts/bootstrap.sh "${ARG[name]}"
+  # The owner and the repository are optional. Given, they go into
+  # theme.toml. Absent, bootstrap reads them from the git remote.
+  scripts/bootstrap.sh "${ARG[name]}" "${ARG[owner]:-}" "${ARG[repo]:-}"
 }
 
 # Resolve theme= into the config files that select it.
@@ -292,6 +294,7 @@ esac
 # ./c theme=all                   both, into public/ours and public/hugo
 # ./c theme=ours serve            hugo server with live reload
 # ./c init name="My Theme"        bootstrap, one-shot. The slug is derived
+# ./c init name=x owner=y repo=z  and the URLs in theme.toml are filled in
 # ./c check                       every gate in order, stop at first failure
 # ./c check gate=static           one gate: static, build, output, release
 # ./c check name=head             one script by name

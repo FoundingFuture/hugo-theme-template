@@ -57,7 +57,13 @@ jobs:
           set -euo pipefail
           # The repository name is the theme's name as given. Bootstrap
           # derives the slug Hugo needs and prints it.
-          ./c init name="${GITHUB_REPOSITORY##*/}"
+          #
+          # The owner and the repository are passed rather than read
+          # from the environment, so the same command works by hand and
+          # bootstrap.sh needs to know nothing about this runner.
+          ./c init name="${GITHUB_REPOSITORY##*/}" \
+                  owner="${GITHUB_REPOSITORY_OWNER}" \
+                  repo="${GITHUB_REPOSITORY##*/}"
 
       - name: Commit
         if: steps.marker.outputs.run == 'yes'

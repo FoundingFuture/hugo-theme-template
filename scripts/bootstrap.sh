@@ -12,7 +12,9 @@ cd "$(dirname "$0")/.."
 # letters, digits and hyphens. The slug becomes a directory, a module path
 # and a URL. It is derived here, once, and never asked for.
 NAME="${1:-}"
-[ -n "$NAME" ] || { echo "usage: scripts/bootstrap.sh NAME" >&2; exit 2; }
+OWNER="${2:-}"
+REPO="${3:-}"
+[ -n "$NAME" ] || { echo "usage: scripts/bootstrap.sh NAME [OWNER] [REPO]" >&2; exit 2; }
 SLUG="$(printf '%s' "$NAME" \
   | tr '[:upper:]' '[:lower:]' \
   | sed -e 's/[^a-z0-9]\{1,\}/-/g' -e 's/^-//' -e 's/-$//')"
@@ -64,29 +66,30 @@ done
 
 # 5. Write what Hugo does not generate.
 #
-#    The owner comes from wherever the project already knows it. CI
-#    has it in the environment, and a clone has it in the remote.
+#    The owner and the repository are given, or read from the remote,
+#    or left as placeholders. Whoever calls knows them. The workflow
+#    has them in its environment, and a clone has them in its remote.
 #
 #    A placeholder left in theme.toml is a URL going nowhere. The
 #    release gate then fails on it later rather than sooner.
-year="$(date +%Y)"
+#
 #    The repository name is not the slug. One may be called My-Theme
 #    while Hugo knows it as my-theme, and the URL has to name the
 #    repository. A module path is case sensitive, and module.sh reads
 #    that path out of homepage.
-if [ -n "${GITHUB_REPOSITORY:-}" ]; then
-  OWNER="${GITHUB_REPOSITORY%%/*}"
-  REPO="${GITHUB_REPOSITORY##*/}"
-else
+year="$(date +%Y)"
+if [ -z "$OWNER" ] || [ -z "$REPO" ]; then
   remote="$(git config --get remote.origin.url 2>/dev/null || true)"
   remote="${remote%.git}"
-  OWNER="$(printf '%s' "$remote" | sed -n 's|.*[:/]\([^/:]*\)/[^/]*$|\1|p')"
-  REPO="$(printf '%s' "$remote" | sed -n 's|.*/\([^/]*\)$|\1|p')"
+  [ -n "$OWNER" ] || \
+    OWNER="$(printf '%s' "$remote" | sed -n 's|.*[:/]\([^/:]*\)/[^/]*$|\1|p')"
+  [ -n "$REPO" ] || \
+    REPO="$(printf '%s' "$remote" | sed -n 's|.*/\([^/]*\)$|\1|p')"
 fi
-[ -n "${OWNER:-}" ] || OWNER=OWNER
-[ -n "${REPO:-}" ] || REPO="$SLUG"
+[ -n "$OWNER" ] || OWNER=OWNER
+[ -n "$REPO" ] || REPO="$SLUG"
 if [ "$OWNER" = OWNER ]; then
-  printf '%s\n' "no owner found, so theme.toml keeps the placeholder"
+  printf '%s\n' "no owner given or found, so theme.toml keeps the placeholder"
 fi
 
 render() {
