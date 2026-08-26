@@ -13,6 +13,7 @@ passes on it with no finding.
   reads it. A link stays visibly different from a subresource.
 - The scale build time lands in the pull request report on every run.
 - `./c site=` builds any real Hugo site against the theme.
-- Two components: `privacy-embeds` and `search`.
+- Two components: `privacy-embeds` and `search`. A third, tag
+  narrowing, waits for the site that has the page it narrows.
 - A tracked file over a megabyte fails, and a directory no check reads
   fails.

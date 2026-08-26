@@ -148,9 +148,9 @@ def main():
         return 0
 
     # --into writes the same pair somewhere else. Both files are
-    # generated from the same templates, so the gate that asks whether
-    # they are stale has to compare both, and comparing them means
-    # having a fresh copy of each that is not the checked-in one.
+    # generated from the same templates, so the gate has to compare
+    # both. That needs a fresh copy of each, and not the checked-in
+    # ones.
     if "--into" in argv:
         index = argv.index("--into") + 1
         if index >= len(argv):

@@ -210,6 +210,13 @@ page in its own markup. A reader with the script blocked then has a
 working index rather than an empty box. The script filters that list and
 fetches nothing. The index is held under 1.5 MB by a gate.
 
+Two components ship, and two is the point. `search` proves the level
+that mounts a directory, and `features/<name>/README.md` says how a
+second one is written. A component whose only real page lives in a
+site is better written there, against that page. A fixture page invented
+for it would be designing the thing twice. The mechanism is proven
+either way.
+
 A manifest declares what the feature adds to the rendered page. The
 fixture builds three times. The reference scaffold, the theme with every
 feature off, and the theme with them at their defaults.
