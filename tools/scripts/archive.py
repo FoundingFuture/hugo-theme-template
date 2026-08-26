@@ -16,6 +16,13 @@ import os
 import sys
 import zipfile
 
+# zipfile stamps each member with the file's mtime, so the same commit
+# packed on two machines gives two different zips. The contents match,
+# the order matches, and the bytes differ. Nothing compares zips today,
+# and a release people can checksum is worth four lines.
+STAMP = (1980, 1, 1, 0, 0, 0)
+MODE = 0o644 << 16
+
 
 def write(source, target):
     source = source.rstrip("/\\")
@@ -31,7 +38,14 @@ def write(source, target):
             paths.append(os.path.join(folder, name))
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(paths):
-            archive.write(path, os.path.relpath(path, parent).replace(os.sep, "/"))
+            name = os.path.relpath(path, parent).replace(os.sep, "/")
+            entry = zipfile.ZipInfo(name, STAMP)
+            entry.compress_type = zipfile.ZIP_DEFLATED
+            # The mode a downloader unpacks, rather than the one this
+            # checkout happens to carry.
+            entry.external_attr = MODE
+            with open(path, "rb") as handle:
+                archive.writestr(entry, handle.read())
     return 0
 
 
