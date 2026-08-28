@@ -1,4 +1,5 @@
 readlink -f|readlink -f is GNU only. Use cd and pwd -P instead.
+declare -A|declare -A is bash 4 only, and macOS ships bash 3.2. Use one variable per key.
 sed -i ''|BSD sed -i with an empty suffix. Write a temp file and mv it.
 find .* -printf|find -printf is GNU only.
 date -d |date -d is GNU only.

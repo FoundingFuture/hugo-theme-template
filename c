@@ -17,7 +17,18 @@ PY_BIN="$(tools/scripts/python.sh 2>/dev/null || echo python3)"
 ROOT="$(pwd -P)"
 STAGE=tools/conformance/public
 VERB=""
-declare -A ARG=()
+# One variable per key rather than an associative array, which is
+# bash 4, and the bash a stock Mac ships is 3.2.
+ARG_theme=""
+ARG_name=""
+ARG_owner=""
+ARG_repo=""
+ARG_gate=""
+ARG_size=""
+ARG_site=""
+ARG_v=""
+ARG_sub=""
+ARG_strict=""
 
 # ------------------------------------------------------------ arguments
 
@@ -33,7 +44,14 @@ parse() {
       *=*)
         key="${item%%=*}"
         case "$key" in
-          theme|name|owner|repo|gate|size|site|v) ARG["$key"]="${item#*=}" ;;
+          theme) ARG_theme="${item#*=}" ;;
+          name)  ARG_name="${item#*=}" ;;
+          owner) ARG_owner="${item#*=}" ;;
+          repo)  ARG_repo="${item#*=}" ;;
+          gate)  ARG_gate="${item#*=}" ;;
+          size)  ARG_size="${item#*=}" ;;
+          site)  ARG_site="${item#*=}" ;;
+          v)     ARG_v="${item#*=}" ;;
           *) printf '%s\n' "unknown key: $key" >&2; usage 2 ;;
         esac
         ;;
@@ -41,21 +59,21 @@ parse() {
         if [ -z "$VERB" ]; then
           VERB="$item"
         else
-          ARG["sub"]="$item"
+          ARG_sub="$item"
         fi
         ;;
       list|new|on|off|add|available)
-        ARG["sub"]="$item"
+        ARG_sub="$item"
         ;;
-      --strict) ARG["strict"]=yes ;;
+      --strict) ARG_strict=yes ;;
       *) printf '%s\n' "unknown argument: $item" >&2; usage 2 ;;
     esac
   done
 }
 
 need() {
-  local key="$1"
-  [ -n "${ARG[$key]:-}" ] || { printf '%s\n' "missing $key=" >&2; usage 2; }
+  local key="$1" var="ARG_$1"
+  [ -n "${!var:-}" ] || { printf '%s\n' "missing $key=" >&2; usage 2; }
 }
 
 say() { printf '%s\n' "$*"; }
@@ -83,7 +101,7 @@ cmd_init() {
   need name
   # The owner and the repository are optional. Given, they go into
   # theme.toml. Absent, bootstrap reads them from the git remote.
-  tools/scripts/bootstrap.sh "${ARG[name]}" "${ARG[owner]:-}" "${ARG[repo]:-}"
+  tools/scripts/bootstrap.sh "$ARG_name" "${ARG_owner:-}" "${ARG_repo:-}"
 }
 
 # Resolve theme= into the config files that select it.
@@ -116,7 +134,7 @@ build_one() {
 # what Hugo can do. This covers what a site does.
 cmd_site() {
   bootstrapped
-  local site="${ARG[site]}" config dir
+  local site="$ARG_site" config dir
   [ -d "$site" ] || { printf '%s\n' "no site at $site" >&2; exit 2; }
   # Relative to tools/conformance/, because an absolute path from Git Bash
   # reads as /c/Users/... and the Windows Hugo binary cannot open one.
@@ -159,7 +177,7 @@ cmd_site() {
 }
 
 cmd_build() {
-  local theme="${ARG[theme]:-all}"
+  local theme="${ARG_theme:-all}"
   bootstrapped
   tools/scripts/configs.sh >/dev/null
   tools/scripts/reference.sh
@@ -174,7 +192,7 @@ cmd_build() {
 
 cmd_serve() {
   bootstrapped
-  local theme="${ARG[theme]:-dev}" config
+  local theme="${ARG_theme:-dev}" config
   tools/scripts/configs.sh >/dev/null
   tools/scripts/reference.sh
   # serve reads the sources, so an edit shows up without a repack.
@@ -192,7 +210,7 @@ cmd_conform() {
 }
 
 cmd_check() {
-  local gate="${ARG[gate]:-}" name="${ARG[name]:-}"
+  local gate="${ARG_gate:-}" name="${ARG_name:-}"
   # With no theme, only the checks that need none can run. That is the
   # template repository itself, which otherwise held its own prose and
   # tools/scripts to nothing, because a project replaces the README it reads.
@@ -210,7 +228,7 @@ cmd_check() {
 
 cmd_snapshot() {
   bootstrapped
-  ARG[theme]=ours
+  ARG_theme=ours
   cmd_build
   rm -rf tools/conformance/snapshots/skeleton
   mkdir -p tools/conformance/snapshots/skeleton
@@ -237,7 +255,7 @@ cmd_snapshot() {
 }
 
 cmd_fixture() {
-  local size="${ARG[size]:-2000}"
+  local size="${ARG_size:-2000}"
   "$PY_BIN" tools/conformance/scripts/fixture.py --size "$size"
 }
 
@@ -263,14 +281,14 @@ cmd_clean() {
 
 cmd_feature() {
   bootstrapped
-  local sub="${ARG[sub]:-list}"
+  local sub="${ARG_sub:-list}"
   case "$sub" in
     list) tools/scripts/feature.sh list ;;
     available) tools/scripts/feature.sh available ;;
-    add)  need name; tools/scripts/feature.sh add "${ARG[name]}" ;;
-    new)  need name; tools/scripts/feature.sh new "${ARG[name]}" ;;
-    on)   need name; tools/scripts/feature.sh on "${ARG[name]}" ;;
-    off)  need name; tools/scripts/feature.sh off "${ARG[name]}" ;;
+    add)  need name; tools/scripts/feature.sh add "$ARG_name" ;;
+    new)  need name; tools/scripts/feature.sh new "$ARG_name" ;;
+    on)   need name; tools/scripts/feature.sh on "$ARG_name" ;;
+    off)  need name; tools/scripts/feature.sh off "$ARG_name" ;;
     *) printf '%s\n' "unknown feature action: $sub" >&2; usage 2 ;;
   esac
 }
@@ -278,11 +296,11 @@ cmd_feature() {
 cmd_release() {
   bootstrapped
   need v
-  tools/scripts/release.sh "${ARG[v]}"
+  tools/scripts/release.sh "$ARG_v"
 }
 
 cmd_help() {
-  if [ "${ARG[sub]:-}" = "check" ]; then
+  if [ "${ARG_sub:-}" = "check" ]; then
     printf '%s\n' "Gates run in order, cheapest first, stopping at the first failure."
     printf '\n%s\n' "Every check is a script under tools/scripts/check, runnable alone."
     printf '%s\n\n' "Exit codes: 0 pass, 1 findings, 2 usage, 3 missing tool."
@@ -297,7 +315,7 @@ cmd_help() {
 parse "$@"
 
 case "$VERB" in
-  "")        if [ -n "${ARG[site]:-}" ]; then cmd_site; else cmd_build; fi ;;
+  "")        if [ -n "${ARG_site:-}" ]; then cmd_site; else cmd_build; fi ;;
   init)      cmd_init ;;
   check)     cmd_check ;;
   conform)   cmd_conform ;;
