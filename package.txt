@@ -16,7 +16,9 @@ ship README.md
 ship archetypes
 ship assets
 ship data
+ship exampleSite
 ship features
+ship go.mod
 ship hugo.toml
 ship i18n
 ship images

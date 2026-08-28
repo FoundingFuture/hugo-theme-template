@@ -25,7 +25,7 @@ gate_checks() {
     # nothing, because a project replaces the README and never sees it.
     template) echo "coverage portable shellcheck comments" ;;
     static)  echo "coverage portable shellcheck templates contract reserved i18n css js comments metadata features" ;;
-    build)   echo "package install build versions scale" ;;
+    build)   echo "package install example build versions scale" ;;
     output)  echo "conform validity head a11y perf external nojs feeds search expect visual" ;;
     release) echo "changelog version listing module demo" ;;
     *)       return 1 ;;

@@ -59,6 +59,31 @@ src="$tmp/$SLUG"
 mkdir -p tools/conformance/content/scaffold
 if [ -d "$src/content" ]; then
   cp -R "$src/content/." tools/conformance/content/scaffold/
+
+  # 4b. The example site, which themes.gohugo.io needs and a reviewer
+  #     opens first. Hugo generates it, so it is a Hugo site rather than
+  #     one written here, and it carries the scaffold's own sample
+  #     content rather than invented prose.
+  #
+  #     A theme whose demo needs its own structure must provide one, and
+  #     it must be as generic as possible. Hugo's lorem ipsum is exactly
+  #     that. A theme that needs more depth than the scaffold ships adds
+  #     it here afterwards, in the same register.
+  hugo new site exampleSite >/dev/null || fail "hugo new site failed."
+  rm -rf exampleSite/content
+  mkdir -p exampleSite/content
+  cp -R "$src/content/." exampleSite/content/
+
+  # The depth Hugo's sample content has not got. Hugo writes every
+  # page, through the archetype, so the pages are its shape rather
+  # than this script's idea of one.
+  #
+  # Run now, while the site's config is the one `hugo new site` wrote
+  # and names no theme. A config naming a theme that is not installed
+  # yet stops Hugo loading the site at all, and `hugo new content`
+  # loads the site.
+  tools/scripts/example-content.py
+
   rm -rf "$src/content"
 fi
 rm -f "$src/LICENSE" "$src/README.md"
@@ -114,12 +139,40 @@ render() {
       -e "s|{{REPO}}|$REPO|g" \
       -e "s|{{HUGO_VERSION}}|$version|g" -e "s|{{YEAR}}|$year|g" "$1"
 }
+# The example site imports the theme as a local module, one directory
+# up. A bare `hugo server` inside exampleSite/ then works from any
+# checkout, however the directory was named.
+#
+# theme = with themesDir = '../..' is the more common spelling and it is
+# worse: it resolves the theme by its slug inside the parent of the
+# repository, so it only works when somebody happened to name the
+# checkout after the slug. Cloning the repository does not.
+#
+# locale, not languageCode, which Hugo deprecated in 0.158.0.
+
 render tools/templates/theme.toml.tmpl > theme.toml
 render tools/templates/README.md.tmpl > README.md
 # The template's own changelog is the template's history, not this
 # theme's. A project inheriting it would ship somebody else's releases.
 render tools/templates/CHANGELOG.md.tmpl > CHANGELOG.md
 mkdir -p i18n data assets static archetypes
+
+# The example site names the theme by the slug it installs as, and that
+# slug is read from theme.toml rather than derived a second time here.
+# Two derivations of one name is one of them going stale.
+#
+# locale, not languageCode, which Hugo deprecated in 0.158.0. `hugo new
+# site` still writes the old key, so the config is written rather than
+# kept.
+if [ -d exampleSite ]; then
+  cat > exampleSite/hugo.toml <<CONFIG
+baseURL = 'https://example.org/'
+title = '$NAME'
+locale = 'en-us'
+
+theme = '$(tools/scripts/slug.sh)'
+CONFIG
+fi
 
 # 6. Pin the floor to the Hugo that generated this.
 if [ -f hugo.toml ]; then
@@ -132,6 +185,19 @@ if [ -f hugo.toml ]; then
   mv "$tmpfile" hugo.toml
 fi
 printf '%s\n' "$version" > .hugo-version
+
+# 6a. The module path. A theme is consumed with `hugo mod get`, which
+#     resolves a Go module, so the repository needs a go.mod declaring
+#     its path. Hugo writes one. Without it the theme is installable
+#     only by unzipping.
+#
+#     The path is the repository, not the slug and not theme.toml's
+#     homepage. homepage is the project's home page, which a theme may
+#     point anywhere it likes; the module path may not move.
+if [ ! -f go.mod ]; then
+  hugo mod init "github.com/$OWNER/$REPO" >/dev/null 2>&1 || \
+    fail "hugo mod init failed for github.com/$OWNER/$REPO."
+fi
 
 # 6b. A theme decides none of these. The scaffold's config carries a
 #     baseURL, a title and a menu. Hugo merges a theme's menus into
