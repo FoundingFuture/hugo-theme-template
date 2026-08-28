@@ -140,7 +140,6 @@ helps, setup prints the command or the link and leaves it to you.
 | [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` | pinned, fetched by `./c setup` |
 | [htmltest](https://github.com/wjdp/htmltest) | `output/validity`, `output/nojs` | pinned, fetched by `./c setup` |
 | newest Hugo, as `hugo-latest` | `build/versions` | fetched by `./c setup` |
-| [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments` | fetched by tag, on its first ask |
 | [Stylelint](https://stylelint.io/) | `static/css` | npm, by `./c setup` |
 | [ESLint](https://eslint.org/) | `static/js` | npm, by `./c setup` |
 | [html5validator](https://github.com/svenkreiss/html5validator) | `output/validity` | `./c setup full`, and it drives Java |
