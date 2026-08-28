@@ -30,3 +30,5 @@ passes on it with no finding.
   fails.
 - The fixture's content is test data. The pipeline reads its structure
   and never its prose, so the content check is gone.
+- The feeds check parses with the standard library. xmllint left the
+  table of what a theme author installs.

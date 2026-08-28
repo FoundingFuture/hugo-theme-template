@@ -8,11 +8,16 @@ first, one layer down.
 
 Only the first was checked before. A theme could drop every page from
 its sitemap and still pass.
+
+Before any of that, every file read here has to parse. That test was
+xmllint's. The standard library does it now, so a machine without
+libxml2 checks the same things.
 """
 
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
 
 BASE = "https://example.org/"
 LOC = re.compile(r"<loc>\s*([^<]+?)\s*</loc>")
@@ -20,6 +25,18 @@ ITEM_LINK = re.compile(r"<item>.*?<link>\s*([^<]+?)\s*</link>", re.S)
 
 # A page Hugo publishes but a sitemap need not name.
 NOT_LISTED = ("404.html",)
+
+
+def well_formed(path, findings):
+    # The file is this build's own output, never foreign input.
+    # Guarding the parse against entity expansion would be a
+    # dependency spent on nothing.
+    try:
+        ET.parse(path)
+        return True
+    except ET.ParseError as fault:
+        findings.append("%s:1: not well formed. %s" % (path, fault))
+        return False
 
 
 def built_urls(root):
@@ -47,6 +64,8 @@ def sitemap_urls(root, path, findings):
     for url in nested:
         target = os.path.join(root, url[len(BASE):])
         if os.path.exists(target):
+            if not well_formed(target, findings):
+                continue
             with open(target, encoding="utf-8", errors="replace") as handle:
                 listed |= set(LOC.findall(handle.read()))
         else:
@@ -60,6 +79,13 @@ def main():
     sitemap = os.path.join(root, "sitemap.xml")
     if not os.path.exists(sitemap):
         print("%s:1: no sitemap." % sitemap)
+        return 1
+
+    # A sitemap that does not parse gets one finding and no agreement
+    # check. Findings against a broken file would all be echoes of it.
+    if not well_formed(sitemap, findings):
+        for finding in findings:
+            print(finding)
         return 1
 
     listed = sitemap_urls(root, sitemap, findings)
@@ -84,6 +110,8 @@ def main():
             if name != "index.xml":
                 continue
             feed = os.path.join(folder, name)
+            if not well_formed(feed, findings):
+                continue
             with open(feed, encoding="utf-8", errors="replace") as handle:
                 for link in ITEM_LINK.findall(handle.read()):
                     if link not in built:
