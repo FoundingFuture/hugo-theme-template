@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Git tracks nothing a tool writes. A `.pyc`, a `__pycache__` or a
+  `node_modules` anywhere in the tree now fails the coverage check.
+
 ## v0.0.1, 2026-08-28
 
 First working pipeline. `./c init` generates a theme and `./c check`

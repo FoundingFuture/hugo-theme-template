@@ -9,6 +9,9 @@ Each check carries a "reads:" comment naming its inputs. This gathers
 them and compares the union against what the repository holds. A
 directory added tomorrow then fails today's run, rather than going
 unread until somebody notices.
+
+What a tool writes is held to the other side of the same rule. Git
+tracks what a person put there, and nothing a build can make again.
 """
 
 import os
@@ -24,6 +27,13 @@ PACKAGE = "package.txt"
 # The runner dispatches and reads nothing of its own.
 NOT_A_CHECK = {"run.sh"}
 READS = re.compile(r"^#\s*reads:\s*(.+)$", re.MULTILINE)
+
+# Written by a tool, never by hand. The ignore list already names
+# these, and an ignore rule does nothing about a file git tracks
+# already. Compiled bytecode sat tracked here from an early commit,
+# and no gate said a word.
+GENERATED_DIRS = {"__pycache__", "node_modules", ".lighthouseci", ".playwright"}
+GENERATED_SUFFIXES = (".pyc", ".pyo")
 
 # Generated, gitignored, or read by Hugo rather than by a check.
 EXEMPT = {
@@ -111,6 +121,15 @@ def main():
             findings.append(
                 "%s:1: no check names this. Add it to a check's reads: line."
                 % top)
+
+    # A tool's output, wherever it sits. The root lists below judge the
+    # top of the tree, and bytecode hides deeper than that.
+    for path in tracked():
+        if path.endswith(GENERATED_SUFFIXES) \
+                or GENERATED_DIRS.intersection(path.split("/")):
+            findings.append(
+                "%s:1: tracked, and a tool writes it. Generated files stay out of git."
+                % path)
 
     names, package_findings = listed()
     findings.extend(package_findings)
