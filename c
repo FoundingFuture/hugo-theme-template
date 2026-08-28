@@ -28,7 +28,6 @@ ARG_size=""
 ARG_site=""
 ARG_v=""
 ARG_sub=""
-ARG_strict=""
 
 # ------------------------------------------------------------ arguments
 
@@ -65,7 +64,6 @@ parse() {
       list|new|on|off|add|available)
         ARG_sub="$item"
         ;;
-      --strict) ARG_strict=yes ;;
       *) printf '%s\n' "unknown argument: $item" >&2; usage 2 ;;
     esac
   done
