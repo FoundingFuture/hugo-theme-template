@@ -11,6 +11,10 @@ permissions:
 
 jobs:
   release:
+    # The template carries no theme, so there is nothing to package and
+    # nothing to publish. A version tag here names the pipeline, and the
+    # gates below read a theme. bootstrap.yml reads the same flag.
+    if: github.event.repository.is_template != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
