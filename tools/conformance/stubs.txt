@@ -1,0 +1,22 @@
+# Shortcodes this theme defines that Hugo does not ship.
+#
+# The fixture is built twice, once against Hugo's own scaffold and once
+# against the theme. A page calling a shortcode the scaffold has never
+# heard of fails that first build, so the fixture could only ever call
+# Hugo's own and a theme's additions went untested.
+#
+# The reference gets an empty template for each name below. It renders
+# nothing, which is exactly what the comparison should measure: what
+# the theme adds where the scaffold puts nothing.
+#
+# A shortcode the theme overrides rather than adds is not listed here.
+# Hugo already has youtube and vimeo, and the reference must keep
+# rendering its own, or the comparison would flatter the theme.
+#
+# A name followed by "paired" is one written with a closing tag. Hugo
+# refuses a closing tag on a shortcode whose template never names
+# .Inner, and refuses to leave one unclosed when it does, so the two
+# kinds need different stubs.
+#
+# Forgetting a name fails the reference build, and Hugo says which
+# shortcode it could not find.

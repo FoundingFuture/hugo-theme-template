@@ -27,7 +27,13 @@ mkdir -p "$partials/features" "data/$slug/features" assets/css/features
 # which theme it belongs to. check/namespace.sh fails if the baked name
 # and the slug ever disagree.
 render_slug() { sed "s|{{SLUG}}|$slug|g" "$1"; }
-render_slug tools/templates/feature/slot.html.tmpl > "$partials/slot.html"
+# feature-on.html is not installed. Only a markup render hook needs
+# it, a fresh theme has none, and a partial nothing calls is an
+# unused template. A theme adding a hook feature writes one.
+for machinery in slot slot-map feature-set; do
+  render_slug "tools/templates/feature/$machinery.html.tmpl" \
+    > "$partials/$machinery.html"
+done
 "$PY_BIN" tools/scripts/wire-slots.py "$partials"
 
 # The starter set is installed and switched on. A feature that ships is a

@@ -1,0 +1,37 @@
+{{- /*
+Every feature's state for one page, worked out once.
+
+@context {page} The page being rendered.
+
+The order is the manifest's default, then the site, then the page. The
+conformance build sets featuresOff to compare a theme carrying no
+feature against the reference scaffold, and that outranks all three.
+
+Called through partialCached, keyed by the page, because the answer
+depends on the page's own front matter and on nothing else. Resolving
+one feature at a time cost a quarter of all template time on the scale
+fixture, which is the fault that fixture exists to find.
+
+@example: {{ $on := partialCached "feature-set.html" . .RelPermalink }}
+*/ -}}
+{{- $page := . }}
+{{- $out := dict }}
+{{- $off := index site.Params "{{SLUG}}" "featuresoff" }}
+{{- $siteSet := index site.Params "{{SLUG}}" "features" }}
+{{- $pageSet := index $page.Params "{{SLUG}}" "features" }}
+{{- range $name, $manifest := index hugo.Data "{{SLUG}}" "features" }}
+  {{- $on := false }}
+  {{- if not $off }}
+    {{- $on = $manifest.default }}
+    {{- with $siteSet }}
+      {{- $found := index . $name }}
+      {{- if ne $found nil }}{{ $on = $found }}{{ end }}
+    {{- end }}
+    {{- with $pageSet }}
+      {{- $found := index . $name }}
+      {{- if ne $found nil }}{{ $on = $found }}{{ end }}
+    {{- end }}
+  {{- end }}
+  {{- $out = merge $out (dict $name $on) }}
+{{- end }}
+{{- return $out }}

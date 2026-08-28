@@ -4,52 +4,31 @@ Render every enabled feature registered for one slot, in weight order.
 @context {string} slot The slot name, such as "page.meta".
 @context {page} page The page being rendered.
 
+Every key this theme reads sits under one namespace, which Hugo asks
+theme authors to do so that a site's own params and a second theme's
+cannot collide with them. index, not dot notation, because a slug may
+carry a hyphen and is then not a valid template identifier.
+
+A slot no feature registers for is the common case, and it costs one
+lookup here.
+
+A component lives in a directory the site mounts, and a site that has
+not mounted it does not have its partial. Not mounting it is how a
+component is turned off, so its absence is an answer rather than a
+fault. A toggle is part of the theme and is always there, so a missing
+one still fails the build.
+
 @example: {{ partial "slot.html" (dict "slot" "page.meta" "page" .) }}
 */ -}}
 {{- $slot := .slot }}
 {{- $page := .page }}
-{{- /* The conformance build sets featuresOff to compare a theme with no
-       feature at all against the reference scaffold. It outranks front
-       matter, which nothing else does.
-
-       Every key this theme reads sits under one namespace, which Hugo
-       asks theme authors to do so that a site's own params and a second
-       theme's cannot collide with them. index, not dot notation,
-       because a slug may carry a hyphen and is then not a valid
-       template identifier. */ -}}
-{{- if not (index site.Params "{{SLUG}}" "featuresoff") }}
-  {{- /* Collected into a slice first. Ranging the data map walks it in
-         key order, which is alphabetical and not what the weights say. */ -}}
-  {{- $enabled := slice }}
-  {{- range $name, $manifest := index hugo.Data "{{SLUG}}" "features" }}
-    {{- if eq $manifest.slot $slot }}
-      {{- $on := $manifest.default }}
-      {{- with index site.Params "{{SLUG}}" "features" }}
-        {{- $found := index . $name }}
-        {{- if ne $found nil }}{{ $on = $found }}{{ end }}
+{{- with index (partialCached "slot-map.html" "features") $slot }}
+  {{- $on := partialCached "feature-set.html" $page $page.RelPermalink }}
+  {{- range . }}
+    {{- if and (index $on .name) (or (not .kinds) (in .kinds $page.Kind)) }}
+      {{- if or (ne .level "component") (templates.Exists (printf "_partials/%s" .partial)) }}
+        {{- partial .partial $page }}
       {{- end }}
-      {{- with index $page.Params "{{SLUG}}" "features" }}
-        {{- $found := index . $name }}
-        {{- if ne $found nil }}{{ $on = $found }}{{ end }}
-      {{- end }}
-      {{- $kinds := $manifest.kinds | default (slice $page.Kind) }}
-      {{- if and $on (in $kinds $page.Kind) }}
-        {{- $enabled = $enabled | append (dict
-              "weight" (default 50 $manifest.weight)
-              "name" $name
-              "level" (default "toggle" $manifest.level)
-              "partial" $manifest.partial) }}
-      {{- end }}
-    {{- end }}
-  {{- end }}
-  {{- /* A component lives in a directory the site mounts, and a site
-         that has not mounted it does not have its partial. Not mounting
-         it is how a component is turned off, so its absence is an
-         answer rather than a fault. A toggle is part of the theme and
-         is always there, so a missing one still fails the build. */ -}}
-  {{- range sort $enabled "weight" }}
-    {{- if or (ne .level "component") (templates.Exists (printf "_partials/%s" .partial)) }}
-      {{- partial .partial $page }}
     {{- end }}
   {{- end }}
 {{- end }}

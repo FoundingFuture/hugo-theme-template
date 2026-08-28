@@ -1,0 +1,31 @@
+{{- /*
+Every feature the theme carries, indexed by the slot it registers for.
+
+@context {string} Any value. The map is the same for the whole site.
+
+The manifests do not change while a site builds, so this is worked out
+once and read from cache after that. slot.html used to walk all
+fourteen of them on every one of ten slot calls a page makes, which is
+a hundred and forty passes a page to render what is usually nothing.
+
+Each list arrives sorted by weight. Ranging the data map walks it in
+key order, which is alphabetical and not what the weights say.
+
+@example: {{ $bySlot := partialCached "slot-map.html" "features" }}
+*/ -}}
+{{- $map := dict }}
+{{- range $name, $manifest := index hugo.Data "{{SLUG}}" "features" }}
+  {{- $entry := dict
+        "name" $name
+        "weight" (default 50 $manifest.weight)
+        "level" (default "toggle" $manifest.level)
+        "partial" $manifest.partial
+        "kinds" ($manifest.kinds | default slice) }}
+  {{- $held := index $map $manifest.slot | default slice }}
+  {{- $map = merge $map (dict $manifest.slot ($held | append $entry)) }}
+{{- end }}
+{{- $sorted := dict }}
+{{- range $slot, $list := $map }}
+  {{- $sorted = merge $sorted (dict $slot (sort $list "weight")) }}
+{{- end }}
+{{- return $sorted }}
