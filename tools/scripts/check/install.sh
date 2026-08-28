@@ -47,6 +47,8 @@ tags = ['a']
 
 A paragraph with a [link](https://example.com/).
 
+A formula, \(E = h \nu\), which is text until a site turns passthrough on.
+
 {{< youtube dQw4w9WgXcQ >}}
 
 ## A heading
@@ -140,6 +142,11 @@ for component in features/*/; do
       holds "$label" index.json '"title"'
       size="$(wc -c < "$site/public-$label/index.json" 2>/dev/null || echo 0)"
       [ "$size" -le 1572864 ] || report "install:1: the index is $((size / 1024)) KB, over the limit it claims."
+      ;;
+    katex)
+      holds "$label" posts/one/index.html "<math"
+      grep -qF '\(E' "$site/public-$label/posts/one/index.html" 2>/dev/null && \
+        report "install:1: $label is mounted and a delimiter still reaches the page."
       ;;
     privacy-embeds)
       holds "$label" posts/one/index.html "embed-youtube"

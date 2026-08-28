@@ -17,11 +17,13 @@ enableGitInfo = false
 [markup.goldmark.renderer]
   unsafe = false
 
+# The delimiters the Hugo documentation names. A single dollar sign is
+# left out, because a price in prose would open a formula.
 [markup.goldmark.extensions.passthrough]
   enable = true
   [markup.goldmark.extensions.passthrough.delimiters]
-    block = [["$$", "$$"]]
-    inline = [["$", "$"]]
+    block = [['\[', '\]'], ['$$', '$$']]
+    inline = [['\(', '\)']]
 
 [taxonomies]
   tag = "tags"

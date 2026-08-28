@@ -1,0 +1,11 @@
+# A Hugo theme component holding mathematics.
+#
+# The passthrough render hook renders every formula with the KaTeX that
+# Hugo embeds, at build time. Nothing here reaches another host, and a
+# page with formulas works with scripts blocked. The site turns the
+# passthrough extension on. A theme cannot, because markup settings
+# belong to the site.
+[module]
+  [module.hugoVersion]
+    extended = true
+    min = "0.158.0"

@@ -1,0 +1,17 @@
+name = "katex"
+# A component. Its render hook fires wherever the content carries a
+# formula, and its partial in the head links the stylesheet only when
+# the site asks for KaTeX markup rather than MathML.
+slot = "head"
+weight = 30
+default = true
+level = "component"
+partial = "features/katex.html"
+i18n = []
+
+[skeleton]
+  # With the default output, MathML, a formula is a math element. It has
+  # no class, so the page skeleton records nothing. With KaTeX markup the
+  # formula is wrapped in these spans. The KaTeX rendering inside them
+  # is aria-hidden, which the skeleton leaves out.
+  text = ["span.katex", "span.katex-display", "span.katex-mathml"]

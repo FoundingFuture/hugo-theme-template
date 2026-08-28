@@ -233,12 +233,20 @@ page in its own markup. A reader with the script blocked then has a
 working index rather than an empty box. The script filters that list and
 fetches nothing. The index is held under 1.5 MB by a gate.
 
-Two components ship, and two is the point. `search` proves the level
-that mounts a directory, and `features/<name>/README.md` says how a
-second one is written. A component whose only real page lives in a
-site is better written there, against that page. A fixture page invented
-for it would be designing the thing twice. The mechanism is proven
-either way.
+`katex` renders mathematics at build time. A passthrough render hook
+hands each formula to the KaTeX that Hugo embeds. The default output is
+MathML, which needs no stylesheet and no script. A site that asks for
+KaTeX markup gets the stylesheet and its fonts from the component. They
+are linked on the pages that carry a formula. The delimiters are the
+ones the Hugo documentation names. The content renders under any theme
+that follows the same page.
+
+Three components ship. `search` proves the level that mounts a
+directory. `katex` proves a render hook at that level.
+`features/<name>/README.md` says how the next one is written. A
+component whose only real page lives in a site is better written there,
+against that page. A fixture page invented for it would be designing
+the thing twice. The mechanism is proven either way.
 
 A manifest declares what the feature adds to the rendered page. The
 fixture builds three times. The reference scaffold, the theme with every

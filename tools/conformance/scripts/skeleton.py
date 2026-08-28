@@ -49,6 +49,11 @@ class Skeleton(HTMLParser):
         # puts a class on every token, and recording those would bury
         # the page in presentation.
         self.pre_depth = 0
+        # An element marked aria-hidden is presentation as well. A
+        # reader using assistive technology never meets it. KaTeX puts
+        # a class on every box of the markup it hides that way. The
+        # stack holds the tag of each hidden element that is open.
+        self.hidden = []
         self.headings = []
         self.links = []
         self.images = []
@@ -79,6 +84,15 @@ class Skeleton(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         attr = dict(attrs)
+        # A hidden subtree is skipped whole. Nothing in it is counted,
+        # classed, or read, and its end tag only closes the subtree.
+        if self.hidden:
+            if tag not in VOID:
+                self.hidden.append(tag)
+            return
+        if (attr.get("aria-hidden") or "").lower() == "true" and tag not in VOID:
+            self.hidden.append(tag)
+            return
         # Read the container before this element joins the stack, or an
         # element would be recorded as its own container.
         parent = self.container()
@@ -144,6 +158,12 @@ class Skeleton(HTMLParser):
                             "buffer": []})
 
     def handle_endtag(self, tag):
+        if self.hidden:
+            for index in range(len(self.hidden) - 1, -1, -1):
+                if self.hidden[index] == tag:
+                    del self.hidden[index:]
+                    break
+            return
         if tag == "pre":
             self.pre_depth = max(0, self.pre_depth - 1)
         for index in range(len(self.frames) - 1, -1, -1):
@@ -162,6 +182,8 @@ class Skeleton(HTMLParser):
             self.chrome_depth = max(0, self.chrome_depth - 1)
 
     def handle_data(self, data):
+        if self.hidden:
+            return
         # Every open frame collects the text. A heading holding a link
         # records its own words, and so does the link.
         for frame in self.frames:

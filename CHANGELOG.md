@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+- A third component, katex. Its passthrough render hook hands every
+  formula to the KaTeX inside Hugo at build time. MathML is the
+  default output. It needs no stylesheet. Setting `params.katex.output`
+  to `htmlAndMathml` adds the KaTeX markup. The component then links
+  its own copy of the KaTeX 0.16.21 stylesheet and woff2 fonts. Only a
+  page that carries a formula gets the link. Nothing reaches another
+  host.
+- The fixture uses the math delimiters the Hugo documentation names,
+  `\(` `\)` inline and `$$` or `\[` `\]` for a display formula. The
+  single dollar sign is gone, so a price in prose stays a price.
+- The page skeleton skips a subtree marked `aria-hidden`. A reader
+  using assistive technology never meets one. KaTeX puts a class on
+  every box of the markup it hides that way.
+- `build/install` builds the `katex` component out of its README and
+  checks that a formula reaches the page as a `math` element.
+
 ## v0.0.2, 2026-08-28
 
 - Git tracks nothing a tool writes. A `.pyc`, a `__pycache__` or a
