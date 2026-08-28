@@ -24,6 +24,8 @@ if [ "$pages" -eq 0 ]; then
 fi
 printf '%s\n' "validity: $pages readable pages, redirects left out"
 
+bin="$(tools/scripts/tools.sh html5validator 2>/dev/null)" && PATH="$bin:$PATH"
+bin="$(tools/scripts/tools.sh htmltest 2>/dev/null)" && PATH="$bin:$PATH"
 status=0
 ran=0
 if command -v html5validator >/dev/null 2>&1; then
@@ -36,7 +38,7 @@ if command -v htmltest >/dev/null 2>&1; then
   htmltest -c tools/scripts/check/htmltest.yml "$target" || status=1
 fi
 if [ "$ran" -eq 0 ]; then
-  echo "SKIP validity: neither html5validator nor htmltest is installed"
+  echo "SKIP validity: neither html5validator nor htmltest is installed. ./c setup fetches them"
   exit 3
 fi
 # The h1 and the description belong to head.sh, which runs beside this

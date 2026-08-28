@@ -35,3 +35,8 @@ __pycache__/
 # have to be installed here rather than globally. That leaves thirty
 # megabytes at the root, which is the same hazard as the browsers.
 node_modules/
+
+# The npm tier's ledger, written by ./c setup under tools/. It grows
+# by machine, so it is no more tracked than what it installs.
+tools/package.json
+tools/package-lock.json

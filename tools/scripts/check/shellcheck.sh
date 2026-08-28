@@ -8,8 +8,9 @@
 set -uo pipefail
 cd "$(dirname "$0")/../../.." || exit 1
 
+bin="$(tools/scripts/tools.sh shellcheck 2>/dev/null)" && PATH="$bin:$PATH"
 command -v shellcheck >/dev/null 2>&1 || {
-  echo "SKIP shellcheck: shellcheck not installed"; exit 3; }
+  echo "SKIP shellcheck: not installed. ./c setup fetches it"; exit 3; }
 
 files="c"
 for file in tools/scripts/*.sh tools/scripts/check/*.sh tools/conformance/scripts/*.sh; do

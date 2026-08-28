@@ -7,7 +7,9 @@ cd "$(dirname "$0")/../../.." || exit 1
 
 target=tools/conformance/public/ours
 [ -d "$target" ] || { echo "SKIP a11y: no build at $target"; exit 3; }
-command -v pa11y-ci >/dev/null 2>&1 || { echo "SKIP a11y: pa11y-ci not installed"; exit 3; }
+bin="$(tools/scripts/tools.sh pa11y-ci 2>/dev/null)" && PATH="$bin:$PATH"
+command -v pa11y-ci >/dev/null 2>&1 || {
+  echo "SKIP a11y: pa11y-ci not installed. ./c setup full fetches it"; exit 3; }
 
 # The URL list is generated. Held in the file it was empty, and pa11y-ci
 # passes on nothing at all.

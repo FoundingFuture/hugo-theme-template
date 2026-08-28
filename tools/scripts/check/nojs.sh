@@ -33,6 +33,7 @@ PY
 
 status=0
 tools/scripts/check/head.sh "$target" || status=1
+bin="$(tools/scripts/tools.sh htmltest 2>/dev/null)" && PATH="$bin:$PATH"
 if command -v htmltest >/dev/null 2>&1; then
   htmltest -c tools/scripts/check/htmltest.yml "$target" || status=1
 fi

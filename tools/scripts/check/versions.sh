@@ -5,8 +5,9 @@
 set -uo pipefail
 cd "$(dirname "$0")/../../.." || exit 1
 
+bin="$(tools/scripts/tools.sh hugo-latest 2>/dev/null)" && PATH="$bin:$PATH"
 if ! command -v hugo-latest >/dev/null 2>&1; then
-  echo "SKIP versions: hugo-latest not on PATH. CI installs both."
+  echo "SKIP versions: hugo-latest is not installed. ./c setup fetches it"
   exit 3
 fi
 status=0

@@ -32,9 +32,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install shellcheck
+      # Fetched by the same script a workstation uses, so the pin in
+      # tools.sh binds here too.
+      - name: Fetch shellcheck
         if: steps.state.outputs.run == 'yes'
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+        run: tools/scripts/tools.sh shellcheck fetch
 
       - name: Reach writing-lint
         if: steps.state.outputs.run == 'yes'
@@ -137,17 +139,10 @@ jobs:
           # visual.sh needs these three, and skipped without them.
           npm install --global --silent playwright pixelmatch pngjs
           npx --yes playwright install --with-deps chromium
-          # The asset carries its version in the name, so the
-          # latest/download URL is a 404 and always has been. The tool
-          # was never installed, and the gate skipped without saying so.
-          ht="$(curl -fsSL https://api.github.com/repos/wjdp/htmltest/releases/latest \
-            | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
-          mkdir -p "$HOME/.local/bin"
-          curl -fsSL -o "$RUNNER_TEMP/htmltest.tar.gz" \
-            "https://github.com/wjdp/htmltest/releases/download/v${ht}/htmltest_${ht}_linux_amd64.tar.gz"
-          tar -xzf "$RUNNER_TEMP/htmltest.tar.gz" -C "$HOME/.local/bin" htmltest
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck libxml2-utils
+          # Fetched by the same script a workstation uses, so the pin
+          # in tools.sh binds here too.
+          tools/scripts/tools.sh shellcheck fetch
+          tools/scripts/tools.sh htmltest fetch
 
       # The checkers live in a private repository, so CI needs a key or a
       # token. Either secret works, and neither is needed to build.

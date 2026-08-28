@@ -40,7 +40,10 @@ jobs:
           set -euo pipefail
           pip install --quiet html5validator
           npm install --global --silent pa11y-ci @lhci/cli stylelint stylelint-config-standard eslint
-          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck libxml2-utils
+          # Fetched by the same script a workstation uses, so the pin
+          # in tools.sh binds here too.
+          tools/scripts/tools.sh shellcheck fetch
+          tools/scripts/tools.sh htmltest fetch
 
       - name: Reach writing-lint
         env:

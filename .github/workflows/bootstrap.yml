@@ -99,15 +99,10 @@ jobs:
           npm install --global --silent pa11y-ci @lhci/cli stylelint \
             stylelint-config-standard eslint playwright pixelmatch pngjs
           npx --yes playwright install --with-deps chromium
-          ht="$(curl -fsSL https://api.github.com/repos/wjdp/htmltest/releases/latest \
-            | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)"
-          mkdir -p "$HOME/.local/bin"
-          curl -fsSL -o "$RUNNER_TEMP/htmltest.tar.gz" \
-            "https://github.com/wjdp/htmltest/releases/download/v${ht}/htmltest_${ht}_linux_amd64.tar.gz"
-          tar -xzf "$RUNNER_TEMP/htmltest.tar.gz" -C "$HOME/.local/bin" htmltest
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq shellcheck libxml2-utils
+          # Fetched by the same script a workstation uses, so the pin
+          # in tools.sh binds here too.
+          tools/scripts/tools.sh shellcheck fetch
+          tools/scripts/tools.sh htmltest fetch
 
       - name: Every gate, on what was just generated
         if: steps.marker.outputs.run == 'yes'
