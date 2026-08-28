@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.0.1, 2026-08-28
 
 First working pipeline. `./c init` generates a theme and `./c check`
 passes on it with no finding.
