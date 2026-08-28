@@ -55,7 +55,7 @@ parse() {
           *) printf '%s\n' "unknown key: $key" >&2; usage 2 ;;
         esac
         ;;
-      init|check|conform|serve|release|snapshot|fixture|docs|report|feature|package|clean|version|help)
+      init|build|check|conform|serve|release|snapshot|fixture|docs|report|feature|package|clean|version|help)
         if [ -z "$VERB" ]; then
           VERB="$item"
         else
@@ -226,6 +226,22 @@ cmd_check() {
   tools/scripts/check/run.sh "$gate" "$name"
 }
 
+# Bare ./c: check, then compile. The gates run in order, and on green
+# the artefact is named. set -e stops on a red gate, so nothing broken
+# is ever handed over.
+cmd_compile() {
+  cmd_check
+  # The template repository holds no theme, so there is nothing to
+  # hand over. cmd_check has already read what needs none.
+  [ -d layouts ] || return 0
+  local slug zip
+  slug="$(tools/scripts/slug.sh)"
+  zip="$(find dist -maxdepth 1 -name "$slug-*.zip" -type f 2>/dev/null | head -1)"
+  [ -n "$zip" ] || { say "no artefact. The package check skipped, so nothing wrote one."; exit 3; }
+  say ""
+  say "the deliverable: $zip"
+}
+
 cmd_snapshot() {
   bootstrapped
   ARG_theme=ours
@@ -315,8 +331,14 @@ cmd_help() {
 parse "$@"
 
 case "$VERB" in
-  "")        if [ -n "${ARG_site:-}" ]; then cmd_site; else cmd_build; fi ;;
+  # Bare ./c with a site= or theme= argument keeps its old meaning, a
+  # build of that thing. With no argument at all it is the promise of
+  # the repository: every gate, then the deliverable.
+  "")        if [ -n "${ARG_site:-}" ]; then cmd_site
+             elif [ -n "${ARG_theme:-}" ]; then cmd_build
+             else cmd_compile; fi ;;
   init)      cmd_init ;;
+  build)     cmd_build ;;
   check)     cmd_check ;;
   conform)   cmd_conform ;;
   serve)     cmd_serve ;;
@@ -334,9 +356,10 @@ case "$VERB" in
 esac
 
 # USAGE
-# ./c theme=ours                  build the fixture against the packaged theme
-# ./c theme=hugo                  build against the scaffold of the installed Hugo
-# ./c theme=all                   both, into public/ours and public/hugo
+# ./c                             every gate, then the deliverable in dist/
+# ./c build theme=ours            build the fixture against the packaged theme
+# ./c build theme=hugo            build against the scaffold of the installed Hugo
+# ./c build theme=all             both, into public/ours and public/hugo
 # ./c serve                       hugo server, reading the sources, live reload
 # ./c init name="My Theme"        bootstrap, one-shot. The slug is derived
 # ./c init name=x owner=y repo=z  and the URLs in theme.toml are filled in

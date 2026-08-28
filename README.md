@@ -68,9 +68,12 @@ three commands that do the same by hand.
 ## The command
 
 Every action goes through `./c`, locally and in CI, so a green run here
-predicts a green run there. Run `./c help` for the table.
+predicts a green run there. Bare `./c` runs every gate and, on green,
+names the deliverable: `dist/<slug>-<version>.zip`, the theme called
+what the repository is called. Run `./c help` for the table.
 
 ```sh
+./c                  every gate, then the deliverable in dist/
 ./c package          write dist/<slug>/ and the zip a downloader gets
 ./c conform          build against the scaffold and against the theme, then diff
 ./c check            every gate in order, stopping at the first failure
