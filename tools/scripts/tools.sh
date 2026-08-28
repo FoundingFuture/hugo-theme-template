@@ -22,12 +22,35 @@ HTMLTEST_TAG=v0.17.0
 venv=tools/.deps/venv
 BIN=tools/.deps/bin
 
-# Where a plain binary lives: PATH first, the fetched copy second.
+# The version a pinned tool must be. Empty means any copy serves.
+pin_of() {
+  case "$1" in
+    shellcheck) printf '%s' "${SHELLCHECK_TAG#v}" ;;
+    htmltest) printf '%s' "${HTMLTEST_TAG#v}" ;;
+  esac
+}
+
+binary_version() {
+  local bin="$1"
+  case "$bin" in
+    *shellcheck*) "$bin" --version 2>/dev/null | sed -n 's/^version: //p' ;;
+    *htmltest*) "$bin" --version 2>/dev/null | awk '{print $2}' ;;
+  esac
+}
+
+# Where a plain binary lives: PATH first, the fetched copy second. A
+# PATH copy of a pinned tool serves only at the pinned version. The
+# runner image carries an older shellcheck. Taking it made the
+# findings differ by machine, while both runs claimed the same check.
 locate_binary() {
-  local name="$1"
+  local name="$1" want dir
+  want="$(pin_of "$name")"
   if command -v "$name" >/dev/null 2>&1; then
-    dirname "$(command -v "$name")"
-    return 0
+    dir="$(dirname "$(command -v "$name")")"
+    if [ -z "$want" ] || [ "$(binary_version "$dir/$name")" = "$want" ]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
   fi
   if [ -x "$BIN/$name" ] || [ -x "$BIN/$name.exe" ]; then
     ( cd "$BIN" && pwd -P )

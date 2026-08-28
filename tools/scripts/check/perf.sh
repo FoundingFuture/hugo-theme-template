@@ -35,7 +35,7 @@ if [ -z "${CHROME_PATH:-}" ]; then
   # Google Chrome for Testing.
   for cache in "${PLAYWRIGHT_BROWSERS_PATH:-}" "$HOME/.cache/ms-playwright" \
       "$HOME/Library/Caches/ms-playwright"; do
-    [ -n "$cache" ] && [ -d "$cache" ] || continue
+    [ -d "$cache" ] || continue
     CHROME_PATH="$(find "$cache" -maxdepth 6 -type f \
       \( -name chrome -o -name Chromium -o -name 'Google Chrome for Testing' \) \
       2>/dev/null | sort | head -1)"
