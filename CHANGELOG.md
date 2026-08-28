@@ -32,3 +32,6 @@ passes on it with no finding.
   and never its prose, so the content check is gone.
 - The feeds check parses with the standard library. xmllint left the
   table of what a theme author installs.
+- `./c setup` reports what the machine has and fetches what it can. A
+  pinned ShellCheck, htmltest and the newest Hugo land in the tree,
+  and CI fetches through the same script.

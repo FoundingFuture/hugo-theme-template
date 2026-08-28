@@ -27,6 +27,7 @@ Then, on your machine:
 ```sh
 git clone git@github.com:<owner>/<repository>.git
 cd <repository>
+./c setup
 ./c check
 ```
 
@@ -109,27 +110,43 @@ Hugo doing the building.
 
 Only Hugo is needed to build. Each gate names its own tool, and a gate
 whose tool is absent prints `SKIP`. That is a warning on a workstation
-and a failure under CI, where the image carries all of them.
+and a failure under CI, where every tool is present. The release path
+runs there, so nothing partly checked is ever published.
 
-Install what you want to run. Nothing here is bundled, because the way
-to install it differs by platform.
+Three things are yours to install: Git, Hugo extended and Python 3.
+On Windows that means Git for Windows, whose Git Bash runs `./c`.
+`./c setup` reports everything else, then fetches what it can:
 
-| Tool | Used by | Where |
+```sh
+./c setup            the report, then the light tier into the tree
+./c setup full       the browser tier too, Chromium included
+./c setup report     only look
+```
+
+A pinned ShellCheck, htmltest and the newest Hugo land in
+`tools/.deps/bin`. The npm tools land in `tools/node_modules`, and
+html5validator in the shared venv. Node, Go and a Java runtime come
+through the machine's package manager when one is present. That is
+brew, apt, dnf, pacman or winget. Where no manager or no mapping
+helps, setup prints the command or the link and leaves it to you.
+
+| Tool | Used by | How it arrives |
 |---|---|---|
-| [Hugo](https://gohugo.io/installation/), extended | everything | required, and the only one that is |
-| [Python 3](https://www.python.org/downloads/) | most checks | 3.9 or later |
-| [Go](https://go.dev/dl/) | `release/module` | resolves the theme as a module |
-| [Node.js](https://nodejs.org/) | runs the five tools below | 20 or later |
-| [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` | every script in the repository |
-| [Stylelint](https://stylelint.io/) | `static/css` | with `stylelint-config-standard`, installed in the repository |
-| [ESLint](https://eslint.org/) | `static/js` | only when the theme has a script |
-| [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments` | fetched by tag into `.tools/` |
-| [html5validator](https://github.com/svenkreiss/html5validator) | `output/validity` | the Nu validator, so it needs Java |
-| [htmltest](https://github.com/wjdp/htmltest) | `output/validity`, `output/nojs` | every link resolves |
-| [pa11y-ci](https://pa11y.org/) | `output/a11y` | WCAG 2.1 AA, and it drives a browser |
-| [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | `output/perf` | budgets, and it drives a browser |
-| [Playwright](https://playwright.dev/) | `output/visual` | with `pixelmatch` and `pngjs` |
-| [libxml2](https://gitlab.gnome.org/GNOME/libxml2), for `xmllint` | `output/feeds` | the feeds and sitemap parse |
+| [Hugo](https://gohugo.io/installation/), extended | everything | yours to install, and the only hard requirement |
+| [Python 3](https://www.python.org/downloads/) | most checks | yours to install, 3.9 or later |
+| [Git](https://git-scm.com/downloads) | everything, and Git Bash runs `./c` on Windows | yours to install |
+| [Node.js](https://nodejs.org/) | runs the five npm tools | the package manager, by `./c setup` |
+| [Go](https://go.dev/dl/) | `release/module` | the package manager, by `./c setup` |
+| [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` | pinned, fetched by `./c setup` |
+| [htmltest](https://github.com/wjdp/htmltest) | `output/validity`, `output/nojs` | pinned, fetched by `./c setup` |
+| newest Hugo, as `hugo-latest` | `build/versions` | fetched by `./c setup` |
+| [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments` | fetched by tag, on its first ask |
+| [Stylelint](https://stylelint.io/) | `static/css` | npm, by `./c setup` |
+| [ESLint](https://eslint.org/) | `static/js` | npm, by `./c setup` |
+| [html5validator](https://github.com/svenkreiss/html5validator) | `output/validity` | `./c setup full`, and it drives Java |
+| [pa11y-ci](https://pa11y.org/) | `output/a11y` | `./c setup full`, and it drives a browser |
+| [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | `output/perf` | `./c setup full`, and it drives a browser |
+| [Playwright](https://playwright.dev/) | `output/visual` | `./c setup full`, Chromium included |
 
 Two of them drive a browser. Playwright installs one, and the perf gate
 finds it. A system Chrome or Chromium works as well.

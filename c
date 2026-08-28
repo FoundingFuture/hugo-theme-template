@@ -54,14 +54,14 @@ parse() {
           *) printf '%s\n' "unknown key: $key" >&2; usage 2 ;;
         esac
         ;;
-      init|build|check|conform|serve|release|snapshot|fixture|docs|report|feature|package|clean|version|help)
+      init|build|setup|check|conform|serve|release|snapshot|fixture|docs|report|feature|package|clean|version|help)
         if [ -z "$VERB" ]; then
           VERB="$item"
         else
           ARG_sub="$item"
         fi
         ;;
-      list|new|on|off|add|available)
+      list|new|on|off|add|available|full)
         ARG_sub="$item"
         ;;
       *) printf '%s\n' "unknown argument: $item" >&2; usage 2 ;;
@@ -278,6 +278,10 @@ cmd_docs() {
   tools/scripts/docs.sh
 }
 
+cmd_setup() {
+  tools/scripts/setup.sh "${ARG_sub:-}"
+}
+
 cmd_report() {
   "$PY_BIN" tools/conformance/scripts/report.py
 }
@@ -337,6 +341,7 @@ case "$VERB" in
              else cmd_compile; fi ;;
   init)      cmd_init ;;
   build)     cmd_build ;;
+  setup)     cmd_setup ;;
   check)     cmd_check ;;
   conform)   cmd_conform ;;
   serve)     cmd_serve ;;
@@ -361,6 +366,9 @@ esac
 # ./c serve                       hugo server, reading the sources, live reload
 # ./c init name="My Theme"        bootstrap, one-shot. The slug is derived
 # ./c init name=x owner=y repo=z  and the URLs in theme.toml are filled in
+# ./c setup                       what this machine has, then fetch the light tier
+# ./c setup full                  the browser tier too, Chromium included
+# ./c setup report                only look
 # ./c check                       every gate in order, stop at first failure
 # ./c check gate=static           one gate: static, build, output, release
 # ./c package                     write dist/<slug>/ and the zip a downloader gets
