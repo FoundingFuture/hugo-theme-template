@@ -35,3 +35,4 @@ passes on it with no finding.
 - `./c setup` reports what the machine has and fetches what it can. A
   pinned ShellCheck, htmltest and the newest Hugo land in the tree,
   and CI fetches through the same script.
+- A deliverable that skipped checks says so as it is handed over.

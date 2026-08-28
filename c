@@ -232,12 +232,21 @@ cmd_compile() {
   # The template repository holds no theme, so there is nothing to
   # hand over. cmd_check has already read what needs none.
   [ -d layouts ] || return 0
-  local slug zip
+  local slug zip skipped
   slug="$(tools/scripts/slug.sh)"
   zip="$(find dist -maxdepth 1 -name "$slug-*.zip" -type f 2>/dev/null | head -1)"
   [ -n "$zip" ] || { say "no artefact. The package check skipped, so nothing wrote one."; exit 3; }
   say ""
-  say "the deliverable: $zip"
+  # A skipped check is a check this artefact never faced. The line
+  # that hands the zip over says so, rather than leaving green to
+  # mean more than it does.
+  skipped="$(sed -n 's/.*, \([0-9][0-9]*\) skipped$/\1/p' tools/conformance/public/tally.txt 2>/dev/null)"
+  if [ -n "$skipped" ] && [ "$skipped" -gt 0 ]; then
+    say "the deliverable: $zip, after $skipped skipped checks."
+    say "./c setup fetches the missing tools. CI and the release run them all."
+  else
+    say "the deliverable: $zip"
+  fi
 }
 
 cmd_snapshot() {
