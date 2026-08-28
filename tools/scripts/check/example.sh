@@ -41,8 +41,7 @@ cp -R exampleSite/. "$work/"
 rm -rf "$work/themes/$slug"
 cp -R "$artefact" "$work/themes/$slug"
 
-out="$( ( cd "$work" && hugo --renderToMemory --panicOnWarning --logLevel warn --gc ) 2>&1 )"
-if [ $? -ne 0 ]; then
+if ! out="$( ( cd "$work" && hugo --renderToMemory --panicOnWarning --logLevel warn --gc ) 2>&1 )"; then
   echo "exampleSite/hugo.toml:1: the example site does not build against the artefact."
   printf '%s\n' "$out" | grep -iE 'ERROR|WARN|found no layout' | head -5
   status=1
