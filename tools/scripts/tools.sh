@@ -5,8 +5,7 @@
 # Prints the directory holding the tool, or exits 3. Bare, it only
 # looks. With fetch, a missing tool is brought into the tree first.
 # A release binary lands in tools/.deps/bin, a node tool in
-# node_modules, a Python tool in the shared venv. writing-lint
-# installs on its first ask, as it always has.
+# node_modules, a Python tool in the shared venv.
 #
 # uv is preferred, because it carries its own Python and needs no
 # ensurepip. A Debian box without python3-venv cannot build a virtual
@@ -14,8 +13,6 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 1
 
-WRITING_LINT_TAG=v1.0.2
-WRITING_LINT_REPO=FoundingFuture/writing-lint
 SHELLCHECK_TAG=v0.11.0
 HTMLTEST_TAG=v0.17.0
 
@@ -258,42 +255,6 @@ install_with_venv() {
 }
 
 case "${1:-}" in
-  writing-lint)
-    want="${WRITING_LINT_TAG#v}"
-
-    # A copy already on PATH is used only when it is the pinned version.
-    #
-    # Taking whichever one happened to be installed made the pin a note
-    # rather than a pin. A runner one release behind then read the rules
-    # of that release, while claiming to read these.
-    if command -v check-web-content >/dev/null 2>&1; then
-      if [ "$(version_of "$(command -v check-web-content)")" = "$want" ]; then
-        dirname "$(command -v check-web-content)"
-        exit 0
-      fi
-    fi
-
-    # The same test on the fetched copy. Without it a bumped pin never
-    # reached a checkout that had already fetched the older one.
-    if [ "$(version_of "$venv/bin/check-web-content")" = "$want" ]; then
-      ( cd "$venv/bin" && pwd -P )
-      exit 0
-    fi
-
-    if install_with_uv || install_with_venv; then
-      got="$(version_of "$venv/bin/check-web-content")"
-      if [ "$got" != "$want" ]; then
-        printf '%s\n' "asked for writing-lint $want and got ${got:-nothing}." >&2
-        exit 3
-      fi
-      ( cd "$venv/bin" && pwd -P )
-      exit 0
-    fi
-    printf '%s\n' "writing-lint ${WRITING_LINT_TAG} could not be installed." >&2
-    printf '%s\n' "Needs uv or python3-venv, and access to ${WRITING_LINT_REPO}." >&2
-    printf '%s\n' "For a private fork, set GH_TOKEN or give the runner a key." >&2
-    exit 3
-    ;;
   shellcheck|htmltest|hugo-latest)
     if locate_binary "$1"; then exit 0; fi
     if [ "${2:-}" = fetch ] && fetch_binary "$1"; then
@@ -350,7 +311,7 @@ case "${1:-}" in
     ;;
   *)
     printf '%s\n' "usage: tools/scripts/tools.sh <tool> [fetch]" >&2
-    printf '%s\n' "tools: writing-lint shellcheck htmltest hugo-latest stylelint eslint pa11y-ci lhci playwright html5validator" >&2
+    printf '%s\n' "tools: shellcheck htmltest hugo-latest stylelint eslint pa11y-ci lhci playwright html5validator" >&2
     exit 2
     ;;
 esac

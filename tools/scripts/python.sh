@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Print a python that can read TOML.
 #
-# tomllib arrived in 3.11. Below that the tools venv carries tomli,
-# because writing-lint depends on it there. The pipeline has a reader
-# either way, so no check is skipped for the want of one.
+# tomllib arrived in 3.11. Below that a tools venv carrying tomli is
+# used when one is present. Nothing installs one, so a Python under
+# 3.11 needs tomli put there by hand.
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 1
 
@@ -24,10 +24,6 @@ reads_toml() {
 }
 
 if reads_toml "$venv/bin/python"; then
-  ( cd "$venv/bin" && pwd -P | sed 's|$|/python|' )
-  exit 0
-fi
-if tools/scripts/tools.sh writing-lint >/dev/null 2>&1 && reads_toml "$venv/bin/python"; then
   ( cd "$venv/bin" && pwd -P | sed 's|$|/python|' )
   exit 0
 fi

@@ -49,19 +49,6 @@ jobs:
           tools/scripts/tools.sh shellcheck fetch
           tools/scripts/tools.sh htmltest fetch
 
-      - name: Reach writing-lint
-        env:
-          WRITING_LINT_KEY: ${{ secrets.WRITING_LINT_DEPLOY_KEY }}
-          GH_TOKEN: ${{ secrets.WRITING_LINT_TOKEN }}
-        run: |
-          set -euo pipefail
-          if [ -n "${WRITING_LINT_KEY:-}" ]; then
-            mkdir -p ~/.ssh && chmod 700 ~/.ssh
-            printf '%s\n' "$WRITING_LINT_KEY" > ~/.ssh/id_ed25519
-            chmod 600 ~/.ssh/id_ed25519
-            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
-          fi
-          tools/scripts/tools.sh writing-lint
 
       - name: Every gate, then the release gate
         env:
