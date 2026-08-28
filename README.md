@@ -120,7 +120,7 @@ to install it differs by platform.
 | [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` | every script in the repository |
 | [Stylelint](https://stylelint.io/) | `static/css` | with `stylelint-config-standard`, installed in the repository |
 | [ESLint](https://eslint.org/) | `static/js` | only when the theme has a script |
-| [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments`, `output/content` | fetched by tag into `.tools/` |
+| [writing-lint](https://github.com/FoundingFuture/writing-lint) | `static/comments` | fetched by tag into `.tools/` |
 | [html5validator](https://github.com/svenkreiss/html5validator) | `output/validity` | the Nu validator, so it needs Java |
 | [htmltest](https://github.com/wjdp/htmltest) | `output/validity`, `output/nojs` | every link resolves |
 | [pa11y-ci](https://pa11y.org/) | `output/a11y` | WCAG 2.1 AA, and it drives a browser |

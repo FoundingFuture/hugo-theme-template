@@ -28,3 +28,5 @@ passes on it with no finding.
   site's to decide.
 - A tracked file over a megabyte fails, and a directory no check reads
   fails.
+- The fixture's content is test data. The pipeline reads its structure
+  and never its prose, so the content check is gone.
