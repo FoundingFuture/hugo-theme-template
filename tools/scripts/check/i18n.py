@@ -11,6 +11,7 @@ name as its word. The page then reads "reading-time" where it should
 read "4 minutes read". Nothing rendered it wrong, so nothing notices.
 """
 
+import glob
 import os
 import re
 import sys
@@ -76,7 +77,7 @@ def placeholders(path, features):
 
 def feature_names():
     names = set()
-    folder = "data/features"
+    folder = next(iter(sorted(glob.glob("data/*/features"))), "data/features")
     if os.path.isdir(folder):
         for name in sorted(os.listdir(folder)):
             if name.endswith(".toml"):

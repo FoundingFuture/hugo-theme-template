@@ -10,12 +10,19 @@ This pipeline never reads content against it: sample content is test
 data, and its prose is nobody's to grade.
 """
 
+import glob
 import os
 import re
 import sys
 
 PARAMS = re.compile(r"\.Params\.([A-Za-z_][\w]*)")
 SITE_PARAMS = re.compile(r"(?:site|\.Site)\.Params\.([A-Za-z_][\w]*)")
+# The namespaced form. A theme's own keys sit under one namespace, and a
+# namespace whose name has a hyphen in it cannot be reached with dot
+# notation, so the templates use index. Without these two the contract
+# reported that the theme reads no parameter at all.
+INDEX_SITE = re.compile(r'index\s+(?:site|\.Site)\.Params\s+"([^"]+)"\s+"([^"]+)"')
+INDEX_PAGE = re.compile(r'index\s+\$?[\w.]*?\.Params\s+"([^"]+)"\s+"([^"]+)"')
 I18N = re.compile(r'\b(?:i18n|T)\s+"([^"]+)"')
 FEATURE = re.compile(r"^\s*name\s*=\s*[\"']([^\"']+)")
 
@@ -48,7 +55,7 @@ def shortcodes():
 
 def features():
     out = []
-    folder = "data/features"
+    folder = next(iter(sorted(glob.glob("data/*/features"))), "data/features")
     if os.path.isdir(folder):
         for name in sorted(os.listdir(folder)):
             if not name.endswith(".toml"):
@@ -68,8 +75,14 @@ def scan():
         with open(path, encoding="utf-8", errors="replace") as handle:
             text = handle.read()
         site.update(SITE_PARAMS.findall(text))
+        for space, key in INDEX_SITE.findall(text):
+            site.add("%s.%s" % (space, key))
         for name in PARAMS.findall(text):
             front.add(name)
+        for space, key in INDEX_PAGE.findall(text):
+            name = "%s.%s" % (space, key)
+            if name not in site:
+                front.add(name)
         words.update(I18N.findall(text))
     front -= site
     return sorted(front), sorted(site), sorted(words)

@@ -8,6 +8,7 @@ A feature that renders something it never declared is caught by the
 skeleton comparison. This catches the missing pieces instead.
 """
 
+import glob
 import os
 import re
 import sys
@@ -20,7 +21,7 @@ except ModuleNotFoundError:
     except ModuleNotFoundError:
         tomllib = None
 
-MANIFESTS = "data/features"
+MANIFESTS = next(iter(sorted(glob.glob("data/*/features"))), "data/features")
 SLOTS = {
     "head", "page.before-title", "page.after-title", "page.meta",
     "page.before-body", "page.after-body", "page.footer",

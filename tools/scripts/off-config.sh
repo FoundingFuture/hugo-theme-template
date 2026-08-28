@@ -18,12 +18,12 @@ slug="$(tools/scripts/slug.sh)"
 printf '%s\n' "# Written by conform.sh. Do not edit."
 printf 'theme = "%s"\n' "$slug"
 printf 'themesDir = "../../dist"\n'
-printf '%s\n' "[params]"
+printf '[params.%s]\n' "$slug"
 # Outranks front matter. A fixture page turning its own feature on
 # does not keep it on here.
 printf '%s\n' "  featuresOff = true"
-printf '%s\n' "[params.features]"
-for manifest in data/features/*.toml; do
+printf '[params.%s.features]\n' "$slug"
+for manifest in "data/$slug/features"/*.toml; do
   [ -e "$manifest" ] || continue
   printf '  "%s" = false\n' "$(basename "$manifest" .toml)"
 done

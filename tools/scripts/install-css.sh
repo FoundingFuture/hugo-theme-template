@@ -37,9 +37,9 @@ cat > "$target" <<'HOOK'
   {{- $sheets = $sheets | append . }}
 {{- end }}
 {{- $features := slice }}
-{{- range $name, $manifest := hugo.Data.features }}
+{{- range $name, $manifest := index hugo.Data "{{SLUG}}" "features" }}
   {{- $on := $manifest.default }}
-  {{- with site.Params.features }}
+  {{- with index site.Params "{{SLUG}}" "features" }}
     {{- $found := index . $name }}
     {{- if ne $found nil }}{{ $on = $found }}{{ end }}
   {{- end }}
@@ -69,3 +69,11 @@ cat > "$target" <<'HOOK'
   {{- end }}
 {{- end }}
 HOOK
+
+# The namespace, baked in. A partial cannot ask which theme it belongs
+# to, so the name is written here and check/namespace.sh holds it to
+# the slug.
+slug="$(tools/scripts/slug.sh)"
+tmpfile="$(mktemp)"
+sed "s|{{SLUG}}|$slug|g" "$target" > "$tmpfile"
+mv "$tmpfile" "$target"

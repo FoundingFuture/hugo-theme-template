@@ -14,6 +14,7 @@ stale. A declaration cannot, because the build reads it.
 """
 
 import fnmatch
+import glob
 import json
 import os
 import subprocess
@@ -27,7 +28,7 @@ except ModuleNotFoundError:
     except ModuleNotFoundError:
         tomllib = None
 
-MANIFESTS = "../../data/features"
+MANIFESTS = next(iter(sorted(glob.glob("../../data/*/features"))), "../../data/features")
 
 
 def skeleton(root):

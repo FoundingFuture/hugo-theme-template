@@ -24,7 +24,7 @@ gate_checks() {
     # that runs there. Without it, the template's own prose is read by
     # nothing, because a project replaces the README and never sees it.
     template) echo "coverage portable shellcheck comments" ;;
-    static)  echo "coverage portable shellcheck templates contract reserved i18n css js comments metadata features" ;;
+    static)  echo "coverage portable shellcheck templates contract reserved namespace i18n css js comments metadata features" ;;
     build)   echo "package install example build versions scale" ;;
     output)  echo "conform validity head a11y perf external nojs feeds search expect visual" ;;
     release) echo "changelog version listing module demo" ;;

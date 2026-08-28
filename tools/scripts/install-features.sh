@@ -16,12 +16,18 @@ cd "$(dirname "$0")/../.." || exit 1
 PY_BIN="$(tools/scripts/python.sh 2>/dev/null || echo python3)"
 
 
+slug="$(tools/scripts/slug.sh)"
+
 partials=layouts/_partials
 [ -d "$partials" ] || partials=layouts/partials
 [ -d "$partials" ] || { echo "no partials directory" >&2; exit 1; }
 
-mkdir -p "$partials/features" data/features assets/css/features
-cp tools/templates/feature/slot.html "$partials/slot.html"
+mkdir -p "$partials/features" "data/$slug/features" assets/css/features
+# The namespace is baked into the partial, because a partial cannot ask
+# which theme it belongs to. check/namespace.sh fails if the baked name
+# and the slug ever disagree.
+render_slug() { sed "s|{{SLUG}}|$slug|g" "$1"; }
+render_slug tools/templates/feature/slot.html.tmpl > "$partials/slot.html"
 "$PY_BIN" tools/scripts/wire-slots.py "$partials"
 
 # The starter set is installed and switched on. A feature that ships is a
@@ -36,11 +42,11 @@ cp tools/templates/feature/slot.html "$partials/slot.html"
 for manifest in tools/templates/feature/manifests/*.toml; do
   [ -e "$manifest" ] || continue
   name="$(basename "$manifest" .toml)"
-  cp "$manifest" "data/features/$name.toml"
+  cp "$manifest" "data/$slug/features/$name.toml"
   # A component renders through its shortcodes and has no partial. Its
   # stylesheet is mounted from its own directory rather than copied.
   [ -f "tools/templates/feature/partials/$name.html" ] \
-    && cp "tools/templates/feature/partials/$name.html" "$partials/features/$name.html"
+    && render_slug "tools/templates/feature/partials/$name.html" > "$partials/features/$name.html"
   [ -f "tools/templates/feature/css/$name.css" ] \
     && cp "tools/templates/feature/css/$name.css" "assets/css/features/$name.css"
   true
@@ -66,13 +72,13 @@ tools/scripts/feature-fixtures.sh
 # Every feature listed in the site config with its default, commented
 # out. A user sees the whole set in one place and flips a line. The
 # alternative is hunting for a name written down nowhere.
-if ! grep -q 'params.features' hugo.toml 2>/dev/null; then
+if ! grep -q "params.$slug.features" hugo.toml 2>/dev/null; then
   {
     printf '\n%s\n' "# Every feature this theme ships, with the default it ships with."
     printf '%s\n' "# Uncomment a line to change it. A page may override any of them"
     printf '%s\n' "# in its own front matter."
-    printf '%s\n' "# [params.features]"
-    for manifest in data/features/*.toml; do
+    printf '%s\n' "# [params.$slug.features]"
+    for manifest in "data/$slug/features"/*.toml; do
       [ -e "$manifest" ] || continue
       name="$(basename "$manifest" .toml)"
       default="$(sed -n 's/^ *default *= *\(true\|false\).*/\1/p' "$manifest" | head -1)"

@@ -10,19 +10,25 @@ Render every enabled feature registered for one slot, in weight order.
 {{- $page := .page }}
 {{- /* The conformance build sets featuresOff to compare a theme with no
        feature at all against the reference scaffold. It outranks front
-       matter, which nothing else does. */ -}}
-{{- if not site.Params.featuresoff }}
+       matter, which nothing else does.
+
+       Every key this theme reads sits under one namespace, which Hugo
+       asks theme authors to do so that a site's own params and a second
+       theme's cannot collide with them. index, not dot notation,
+       because a slug may carry a hyphen and is then not a valid
+       template identifier. */ -}}
+{{- if not (index site.Params "{{SLUG}}" "featuresoff") }}
   {{- /* Collected into a slice first. Ranging the data map walks it in
          key order, which is alphabetical and not what the weights say. */ -}}
   {{- $enabled := slice }}
-  {{- range $name, $manifest := hugo.Data.features }}
+  {{- range $name, $manifest := index hugo.Data "{{SLUG}}" "features" }}
     {{- if eq $manifest.slot $slot }}
       {{- $on := $manifest.default }}
-      {{- with site.Params.features }}
+      {{- with index site.Params "{{SLUG}}" "features" }}
         {{- $found := index . $name }}
         {{- if ne $found nil }}{{ $on = $found }}{{ end }}
       {{- end }}
-      {{- with $page.Params.features }}
+      {{- with index $page.Params "{{SLUG}}" "features" }}
         {{- $found := index . $name }}
         {{- if ne $found nil }}{{ $on = $found }}{{ end }}
       {{- end }}

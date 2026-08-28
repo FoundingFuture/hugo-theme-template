@@ -9,6 +9,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.." || exit 1
 
+slug="$(tools/scripts/slug.sh)"
+
 dest=tools/conformance/content/kitchen-sink/features
 mkdir -p "$dest"
 
@@ -23,15 +25,16 @@ Every page below exercises one feature. The switch in its front matter
 turns that feature on, and the sibling section turns it off.
 PAGE
 
-for manifest in data/features/*.toml; do
+for manifest in data/*/features/*.toml; do
   [ -e "$manifest" ] || continue
   name="$(basename "$manifest" .toml)"
   [ -e "$dest/$name.md" ] && continue
   # A feature may ship a fixture page of its own. The generated one
   # cannot say what that feature has to render.
   if [ -f "tools/templates/feature/pages/$name.md" ]; then
-    cp "tools/templates/feature/pages/$name.md" "$dest/$name.md"
+    sed -e "s|{{SLUG}}|$slug|g" "tools/templates/feature/pages/$name.md" > "$dest/$name.md"
   else
-    sed -e "s|{{NAME}}|$name|g" tools/templates/feature/page.md.tmpl > "$dest/$name.md"
+    sed -e "s|{{NAME}}|$name|g" -e "s|{{SLUG}}|$slug|g" \
+      tools/templates/feature/page.md.tmpl > "$dest/$name.md"
   fi
 done
