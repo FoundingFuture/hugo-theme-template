@@ -197,63 +197,6 @@ install_from_pypi() {
   "$venv/bin/pip" install --quiet "$pkg" >/dev/null 2>&1
 }
 
-specs() {
-  # Plain https first. It needs no key and no token, which is what a
-  # runner has. For a public repository that is enough.
-  #
-  # The list held only ssh and a token before. CI could reach neither,
-  # so the step failed on every repository made from the template.
-  printf '%s\n' "git+https://github.com/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
-  if [ -n "${GH_TOKEN:-}" ]; then
-    printf '%s\n' "git+https://${GH_TOKEN}@github.com/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
-  fi
-  # ssh, for a private fork and for a workstation with a key. The host
-  # alias is tried too, since a clone may have been made through one.
-  printf '%s\n' "git+ssh://git@github.com/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
-  printf '%s\n' "git+ssh://git@github-ff/${WRITING_LINT_REPO}@${WRITING_LINT_TAG}"
-}
-
-# The version an entry point would run, asked of the interpreter named
-# in its first line. A console script is written by the installer, so
-# that line points at the environment holding the package.
-version_of() {
-  local script="$1" interpreter
-  [ -x "$script" ] || return 0
-  interpreter="$(sed -n '1s|^#!||p' "$script" | awk '{print $1}')"
-  [ -x "$interpreter" ] || return 0
-  "$interpreter" -c 'import writing_lint, sys; sys.stdout.write(writing_lint.__version__)' \
-    2>/dev/null || true
-}
-
-install_with_uv() {
-  command -v uv >/dev/null 2>&1 || return 1
-  # Fail rather than ask. A private repository would otherwise stop the
-  # run at a password prompt that nobody is there to answer.
-  export GIT_TERMINAL_PROMPT=0
-  [ -x "$venv/bin/python" ] || uv venv --quiet "$venv" >/dev/null 2>&1 || return 1
-  local spec
-  while IFS= read -r spec; do
-    if uv pip install --quiet --reinstall --python "$venv/bin/python" "$spec" >/dev/null 2>&1; then
-      return 0
-    fi
-  done < <(specs)
-  return 1
-}
-
-install_with_venv() {
-  command -v python3 >/dev/null 2>&1 || return 1
-  export GIT_TERMINAL_PROMPT=0
-  [ -x "$venv/bin/pip" ] || python3 -m venv "$venv" >/dev/null 2>&1 || return 1
-  [ -x "$venv/bin/pip" ] || return 1
-  local spec
-  while IFS= read -r spec; do
-    if "$venv/bin/pip" install --quiet --force-reinstall "$spec" >/dev/null 2>&1; then
-      return 0
-    fi
-  done < <(specs)
-  return 1
-}
-
 case "${1:-}" in
   shellcheck|htmltest|hugo-latest)
     if locate_binary "$1"; then exit 0; fi
