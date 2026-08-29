@@ -1,0 +1,27 @@
+{{- /* Link the KaTeX stylesheet, on the pages that need it.
+
+       MathML output needs no stylesheet, so with the default setting
+       this renders nothing. With html or htmlAndMathml the page needs
+       the KaTeX rules and fonts, and only a page that carries a formula
+       gets the link.
+
+       The render hook sets hasMath while the content renders, and the
+       head renders first. Reading .Content here forces the content
+       through before the flag is read. */ -}}
+{{- $output := "mathml" }}
+{{- with site.Params.katex }}{{ with .output }}{{ $output = . }}{{ end }}{{ end }}
+{{- if ne $output "mathml" }}
+  {{- $noop := .Content }}
+  {{- if .Store.Get "hasMath" }}
+    {{- with resources.Get "css/katex/katex.min.css" }}
+      {{- /* The fonts are published beside the stylesheet, where its
+             relative URLs point. A resource is written out when its
+             permalink is read, so each one is read here. */ -}}
+      {{- range resources.Match "css/katex/fonts/*.woff2" }}
+        {{- $noop = .RelPermalink }}
+      {{- end }}
+      {{- $sheet := . | fingerprint }}
+<link rel="stylesheet" href="{{ $sheet.RelPermalink }}" integrity="{{ $sheet.Data.Integrity }}">
+    {{- end }}
+  {{- end }}
+{{- end }}

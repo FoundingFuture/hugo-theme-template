@@ -62,7 +62,7 @@ That is the loop: edit, look, check, commit.
 | `assets/css/a11y.css` | Underlined links, and targets big enough to hit |
 | `i18n/en.toml` | Every string the templates show |
 | `data/{{SLUG}}/features/` | One manifest per feature: slot, weight, default, what it adds. Namespaced, because a site's own `data/` wins any collision |
-| `features/` | Components: `search` and `privacy-embeds`, each with its own layouts and assets |
+| `features/` | Components: `search`, `privacy-embeds` and `katex`, each with its own layouts and assets |
 | `c` | The one command. Every verb the theme has |
 | `tools/` | The machinery `./c` runs: the checks, the fixture site, the feature catalogue |
 | `theme.toml`, `hugo.toml` | Theme metadata, and the theme's own defaults |
@@ -148,7 +148,7 @@ adds. Run `./c check`. `static/i18n` fails while the word is still the
 feature's own name, and `output/conform` fails if the feature renders
 anything the manifest does not declare.
 
-Search and privacy-embeds are components rather than toggles. They bring
+Search, privacy-embeds and katex are components rather than toggles. They bring
 their own layouts, scripts and shortcodes under `features/`. A site
 removes one by not mounting it. `features/<name>/README.md` says how.
 
