@@ -236,6 +236,21 @@ case "${1:-}" in
     printf '%s\n' "$1 is not installed. ./c setup fetches it." >&2
     exit 3
     ;;
+  fonttools)
+    # Reading a woff2 needs brotli as well, and fontTools does not
+    # bring it. The glyph gate reads every face the theme ships.
+    if [ -x "$venv/bin/python" ] \
+       && "$venv/bin/python" -c 'import fontTools, brotli' >/dev/null 2>&1; then
+      ( cd "$venv/bin" && pwd -P )
+      exit 0
+    fi
+    if [ "${2:-}" = fetch ] && install_from_pypi fonttools \
+       && install_from_pypi brotli; then
+      ( cd "$venv/bin" && pwd -P )
+      exit 0
+    fi
+    exit 3
+    ;;
   html5validator)
     if command -v html5validator >/dev/null 2>&1; then
       dirname "$(command -v html5validator)"
@@ -254,7 +269,7 @@ case "${1:-}" in
     ;;
   *)
     printf '%s\n' "usage: tools/scripts/tools.sh <tool> [fetch]" >&2
-    printf '%s\n' "tools: shellcheck htmltest hugo-latest stylelint eslint pa11y-ci lhci playwright html5validator" >&2
+    printf '%s\n' "tools: fonttools shellcheck htmltest hugo-latest stylelint eslint pa11y-ci lhci playwright html5validator" >&2
     exit 2
     ;;
 esac

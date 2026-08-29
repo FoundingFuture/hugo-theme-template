@@ -13,7 +13,7 @@ cd "$(dirname "$0")/../.." || exit 1
 
 MODE="${1:-fetch}"
 
-LIGHT="shellcheck htmltest hugo-latest stylelint eslint"
+LIGHT="fonttools shellcheck htmltest hugo-latest stylelint eslint"
 FULL="html5validator pa11y-ci lhci playwright"
 
 manager=""
@@ -97,6 +97,7 @@ report() {
 
 unlocks() {
   case "$1" in
+    fonttools) printf 'static/glyphs' ;;
     shellcheck) printf 'static/shellcheck' ;;
     htmltest) printf 'output/validity, output/nojs' ;;
     hugo-latest) printf 'build/versions' ;;

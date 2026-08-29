@@ -137,6 +137,7 @@ helps, setup prints the command or the link and leaves it to you.
 | [Git](https://git-scm.com/downloads) | everything, and Git Bash runs `./c` on Windows | yours to install |
 | [Node.js](https://nodejs.org/) | runs the five npm tools | the package manager, by `./c setup` |
 | [Go](https://go.dev/dl/) | `release/module` | the package manager, by `./c setup` |
+| [fontTools](https://github.com/fonttools/fonttools) | `static/glyphs` |
 | [ShellCheck](https://www.shellcheck.net/) | `static/shellcheck` | pinned, fetched by `./c setup` |
 | [htmltest](https://github.com/wjdp/htmltest) | `output/validity`, `output/nojs` | pinned, fetched by `./c setup` |
 | newest Hugo, as `hugo-latest` | `build/versions` | fetched by `./c setup` |
