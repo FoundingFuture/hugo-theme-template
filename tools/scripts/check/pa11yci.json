@@ -11,8 +11,8 @@
         "--no-sandbox"
       ]
     },
-    "hideElements": "input[type=checkbox][disabled]"
+    "hideElements": "input[type=checkbox][disabled], math msubsup > mo, math munderover > mo"
   },
   "urls": [],
-  "_why": "Goldmark renders a task list as a disabled checkbox with no label. The markup comes from the renderer, so no template can label it. Only that element is hidden, not the rule, so any other unlabelled form control still fails."
+  "_why": "Two elements no template can reach. Goldmark renders a task list as a disabled checkbox with no label, and the markup comes from the renderer. KaTeX renders an operator the browser stretches, and axe cannot measure the scaled glyph: it reports a contrast failure on an integral sign that inherits the same colour as the rest of the formula, which passes. Only these elements are hidden, never the rules, so any other unlabelled control or genuinely faint text still fails."
 }
