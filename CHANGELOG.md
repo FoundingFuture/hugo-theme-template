@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.1.0, 2026-08-29
+
+A generated theme is now installable and listable. The example site and
+the module path are new, and a theme's data and parameters moved.
+
+- `./c init` generates `exampleSite/`, which themes.gohugo.io reads and
+  a reviewer opens first. Hugo writes the site, and the scaffold's own
+  content fills it. `build/example` builds it the way a downloader
+  does, from the artefact unzipped into `themes/<slug>`.
+- `go.mod` arrives with it, so `hugo mod get` resolves the theme.
+  `release/module` reads the path from there, rather than inferring it
+  from whatever `theme.toml` names as the homepage.
+- The manifests move to `data/<slug>/features`, and the parameters to
+  `params.<slug>`. Hugo merges a theme's data into the site's and the
+  site wins, so an unnamespaced theme is one a site overrides by
+  accident. `static/namespace` holds the generated name to `slug.sh`.
+- A theme may define its own shortcodes. The reference build reads
+  `tools/conformance/stubs.txt` and renders a no-op for each name, so
+  the comparison measures what the theme adds where the scaffold puts
+  nothing.
+- `slot.html` indexes the manifests once for the site, and caches each
+  page's feature states. It walked all fourteen on every slot call.
+- The content linter is gone. A theme repository holds templates and no
+  content, so there was nothing here for it to grade.
+- Two gates that had never once passed. `release/module` wrote a
+  `module.replacements` table where Hugo reads a list of strings, and
+  `slug.sh` answered with the checkout's directory name whenever the
+  homepage ended in a slash.
+
 ## v0.0.2, 2026-08-28
 
 - Git tracks nothing a tool writes. A `.pyc`, a `__pycache__` or a
